@@ -1,0 +1,33 @@
+# Secrets
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Data — large files excluded from git
+data/processed/
+data/index/
+data/models/
+
+# Keep eval dataset (small, curated)
+!data/eval/
+data/eval/results.json
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+Thumbs.db
+.DS_Store
+
+# Notebooks — checkpoints
+.ipynb_checkpoints/

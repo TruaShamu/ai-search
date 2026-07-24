@@ -1,0 +1,267 @@
+[
+  {
+    "query": "romance set in Scotland",
+    "relevant": [
+      {
+        "work_id": "OL18178460W",
+        "relevance": 2,
+        "title": "Seducing the Highlander"
+      },
+      {
+        "work_id": "OL3277302W",
+        "relevance": 2,
+        "title": "Border Bride"
+      },
+      {
+        "work_id": "OL26945W",
+        "relevance": 2,
+        "title": "The Bride"
+      }
+    ],
+    "source": "synthetic",
+    "category": "genre"
+  },
+  {
+    "query": "mystery detective noir",
+    "relevant": [
+      {
+        "work_id": "OL17350938W",
+        "relevance": 2,
+        "title": "The Art of Detection"
+      }
+    ],
+    "source": "synthetic",
+    "category": "genre"
+  },
+  {
+    "query": "fantasy adventure for children",
+    "relevant": [
+      {
+        "work_id": "OL20923796W",
+        "relevance": 2,
+        "title": "Jungle Adventures"
+      }
+    ],
+    "source": "synthetic",
+    "category": "genre"
+  },
+  {
+    "query": "historical fiction about ancient Rome",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "genre"
+  },
+  {
+    "query": "horror supernatural ghost story",
+    "relevant": [
+      {
+        "work_id": "OL20660197W",
+        "relevance": 1,
+        "title": "The Haunted"
+      }
+    ],
+    "source": "synthetic",
+    "category": "genre"
+  },
+  {
+    "query": "history of computing and the internet",
+    "relevant": [
+      {
+        "work_id": "OL1965741W",
+        "relevance": 2,
+        "title": "The Internet in Everyday Life"
+      },
+      {
+        "work_id": "OL277729W",
+        "relevance": 1,
+        "title": "The Road Ahead"
+      }
+    ],
+    "source": "synthetic",
+    "category": "topic"
+  },
+  {
+    "query": "cooking and food culture",
+    "relevant": [
+      {
+        "work_id": "OL32136968W",
+        "relevance": 2,
+        "title": "Celebration food"
+      }
+    ],
+    "source": "synthetic",
+    "category": "topic"
+  },
+  {
+    "query": "world war 2 memoir",
+    "relevant": [
+      {
+        "work_id": "OL24227892W",
+        "relevance": 2,
+        "title": "The war-time diary of Gertrude Elizabeth Bathurst"
+      },
+      {
+        "work_id": "OL5703691W",
+        "relevance": 2,
+        "title": "Serenade to the Big Bird"
+      },
+      {
+        "work_id": "OL5857618W",
+        "relevance": 1,
+        "title": "We Who Are Alive and Remain"
+      }
+    ],
+    "source": "synthetic",
+    "category": "topic"
+  },
+  {
+    "query": "african american literature and identity",
+    "relevant": [
+      {
+        "work_id": "OL3949189W",
+        "relevance": 2,
+        "title": "Cane River"
+      }
+    ],
+    "source": "synthetic",
+    "category": "topic"
+  },
+  {
+    "query": "climate change and environment",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "topic"
+  },
+  {
+    "query": "artificial intelligence and machine learning",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "topic"
+  },
+  {
+    "query": "psychology of habits and behavior",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "topic"
+  },
+  {
+    "query": "space exploration and astronomy",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "topic"
+  },
+  {
+    "query": "philosophy of meaning and suffering",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "topic"
+  },
+  {
+    "query": "books about loneliness and isolation",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "concept"
+  },
+  {
+    "query": "stories about redemption and second chances",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "concept"
+  },
+  {
+    "query": "overcoming adversity and personal growth",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "concept"
+  },
+  {
+    "query": "the meaning of home and belonging",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "concept"
+  },
+  {
+    "query": "forbidden love across social classes",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "concept"
+  },
+  {
+    "query": "Bill Gates book about technology future",
+    "relevant": [
+      {
+        "work_id": "OL277729W",
+        "relevance": 2,
+        "title": "The Road Ahead"
+      }
+    ],
+    "source": "synthetic",
+    "category": "specific"
+  },
+  {
+    "query": "Julie Garwood scottish romance novel",
+    "relevant": [
+      {
+        "work_id": "OL26945W",
+        "relevance": 2,
+        "title": "The Bride"
+      }
+    ],
+    "source": "synthetic",
+    "category": "specific"
+  },
+  {
+    "query": "Maya Angelou autobiography",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "specific"
+  },
+  {
+    "query": "italian mediterranean cookbook recipes",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "specific"
+  },
+  {
+    "query": "classic literature from the 1800s",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "era"
+  },
+  {
+    "query": "modern thriller published after 2010",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "era"
+  },
+  {
+    "query": "feminist science fiction",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "cross-domain"
+  },
+  {
+    "query": "coming of age story set in India",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "cross-domain"
+  },
+  {
+    "query": "mathematical puzzles and recreational math",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "cross-domain"
+  },
+  {
+    "query": "true crime serial killer investigation",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "cross-domain"
+  },
+  {
+    "query": "graphic novel about war",
+    "relevant": [],
+    "source": "synthetic",
+    "category": "cross-domain"
+  }
+]
