@@ -161,15 +161,35 @@ hybrid               0.9344     0.7157     0.5901       226ms
 hybrid+rerank        0.8815     0.5980     0.4347       1199ms
 ```
 
-### Key Insight
-The heuristic annotator is biased toward BM25 because it checks literal term overlap. Manual inspection shows:
-- Vector search consistently ranks **highly relevant (rel=2)** docs at the top
-- BM25 gets more partial matches (rel=1) including false positives (e.g. "Computational logic and set theory" matching "romance **set** in Scotland")
-- Proper manual judgments would likely show hybrid+rerank winning on NDCG
+⚠️ **These results were misleading** — the heuristic annotator checked literal keyword overlap, inflating BM25 and penalizing vector search.
+
+### LLM-as-Judge Results ✅ (gpt-5.4-nano, 541 judgments, $0.058)
+
+```
+Strategy             MRR@10     NDCG@10    Recall@10    Latency
+keyword              0.8667     0.6031     0.5144       157ms
+vector               0.9667     0.7943     0.6759       164ms
+hybrid (RRF)         0.9444     0.8004     0.6591       234ms
+hybrid+rerank        0.9011     0.6304     0.4715       918ms
+```
+
+### Key Findings (with proper semantic judgments)
+1. **Vector search dominates BM25** — NDCG +32%, Recall +31%. Semantic matching wins.
+2. **Hybrid (RRF) is best overall** — NDCG 0.800, combining both signals optimally.
+3. **Reranker hurts performance** — ms-marco cross-encoder was trained on web passages, not short book metadata. It incorrectly demotes relevant books that have terse descriptions.
+4. **Heuristic vs LLM agreement was only 35%** — proves keyword-overlap is not a valid relevance proxy for semantic search evaluation.
+
+### Reranker Analysis
+The cross-encoder reranker (ms-marco-MiniLM-L-6-v2) underperforms because:
+- Trained on MS MARCO web passages (avg ~60 words), not book metadata (title + 0-50 words)
+- Prefers verbose passages → penalizes books with short/no descriptions (87% of our corpus)
+- Fix: fine-tune on book data, or use a longer-form reranker (e.g. BGE-reranker-v2)
 
 ### TODO
-- [ ] Manual relevance judgments on 20 queries (the gold standard)
-- [ ] LLM-as-judge for automated but semantic relevance scoring
+- [x] LLM-as-judge for automated semantic relevance scoring ✅
+- [ ] Category-breakdown analysis (where does each strategy win?)
+- [ ] Manual relevance judgments on 20 queries (gold standard calibration)
+- [ ] Fine-tune or swap reranker for book-domain data
 - [ ] Add eval to CI pipeline (regression detection)
 
 ---

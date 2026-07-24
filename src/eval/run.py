@@ -113,14 +113,22 @@ def evaluate_strategy(
     }
 
 
-def run_eval(strategies: list[str] = None, rerank: bool = True, verbose: bool = False, annotated: bool = True):
+def run_eval(strategies: list[str] = None, rerank: bool = True, verbose: bool = False, annotated: bool = True, llm_judged: bool = False):
     """Run full evaluation across all strategies."""
     if strategies is None:
         strategies = STRATEGIES
 
-    # Use annotated dataset if available
-    if annotated:
-        from src.eval.dataset import load_eval_dataset
+    # Choose judgment source
+    from src.eval.dataset import load_eval_dataset
+    if llm_judged:
+        judged_path = Path("data/eval/queries_llm_judged.json")
+        if judged_path.exists():
+            queries = load_eval_dataset(judged_path)
+            print("[Using LLM-as-judge relevance judgments]")
+        else:
+            print("WARNING: LLM judgments not found, falling back to heuristic")
+            queries = get_eval_queries()
+    elif annotated:
         annotated_path = Path("data/eval/queries_annotated.json")
         if annotated_path.exists():
             queries = load_eval_dataset(annotated_path)
@@ -194,7 +202,8 @@ if __name__ == "__main__":
     parser.add_argument("--strategy", choices=STRATEGIES, help="Single strategy to evaluate")
     parser.add_argument("--no-rerank", action="store_true", help="Skip reranker evaluation")
     parser.add_argument("--verbose", action="store_true", help="Show per-query details")
+    parser.add_argument("--llm-judged", action="store_true", help="Use LLM-as-judge annotations")
     args = parser.parse_args()
 
     strategies = [args.strategy] if args.strategy else None
-    run_eval(strategies=strategies, rerank=not args.no_rerank, verbose=args.verbose)
+    run_eval(strategies=strategies, rerank=not args.no_rerank, verbose=args.verbose, llm_judged=args.llm_judged)
