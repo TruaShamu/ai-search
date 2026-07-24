@@ -179,17 +179,47 @@ hybrid+rerank        0.9011     0.6304     0.4715       918ms
 3. **Reranker hurts performance** — ms-marco cross-encoder was trained on web passages, not short book metadata. It incorrectly demotes relevant books that have terse descriptions.
 4. **Heuristic vs LLM agreement was only 35%** — proves keyword-overlap is not a valid relevance proxy for semantic search evaluation.
 
-### Reranker Analysis
-The cross-encoder reranker (ms-marco-MiniLM-L-6-v2) underperforms because:
-- Trained on MS MARCO web passages (avg ~60 words), not book metadata (title + 0-50 words)
-- Prefers verbose passages → penalizes books with short/no descriptions (87% of our corpus)
-- Fix: fine-tune on book data, or use a longer-form reranker (e.g. BGE-reranker-v2)
+### Reranker Analysis — Deep Dive
+
+Tested two rerankers with **full descriptions** (all 13K books are Tier 1 with 800+ char descriptions):
+
+```
+Strategy                    MRR@10    NDCG@10    Recall@10    Latency
+hybrid (no rerank)          0.9444    0.8004     0.6591       234ms
+hybrid + ms-marco (ONNX)    0.8944    0.6961     0.5649       698ms     ← -13% NDCG
+hybrid + BGE-v2-m3          0.8611    0.6695     0.5257       23,449ms  ← -16% NDCG
+```
+
+**Root cause:** Both rerankers hurt because hybrid+RRF already has high precision at top-10 for a 13K corpus. Rerankers add value when first-stage retrieval has many false positives; here, the fusion of BM25 + vector already gives clean top-10 results. The cross-encoders shuffle good results down.
+
+**When rerankers will help:**
+- At 250K+ books (more noise in retrieval pool → reranker adds signal)
+- With fine-tuned model (trained on book metadata, not web passages)
+- The reranker code and ONNX pipeline are preserved for this future use
+
+### Category Breakdown (NDCG@10, LLM-judged)
+
+```
+Category        N   BM25    Vector  Hybrid  Winner
+concept         5   0.480   0.792   0.796   Hybrid
+cross-domain    5   0.501   0.765   0.737   Vector
+era             2   0.234   0.689   0.773   Hybrid
+genre           5   0.586   0.826   0.879   Hybrid
+specific        4   0.797   0.754   0.756   BM25
+topic           9   0.733   0.835   0.820   Vector
+```
+
+**Insights:**
+- BM25 wins only on `specific` queries (exact author/title matching)
+- Vector wins on `topic` and `cross-domain` (semantic understanding)
+- Hybrid wins on `concept`, `genre`, `era` (needs both signals combined)
+- BM25 collapses on abstract queries: `concept` (0.48), `era` (0.23)
 
 ### TODO
 - [x] LLM-as-judge for automated semantic relevance scoring ✅
-- [ ] Category-breakdown analysis (where does each strategy win?)
+- [x] Category-breakdown analysis ✅
+- [x] Reranker deep-dive (two models, full descriptions) ✅
 - [ ] Manual relevance judgments on 20 queries (gold standard calibration)
-- [ ] Fine-tune or swap reranker for book-domain data
 - [ ] Add eval to CI pipeline (regression detection)
 
 ---

@@ -107,7 +107,7 @@ class HybridSearchEngine:
                 "id": doc["id"],
                 "title": doc["title"],
                 "authors": doc.get("authors", ""),
-                "description": (doc.get("description") or "")[:200],
+                "description": doc.get("description") or "",
                 "subjects": doc.get("subjects", []),
                 "year": doc.get("year"),
                 "cover_url": doc.get("cover_url"),
