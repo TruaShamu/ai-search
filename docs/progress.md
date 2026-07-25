@@ -226,9 +226,11 @@ topic           9   0.733   0.835   0.820   Vector
 
 ## Backlog (Phase 2-3)
 - [x] Evaluation framework (MRR, NDCG@10) ✅
+- [x] RAG `/ask` endpoint (gpt-5.4-nano) ✅
+- [ ] RAG eval (faithfulness, groundedness, relevance, completeness — LLM-as-judge)
 - [ ] Query understanding (spell correction, intent classification)
 - [ ] Caching layer (in-process LRU → Redis sidecar)
-- [ ] RAG `/ask` endpoint (gpt-4.1-nano)
+- [ ] Dockerfile + container setup
 - [ ] Infrastructure-as-Code (Bicep)
 - [ ] CI/CD (GitHub Actions)
 - [ ] Monitoring + dashboards
