@@ -236,9 +236,22 @@ topic           9   0.733   0.835   0.820   Vector
 - [ ] Monitoring + dashboards
 
 ## Stretch (Phase 5)
+
+### Advanced Retrieval
 - [ ] SPLADE learned sparse retrieval (replace BM25 with PyTorch model)
 - [ ] ColBERT late-interaction retrieval
 - [ ] Distillation: train fast bi-encoder from cross-encoder teacher
-- [ ] Fine-tune embeddings on click data
+- [ ] Fine-tune embeddings on book pairs (contrastive learning on click data)
+- [ ] TurboQuant + Matryoshka stacking (21x compression, fit 250K in free tier)
+
+### Search Features (Exploration Ideas)
+- [ ] **"More like this"** — `GET /similar?work_id=X` → nearest neighbors by embedding. Dead simple, very demoable.
+- [ ] **Result explanations** — "Why did this match?" Show which signals contributed (BM25 score, vector similarity, matched subjects). Portfolio differentiator.
+- [ ] **Faceted browse** — filter/aggregate by genre, decade, author. Exposes AI Search facets.
+- [ ] **Autocomplete/typeahead** — prefix search on titles + authors. Good UX touch.
+- [ ] **Query expansion** — synonym mapping (sci-fi → science fiction), related genre suggestions.
+- [ ] **Personalization** — if we had user signals, weight results by reading history (overlaps with two-tower rec model).
+
+### Data Quality
 - [ ] LLM-generated descriptions for Tier 2/3 books
 - [ ] A/B testing framework
