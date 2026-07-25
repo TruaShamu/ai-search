@@ -5,15 +5,17 @@ import { SearchBar } from "@/components/search-bar";
 import { BookCard } from "@/components/book-card";
 import { ModeToggle } from "@/components/mode-toggle";
 import { CompareView } from "@/components/compare-view";
+import { AskView } from "@/components/ask-view";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   searchBooks,
   BookResult,
   QueryUnderstanding,
 } from "@/lib/api";
-import { BookOpen, GitCompare, Zap } from "lucide-react";
+import { BookOpen, GitCompare, Zap, Search, MessageCircle } from "lucide-react";
 
 const SAMPLE_QUERIES = [
   "fantasy adventure",
@@ -36,6 +38,7 @@ export default function Home() {
   const [compareMode, setCompareMode] = useState(false);
   const [currentQuery, setCurrentQuery] = useState("");
   const [catalogLoaded, setCatalogLoaded] = useState(false);
+  const [activeTab, setActiveTab] = useState("search");
 
   useEffect(() => {
     loadCatalogSample();
@@ -109,57 +112,93 @@ export default function Home() {
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="spell"
-                  checked={spellCorrection}
-                  onCheckedChange={setSpellCorrection}
-                />
-                <Label htmlFor="spell" className="text-xs text-muted-foreground">
-                  Spell fix
-                </Label>
+              {/* Tab switcher */}
+              <div className="flex gap-1 p-1 bg-muted rounded-lg">
+                <button
+                  onClick={() => setActiveTab("search")}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 ${
+                    activeTab === "search"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Search className="h-3 w-3" />
+                  Search
+                </button>
+                <button
+                  onClick={() => setActiveTab("ask")}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 ${
+                    activeTab === "ask"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <MessageCircle className="h-3 w-3" />
+                  Ask
+                </button>
               </div>
 
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="compare"
-                  checked={compareMode}
-                  onCheckedChange={setCompareMode}
-                />
-                <Label htmlFor="compare" className="text-xs text-muted-foreground">
-                  <GitCompare className="h-3 w-3 inline mr-1" />
-                  Compare
-                </Label>
-              </div>
+              {activeTab === "search" && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="spell"
+                      checked={spellCorrection}
+                      onCheckedChange={setSpellCorrection}
+                    />
+                    <Label htmlFor="spell" className="text-xs text-muted-foreground">
+                      Spell fix
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="compare"
+                      checked={compareMode}
+                      onCheckedChange={setCompareMode}
+                    />
+                    <Label htmlFor="compare" className="text-xs text-muted-foreground">
+                      <GitCompare className="h-3 w-3 inline mr-1" />
+                      Compare
+                    </Label>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
-          <SearchBar
-            onSearch={handleSearch}
-            loading={loading}
-            queryUnderstanding={queryUnderstanding}
-          />
-
-          {!compareMode && (
-            <div className="flex items-center justify-between mt-3">
-              <ModeToggle
-                selected={mode}
-                onChange={setMode}
-                latencyMs={latencyMs}
+          {activeTab === "search" && (
+            <>
+              <SearchBar
+                onSearch={handleSearch}
+                loading={loading}
+                queryUnderstanding={queryUnderstanding}
               />
-              {totalResults > 0 && (
-                <span className="text-xs text-muted-foreground">
-                  {totalResults.toLocaleString()} results
-                </span>
+
+              {!compareMode && (
+                <div className="flex items-center justify-between mt-3">
+                  <ModeToggle
+                    selected={mode}
+                    onChange={setMode}
+                    latencyMs={latencyMs}
+                  />
+                  {totalResults > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      {totalResults.toLocaleString()} results
+                    </span>
+                  )}
+                </div>
               )}
-            </div>
+            </>
           )}
         </div>
       </header>
 
       {/* Content */}
       <div className="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
-        {compareMode && currentQuery ? (
+        {activeTab === "ask" ? (
+          <AskView />
+        ) : compareMode && currentQuery ? (
           <CompareView query={currentQuery} spellCorrection={spellCorrection} />
         ) : (
           <>
