@@ -46,8 +46,8 @@ SIMILAR_PATTERNS = [
 ]
 
 AUTHOR_PATTERNS = [
-    r"(?:books?\s+)?by\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)",
-    r"([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\s+(?:books?|novels?|works?|writing)",
+    r"(?:books?\s+)?by\s+([A-Z][\w.]+(?:\s+[A-Z][\w.]+)+)",
+    r"([A-Z][\w.]+(?:\s+[A-Z][\w.]+)+)\s+(?:books?|novels?|works?|writing)",
     r"(?:author|written by)\s+(.+)",
 ]
 

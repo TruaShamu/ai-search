@@ -82,28 +82,41 @@ def search(
     Query understanding (spell correction + intent classification) is on by default."""
     engine = get_engine()
 
-    # Query understanding
+    # Query understanding + adaptive routing
     query_info = None
     search_query = q
     search_mode = mode.value
+    mode_was_default = (mode == SearchMode.hybrid)  # user didn't explicitly override
 
     if understand:
-        from src.query.pipeline import QueryPipeline
         qp = get_query_pipeline()
         analysis = qp.process(q)
         search_query = analysis.corrected
+
+        # Adaptive routing: let intent override mode unless user explicitly set it
+        if mode_was_default:
+            search_mode = analysis.search_mode  # keyword, vector, or hybrid
+
+        # Apply detected filters (only if user didn't explicitly set them)
+        if analysis.filters.get("year_min") and not year_min:
+            year_min = analysis.filters["year_min"]
+        if analysis.filters.get("year_max") and not year_max:
+            year_max = analysis.filters["year_max"]
+
+        # For "similar_to" intent, search by title with context for embedding
+        if analysis.intent.value == "similar_to" and analysis.extracted_title:
+            search_query = f"novel titled {analysis.extracted_title}"
+
         query_info = {
             "original": analysis.original,
             "corrected": analysis.corrected,
             "was_corrected": analysis.was_corrected,
             "intent": analysis.intent.value,
             "confidence": analysis.confidence,
+            "routed_mode": search_mode,
+            "extracted_title": analysis.extracted_title or None,
+            "filters_applied": analysis.filters or None,
         }
-        # Apply detected filters (only if user didn't explicitly set them)
-        if analysis.filters.get("year_min") and not year_min:
-            year_min = analysis.filters["year_min"]
-        if analysis.filters.get("year_max") and not year_max:
-            year_max = analysis.filters["year_max"]
 
     # Fetch more candidates if reranking (need a larger pool to reorder)
     retrieve_k = top_k * 5 if rerank else top_k
@@ -135,7 +148,7 @@ def search(
 
         response = {
             "query": q,
-            "mode": mode.value,
+            "mode": search_mode,  # actual mode used (may differ from requested if routed)
             "reranked": rerank,
             "total_results": result["total_count"],
             "latency_ms": round(retrieval_latency + rerank_latency, 1),
@@ -157,8 +170,10 @@ def search(
                 "model": "nomic-ai/nomic-embed-text-v1.5",
                 "reranker": "cross-encoder/ms-marco-MiniLM-L-6-v2" if rerank else None,
                 "dimension": engine.dim,
-                "retrieval": f"{mode.value} (BM25+vector+RRF)" if mode == SearchMode.hybrid else mode.value,
-                "pipeline": "retrieve → rerank → top_k" if rerank else "retrieve → top_k",
+                "requested_mode": mode.value,
+                "routed_mode": search_mode,
+                "retrieval": f"{search_mode} (BM25+vector+RRF)" if search_mode == "hybrid" else search_mode,
+                "pipeline": "understand → retrieve → rerank → top_k" if rerank else "understand → retrieve → top_k",
             }
 
         return JSONResponse(content=response)
