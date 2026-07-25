@@ -297,10 +297,10 @@ def ask(req: AskRequest):
 
     t0 = time.time()
 
-    # Step 1: Retrieve relevant books
+    # Step 1: Retrieve relevant books (with reranker for better source quality)
     engine = get_engine()
     if hasattr(engine, "search") and hasattr(engine, "compare"):
-        result = engine.search(query=req.question, top_k=req.max_sources * 2, mode=req.mode.value)
+        result = engine.search(query=req.question, top_k=req.max_sources * 2, mode=req.mode.value, rerank=True)
         if "error" in result:
             return JSONResponse(content={"error": "Search failed", "detail": result["error"]}, status_code=502)
         search_results = result["results"]
