@@ -9,7 +9,7 @@ import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-EMBEDDING_DIM = 384
+EMBEDDING_DIM = 256
 MODEL_NAME = "nomic-ai/nomic-embed-text-v1.5"
 
 

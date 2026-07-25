@@ -11,8 +11,9 @@ import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-# Matryoshka dimension — use 384 for prototype, can upgrade to 768 later
-EMBEDDING_DIM = 384
+# Matryoshka dimension — 256 is a trained checkpoint for nomic-embed-text-v1.5
+# (supported: 768, 512, 256, 128, 64; 384 was non-standard)
+EMBEDDING_DIM = 256
 MODEL_NAME = "nomic-ai/nomic-embed-text-v1.5"
 BATCH_SIZE = 128
 
@@ -37,7 +38,7 @@ def build_embedding_texts(books: list[dict]) -> list[str]:
         parts = [f"{b['title']} by {author_str}"]
 
         if b.get("description"):
-            parts.append(b["description"][:512])
+            parts.append(b["description"][:2000])
 
         if b.get("subjects"):
             parts.append(", ".join(b["subjects"][:10]))

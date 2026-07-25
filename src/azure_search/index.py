@@ -85,7 +85,7 @@ def create_index():
                 "type": "Collection(Edm.Single)",
                 "searchable": True,
                 "retrievable": False,
-                "dimensions": 384,
+                "dimensions": 256,
                 "vectorSearchProfile": "hnsw-nomic",
             },
         ],

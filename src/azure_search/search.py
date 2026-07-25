@@ -23,7 +23,7 @@ HEADERS = {
 class HybridSearchEngine:
     """Azure AI Search hybrid engine: BM25 + vector + RRF fusion."""
 
-    def __init__(self, model_name: str = "nomic-ai/nomic-embed-text-v1.5", dim: int = 384):
+    def __init__(self, model_name: str = "nomic-ai/nomic-embed-text-v1.5", dim: int = 256):
         self.dim = dim
         print(f"Loading embedding model: {model_name}...")
         self.model = SentenceTransformer(model_name, trust_remote_code=True)
