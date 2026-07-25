@@ -11,31 +11,35 @@ interface CompareViewProps {
 }
 
 export function CompareView({ query, spellCorrection }: CompareViewProps) {
-  const [leftResult, setLeftResult] = useState<SearchResponse | null>(null);
-  const [rightResult, setRightResult] = useState<SearchResponse | null>(null);
+  const [keywordResult, setKeywordResult] = useState<SearchResponse | null>(null);
+  const [vectorResult, setVectorResult] = useState<SearchResponse | null>(null);
+  const [hybridResult, setHybridResult] = useState<SearchResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!query) return;
 
-    const fetchBoth = async () => {
+    const fetchAll = async () => {
       setLoading(true);
       try {
-        const [keyword, vector] = await Promise.all([
+        const [keyword, vector, hybrid] = await Promise.all([
           searchBooks(query, { mode: "keyword", top_k: 8, understand: spellCorrection }),
           searchBooks(query, { mode: "vector", top_k: 8, understand: spellCorrection }),
+          searchBooks(query, { mode: "hybrid", top_k: 8, understand: spellCorrection }),
         ]);
-        setLeftResult(keyword);
-        setRightResult(vector);
+        setKeywordResult(keyword);
+        setVectorResult(vector);
+        setHybridResult(hybrid);
       } catch {
-        setLeftResult(null);
-        setRightResult(null);
+        setKeywordResult(null);
+        setVectorResult(null);
+        setHybridResult(null);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchBoth();
+    fetchAll();
   }, [query, spellCorrection]);
 
   if (loading) {
@@ -47,26 +51,41 @@ export function CompareView({ query, spellCorrection }: CompareViewProps) {
     );
   }
 
-  if (!leftResult || !rightResult) return null;
+  if (!keywordResult || !vectorResult || !hybridResult) return null;
 
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground text-center">
-        Side-by-side: how different retrieval strategies rank results for the same query
+        Side-by-side: how BM25, Vector, and Hybrid (RRF) rank results for the same query
       </p>
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-3 gap-4">
         {/* Keyword (BM25) column */}
         <div>
           <div className="flex items-center gap-2 mb-3 pb-2 border-b">
-            <Badge variant="outline">Keyword (BM25)</Badge>
+            <Badge variant="outline">BM25</Badge>
             <span className="text-[10px] text-muted-foreground font-mono">
-              {leftResult.latency_ms.toFixed(0)}ms
+              {keywordResult.latency_ms.toFixed(0)}ms
             </span>
           </div>
           <div className="grid gap-2">
-            {leftResult.results.map((book) => (
-              <BookCard key={book.id} book={book} />
+            {keywordResult.results.map((book) => (
+              <BookCard key={book.id} book={book} compact />
+            ))}
+          </div>
+        </div>
+
+        {/* Hybrid (RRF) column — center, highlighted */}
+        <div>
+          <div className="flex items-center gap-2 mb-3 pb-2 border-b border-primary/40">
+            <Badge>Hybrid (RRF)</Badge>
+            <span className="text-[10px] text-muted-foreground font-mono">
+              {hybridResult.latency_ms.toFixed(0)}ms
+            </span>
+          </div>
+          <div className="grid gap-2">
+            {hybridResult.results.map((book) => (
+              <BookCard key={book.id} book={book} compact />
             ))}
           </div>
         </div>
@@ -74,31 +93,35 @@ export function CompareView({ query, spellCorrection }: CompareViewProps) {
         {/* Vector (Semantic) column */}
         <div>
           <div className="flex items-center gap-2 mb-3 pb-2 border-b">
-            <Badge variant="outline">Semantic (Vector)</Badge>
+            <Badge variant="outline">Vector</Badge>
             <span className="text-[10px] text-muted-foreground font-mono">
-              {rightResult.latency_ms.toFixed(0)}ms
+              {vectorResult.latency_ms.toFixed(0)}ms
             </span>
           </div>
           <div className="grid gap-2">
-            {rightResult.results.map((book) => (
-              <BookCard key={book.id} book={book} />
+            {vectorResult.results.map((book) => (
+              <BookCard key={book.id} book={book} compact />
             ))}
           </div>
         </div>
       </div>
 
       {/* Overlap analysis */}
-      <div className="mt-4 p-3 bg-muted/50 rounded-lg text-center">
-        <OverlapBadge left={leftResult} right={rightResult} />
+      <div className="mt-4 p-3 bg-muted/50 rounded-lg text-center space-y-1">
+        <OverlapBadge label="BM25 ∩ Vector" left={keywordResult} right={vectorResult} />
+        <OverlapBadge label="BM25 ∩ Hybrid" left={keywordResult} right={hybridResult} />
+        <OverlapBadge label="Vector ∩ Hybrid" left={vectorResult} right={hybridResult} />
       </div>
     </div>
   );
 }
 
 function OverlapBadge({
+  label,
   left,
   right,
 }: {
+  label: string;
   left: SearchResponse;
   right: SearchResponse;
 }) {
@@ -109,9 +132,10 @@ function OverlapBadge({
   const pct = total > 0 ? Math.round((overlap / total) * 100) : 0;
 
   return (
-    <span className="text-xs text-muted-foreground">
-      <span className="font-medium text-foreground">{overlap}</span> shared results
-      ({pct}% overlap) — {total - overlap} unique per mode
+    <span className="text-xs text-muted-foreground block">
+      <span className="font-mono">{label}:</span>{" "}
+      <span className="font-medium text-foreground">{overlap}</span> shared
+      ({pct}% overlap)
     </span>
   );
 }
