@@ -97,7 +97,7 @@ export default function Home() {
     if (currentQuery && !compareMode) {
       handleSearch(currentQuery);
     }
-  }, [mode]);
+  }, [mode, rerank]);
 
   return (
     <main className="flex-1 flex flex-col">
