@@ -10,6 +10,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, Query
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -17,7 +18,7 @@ load_dotenv()
 app = FastAPI(
     title="Book Search API",
     description="Hybrid semantic search over the OpenLibrary catalog",
-    version="0.2.0",
+    version="0.3.0",
 )
 
 
@@ -202,3 +203,83 @@ def stats():
             "dimension": engine.dim,
             "model": "nomic-ai/nomic-embed-text-v1.5",
         }
+
+
+# --- RAG /ask endpoint ---
+
+class AskRequest(BaseModel):
+    question: str = Field(..., min_length=3, max_length=500, description="Natural language question about books")
+    max_sources: int = Field(5, ge=1, le=10, description="Max books to use as context")
+    mode: SearchMode = Field(SearchMode.hybrid, description="Retrieval mode for finding sources")
+
+
+_rag = None
+
+
+def get_rag():
+    global _rag
+    if _rag is None:
+        from src.rag.generate import RAGPipeline
+        _rag = RAGPipeline()
+    return _rag
+
+
+@app.post("/ask")
+def ask(req: AskRequest):
+    """Ask a question and get a grounded answer with book citations.
+
+    Uses hybrid search to find relevant books, then generates a natural language
+    answer citing those sources. Hallucination guardrails validate all mentioned titles."""
+    import time
+
+    t0 = time.time()
+
+    # Step 1: Retrieve relevant books
+    engine = get_engine()
+    if hasattr(engine, "search") and hasattr(engine, "compare"):
+        result = engine.search(query=req.question, top_k=req.max_sources * 2, mode=req.mode.value)
+        if "error" in result:
+            return JSONResponse(content={"error": "Search failed", "detail": result["error"]}, status_code=502)
+        search_results = result["results"]
+        retrieval_ms = result["latency_ms"]
+    else:
+        search_results = engine.search(query=req.question, top_k=req.max_sources * 2)
+        retrieval_ms = 0
+
+    if not search_results:
+        return JSONResponse(content={
+            "answer": "I couldn't find any relevant books for your question.",
+            "sources": [],
+            "latency_ms": {"retrieval": retrieval_ms, "total": retrieval_ms},
+        })
+
+    # Step 2: RAG generation
+    try:
+        rag = get_rag()
+        response = rag.ask(
+            question=req.question,
+            search_results=search_results,
+            max_sources=req.max_sources,
+        )
+    except Exception as e:
+        return JSONResponse(
+            content={"error": "Generation failed", "detail": str(e)},
+            status_code=502,
+        )
+
+    total_ms = (time.time() - t0) * 1000
+
+    return JSONResponse(content={
+        "question": req.question,
+        "answer": response.answer,
+        "sources": response.sources,
+        "citations_valid": response.citations_valid,
+        "hallucinated_titles": response.hallucinated_titles if not response.citations_valid else [],
+        "latency_ms": {
+            "retrieval": round(retrieval_ms, 1),
+            "generation": response.latency_ms["generation"],
+            "total": round(total_ms, 1),
+        },
+        "model": response.model,
+        "token_usage": response.token_usage,
+    })
