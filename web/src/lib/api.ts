@@ -47,6 +47,7 @@ export async function searchBooks(
     mode?: "hybrid" | "vector" | "keyword";
     top_k?: number;
     understand?: boolean;
+    rerank?: boolean;
   } = {}
 ): Promise<SearchResponse> {
   const params = new URLSearchParams({ q: query });
@@ -54,6 +55,7 @@ export async function searchBooks(
   if (options.top_k) params.set("top_k", String(options.top_k));
   if (options.understand !== undefined)
     params.set("understand", String(options.understand));
+  if (options.rerank) params.set("rerank", "true");
 
   const res = await fetch(`${API_BASE}/search?${params}`);
   if (!res.ok) throw new Error(`Search failed: ${res.status}`);

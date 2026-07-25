@@ -35,6 +35,7 @@ export default function Home() {
   const [queryUnderstanding, setQueryUnderstanding] =
     useState<QueryUnderstanding | null>(null);
   const [spellCorrection, setSpellCorrection] = useState(true);
+  const [rerank, setRerank] = useState(false);
   const [compareMode, setCompareMode] = useState(false);
   const [currentQuery, setCurrentQuery] = useState("");
   const [catalogLoaded, setCatalogLoaded] = useState(false);
@@ -76,6 +77,7 @@ export default function Home() {
           mode,
           top_k: 10,
           understand: spellCorrection,
+          rerank,
         });
         setResults(res.results);
         setLatencyMs(res.latency_ms);
@@ -88,7 +90,7 @@ export default function Home() {
         setLoading(false);
       }
     },
-    [mode, spellCorrection, compareMode]
+    [mode, spellCorrection, compareMode, rerank]
   );
 
   useEffect(() => {
@@ -153,6 +155,18 @@ export default function Home() {
 
                   <div className="flex items-center gap-2">
                     <Switch
+                      id="rerank"
+                      checked={rerank}
+                      onCheckedChange={setRerank}
+                    />
+                    <Label htmlFor="rerank" className="text-xs text-muted-foreground">
+                      <Zap className="h-3 w-3 inline mr-1" />
+                      Rerank
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Switch
                       id="compare"
                       checked={compareMode}
                       onCheckedChange={setCompareMode}
@@ -206,7 +220,7 @@ export default function Home() {
               <div className="mb-4">
                 <p className="text-sm text-muted-foreground mb-3">
                   <Zap className="h-3.5 w-3.5 inline mr-1" />
-                  Explore the catalog — 13K+ books with hybrid semantic search
+                  Explore the catalog — 26K+ books with hybrid semantic search
                 </p>
               </div>
             )}
@@ -244,8 +258,8 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t py-3 text-center text-xs text-muted-foreground">
-        Hybrid Search (BM25 + Vector + RRF) · nomic-embed-text-v1.5 · Azure AI Search
-        · gpt-5.4-nano RAG
+        Hybrid Search (TF-IDF + Vector + RRF) · nomic-embed-text-v1.5 · Qdrant
+        · Cross-Encoder Reranker
       </footer>
     </main>
   );

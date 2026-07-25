@@ -49,6 +49,14 @@ class QdrantSearch:
         with VECTORIZER_PATH.open("rb") as f:
             self.vectorizer = pickle.load(f)
 
+        # Load reranker (optional — gracefully skip if ONNX model missing)
+        self._reranker = None
+        try:
+            from src.reranker.onnx_reranker import OnnxReranker
+            self._reranker = OnnxReranker()
+        except Exception as e:
+            print(f"Reranker not available: {e}")
+
     def embed_query(self, query: str) -> list[float]:
         """Embed a query using Nomic's search_query prefix convention."""
         prefixed = f"search_query: {query}"
@@ -121,7 +129,10 @@ class QdrantSearch:
         year_min: int | None = None,
         year_max: int | None = None,
         tier: int | None = None,
+        rerank: bool = False,
     ) -> dict:
+        # Over-fetch when reranking to give the reranker more candidates
+        fetch_k = top_k * 5 if rerank and self._reranker else top_k
         query_filter = self._build_filter(year_min=year_min, year_max=year_max, tier=tier)
         dense_vector = self.embed_query(query) if mode in {"vector", "hybrid"} else None
         sparse_vector = self._build_sparse_query(query) if mode in {"keyword", "hybrid"} else None
@@ -134,7 +145,7 @@ class QdrantSearch:
                 using="dense",
                 query_filter=query_filter,
                 with_payload=True,
-                limit=top_k,
+                limit=fetch_k,
             )
         elif mode == "keyword":
             response = self.client.query_points(
@@ -143,10 +154,10 @@ class QdrantSearch:
                 using="sparse",
                 query_filter=query_filter,
                 with_payload=True,
-                limit=top_k,
+                limit=fetch_k,
             )
         elif mode == "hybrid":
-            prefetch_limit = max(top_k * 2, top_k)
+            prefetch_limit = max(fetch_k * 2, fetch_k)
             response = self.client.query_points(
                 collection_name=self.collection,
                 prefetch=[
@@ -156,7 +167,7 @@ class QdrantSearch:
                 query=models.FusionQuery(fusion=models.Fusion.RRF),
                 query_filter=query_filter,
                 with_payload=True,
-                limit=top_k,
+                limit=fetch_k,
             )
         else:
             raise ValueError(f"Unsupported search mode: {mode}")
@@ -165,14 +176,26 @@ class QdrantSearch:
         points = getattr(response, "points", response)
         results = [self._format_point(point) for point in points]
 
+        # Rerank if requested and reranker is available
+        reranked = False
+        rerank_latency_ms = 0
+        if rerank and self._reranker and results:
+            rerank_result = self._reranker.rerank(query=query, candidates=results, top_k=top_k)
+            results = rerank_result["results"]
+            rerank_latency_ms = rerank_result["latency_ms"]
+            reranked = True
+        else:
+            results = results[:top_k]
+
+        total_latency = retrieval_latency_ms + rerank_latency_ms
         return {
             "query": query,
             "results": results,
             "total": len(results),
             "total_count": len(results),
             "mode": mode,
-            "reranked": False,
-            "latency_ms": retrieval_latency_ms,
+            "reranked": reranked,
+            "latency_ms": round(total_latency, 1),
             "retrieval_latency_ms": retrieval_latency_ms,
         }
 
