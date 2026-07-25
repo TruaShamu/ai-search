@@ -224,11 +224,70 @@ topic           9   0.733   0.835   0.820   Vector
 
 ---
 
+## Query Understanding — Evaluated ✅
+
+### What We Built
+- SymSpell spell correction (English + 32K domain terms from index)
+- Rule-based intent classifier (keyword/semantic/author/similar_to/filtered)
+- Intent-based adaptive routing (mode selection per intent)
+- LLM query expansion (gpt-5.4-nano, 3-5 synonym terms)
+
+### What Actually Works
+
+**Spell correction: ✅ SHIPS (only QU component with proven value)**
+```
+Condition                      NDCG@10    vs Clean
+Clean (no typos)               0.800      baseline
+Typos (no correction)          0.502      -37.2%
+Typos + spell correction       0.757      -5.5%
+```
+- Recovers **85% of NDCG lost** to typos
+- 80% exact query recovery rate (24/30)
+- <1ms latency, pure CPU (SymSpell dictionary lookup)
+
+**Intent routing: ❌ DROPPED (NDCG-neutral)**
+```
+Baseline (hybrid for all)      0.800
+Routed (intent-adaptive)       0.800      +0.0%
+```
+- 93% of eval queries classify as `semantic` → route to hybrid anyway
+- Year filters from NLU hurt when ground-truth doesn't match constraint
+- Routing adds value only for ISBN (rare) and "books like X" (needs diverse eval set)
+
+**LLM query expansion: ❌ NOT SHIPPING (-21% NDCG)**
+```
+Baseline (no expansion)        0.800
+LLM expanded                   0.632      -21.0%
+```
+- Regresses **25/30 queries**
+- Root cause: expansion terms dilute BM25 signal in hybrid RRF
+- Vector component already captures synonyms via embeddings — expansion double-counts semantic signal
+- +993ms latency (too slow regardless of quality)
+- Only helps 4 queries where BM25 vocabulary mismatch was severe
+
+### Current State (shipped)
+- Spell correction → active (corrects query before search)
+- Intent classification → metadata only (returned in response JSON for observability/analytics)
+- No routing behavior, no query expansion, no hard filters from NLU
+
+### Lessons Learned
+1. Hybrid RRF at small scale is remarkably robust — additional components (reranker, expansion, routing) all failed to improve it
+2. The vector component already handles synonyms/semantics — don't duplicate that signal on BM25 side
+3. Rule-based intent classification without query logs or user signals is guesswork
+4. Spell correction is the only QU component that addresses a real failure mode (typos degrade embedding quality)
+
+### Future Work (if pursuing intent as a data project)
+- Collect query logs with click/engagement signals
+- Fine-tune distilbert on domain-specific intents
+- Key papers: Guo & Lan 2020 (survey), Liu et al. 2020 (LinkedIn deep intent), Broder 2002 (taxonomy)
+
+---
+
 ## Backlog (Phase 2-3)
 - [x] Evaluation framework (MRR, NDCG@10) ✅
 - [x] RAG `/ask` endpoint (gpt-5.4-nano) ✅
+- [x] Query understanding evaluation ✅
 - [ ] RAG eval (faithfulness, groundedness, relevance, completeness — LLM-as-judge)
-- [ ] Query understanding (spell correction, intent classification)
 - [ ] Caching layer (in-process LRU → Redis sidecar)
 - [ ] Dockerfile + container setup
 - [ ] Infrastructure-as-Code (Bicep)
@@ -249,7 +308,6 @@ topic           9   0.733   0.835   0.820   Vector
 - [ ] **Result explanations** — "Why did this match?" Show which signals contributed (BM25 score, vector similarity, matched subjects). Portfolio differentiator.
 - [ ] **Faceted browse** — filter/aggregate by genre, decade, author. Exposes AI Search facets.
 - [ ] **Autocomplete/typeahead** — prefix search on titles + authors. Good UX touch.
-- [ ] **Query expansion** — synonym mapping (sci-fi → science fiction), related genre suggestions.
 - [ ] **Personalization** — if we had user signals, weight results by reading history (overlaps with two-tower rec model).
 
 ### Data Quality
