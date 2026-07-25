@@ -9,6 +9,7 @@ from enum import Enum
 from pathlib import Path
 
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -18,7 +19,14 @@ load_dotenv()
 app = FastAPI(
     title="Book Search API",
     description="Hybrid semantic search over the OpenLibrary catalog",
-    version="0.3.0",
+    version="0.4.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

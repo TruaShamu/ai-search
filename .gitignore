@@ -29,5 +29,9 @@ data/eval/results.json
 Thumbs.db
 .DS_Store
 
+# Node (web frontend)
+web/node_modules/
+web/.next/
+
 # Notebooks — checkpoints
 .ipynb_checkpoints/
