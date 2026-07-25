@@ -10,7 +10,7 @@ COPY requirements.txt ./
 
 RUN python -m pip install --upgrade pip && \
     pip install --index-url https://download.pytorch.org/whl/cpu torch && \
-    pip install sentence-transformers faiss-cpu numpy azure-storage-blob
+    pip install sentence-transformers faiss-cpu numpy azure-storage-blob einops
 
 COPY src ./src
 COPY scripts ./scripts

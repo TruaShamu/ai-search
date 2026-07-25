@@ -1,7 +1,7 @@
 """
-FastAPI search API — hybrid search over Azure AI Search.
+FastAPI search API — hybrid search over book catalog.
 Supports BM25, vector, and hybrid (RRF) retrieval modes.
-Falls back to local FAISS if Azure credentials are not configured.
+Backends: Qdrant (default), Azure AI Search, or local FAISS fallback.
 """
 
 import os
@@ -19,12 +19,12 @@ load_dotenv()
 app = FastAPI(
     title="Book Search API",
     description="Hybrid semantic search over the OpenLibrary catalog",
-    version="0.4.0",
+    version="0.5.0",
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -47,8 +47,14 @@ def get_engine():
     if _engine is not None:
         return _engine
 
-    # Use Azure AI Search if configured, else fall back to local FAISS
-    if os.environ.get("AZURE_SEARCH_ENDPOINT") and os.environ.get("AZURE_SEARCH_ADMIN_KEY"):
+    # Priority: Qdrant → Azure AI Search → local FAISS
+    if os.environ.get("QDRANT_URL"):
+        from src.qdrant.client import QdrantSearch
+        _engine = QdrantSearch(
+            url=os.environ["QDRANT_URL"],
+            collection=os.environ.get("QDRANT_COLLECTION", "books"),
+        )
+    elif os.environ.get("AZURE_SEARCH_ENDPOINT") and os.environ.get("AZURE_SEARCH_ADMIN_KEY"):
         from src.azure_search.search import HybridSearchEngine
         _engine = HybridSearchEngine()
     else:
@@ -154,9 +160,10 @@ def search(
             response["candidates_reranked"] = len(result["results"])
 
         if explain:
+            backend_name = "qdrant" if hasattr(engine, "collection") else "azure_ai_search"
             response["explain"] = {
-                "backend": "azure_ai_search",
-                "index": os.environ.get("AZURE_SEARCH_INDEX", "books-v1"),
+                "backend": backend_name,
+                "index": engine.collection if hasattr(engine, "collection") else os.environ.get("AZURE_SEARCH_INDEX", "books-v1"),
                 "model": "nomic-ai/nomic-embed-text-v1.5",
                 "reranker": "cross-encoder/ms-marco-MiniLM-L-6-v2" if rerank else None,
                 "dimension": engine.dim,
@@ -193,7 +200,7 @@ def compare(
 
     if not hasattr(engine, "compare"):
         return JSONResponse(
-            content={"error": "Compare only available with Azure AI Search backend"},
+            content={"error": "Compare requires Azure AI Search or Qdrant backend"},
             status_code=501,
         )
 
@@ -217,14 +224,30 @@ def compare(
 def health():
     engine_type = "not_loaded"
     if _engine is not None:
-        engine_type = "azure_ai_search" if hasattr(_engine, "compare") else "faiss_local"
+        if hasattr(_engine, "collection"):
+            engine_type = "qdrant"
+        elif hasattr(_engine, "compare"):
+            engine_type = "azure_ai_search"
+        else:
+            engine_type = "faiss_local"
     return {"status": "ok", "backend": engine_type}
 
 
 @app.get("/stats")
 def stats():
     engine = get_engine()
-    if hasattr(engine, "compare"):
+    if hasattr(engine, "collection"):
+        # Qdrant backend
+        info = engine.client.get_collection(engine.collection)
+        return {
+            "backend": "qdrant",
+            "collection": engine.collection,
+            "documents": info.points_count,
+            "model": "nomic-ai/nomic-embed-text-v1.5",
+            "dimension": engine.dim,
+            "qdrant_url": engine.url,
+        }
+    elif hasattr(engine, "compare"):
         # Azure backend
         from src.azure_search.index import get_index_stats
         idx_stats = get_index_stats()

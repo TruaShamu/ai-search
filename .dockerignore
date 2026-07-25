@@ -1,0 +1,14 @@
+data/*
+!data/index/
+data/index/*
+!data/index/tfidf_vectorizer.pkl
+notebooks/
+web/
+.git/
+__pycache__/
+*.pyc
+.env
+*.index
+data/processed/
+data/eval/
+data/models/
