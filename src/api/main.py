@@ -28,9 +28,10 @@ class SearchMode(str, Enum):
     keyword = "keyword"
 
 
-# Lazy-load search engine and reranker
+# Lazy-load search engine, reranker, and query pipeline
 _engine = None
 _reranker = None
+_query_pipeline = None
 
 
 def get_engine():
@@ -57,6 +58,14 @@ def get_reranker():
     return _reranker
 
 
+def get_query_pipeline():
+    global _query_pipeline
+    if _query_pipeline is None:
+        from src.query.pipeline import QueryPipeline
+        _query_pipeline = QueryPipeline()
+    return _query_pipeline
+
+
 @app.get("/search")
 def search(
     q: str = Query(..., description="Search query"),
@@ -67,10 +76,34 @@ def search(
     year_min: int | None = Query(None, description="Min publication year"),
     year_max: int | None = Query(None, description="Max publication year"),
     explain: bool = Query(False, description="Include search metadata"),
+    understand: bool = Query(True, description="Apply query understanding (spell + intent)"),
 ):
     """Search for books. Supports hybrid (BM25+vector+RRF), vector-only, or keyword-only.
-    Add &rerank=true to apply cross-encoder reranking on top."""
+    Query understanding (spell correction + intent classification) is on by default."""
     engine = get_engine()
+
+    # Query understanding
+    query_info = None
+    search_query = q
+    search_mode = mode.value
+
+    if understand:
+        from src.query.pipeline import QueryPipeline
+        qp = get_query_pipeline()
+        analysis = qp.process(q)
+        search_query = analysis.corrected
+        query_info = {
+            "original": analysis.original,
+            "corrected": analysis.corrected,
+            "was_corrected": analysis.was_corrected,
+            "intent": analysis.intent.value,
+            "confidence": analysis.confidence,
+        }
+        # Apply detected filters (only if user didn't explicitly set them)
+        if analysis.filters.get("year_min") and not year_min:
+            year_min = analysis.filters["year_min"]
+        if analysis.filters.get("year_max") and not year_max:
+            year_max = analysis.filters["year_max"]
 
     # Fetch more candidates if reranking (need a larger pool to reorder)
     retrieve_k = top_k * 5 if rerank else top_k
@@ -78,9 +111,9 @@ def search(
     # Azure AI Search backend
     if hasattr(engine, "search") and hasattr(engine, "compare"):
         result = engine.search(
-            query=q,
+            query=search_query,
             top_k=retrieve_k,
-            mode=mode.value,
+            mode=search_mode,
             year_min=year_min,
             year_max=year_max,
             tier=tier,
@@ -109,6 +142,9 @@ def search(
             "retrieval_latency_ms": retrieval_latency,
             "results": results[:top_k],
         }
+
+        if query_info:
+            response["query_understanding"] = query_info
 
         if rerank:
             response["rerank_latency_ms"] = rerank_latency
