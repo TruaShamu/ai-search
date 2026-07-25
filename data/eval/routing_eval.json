@@ -1,0 +1,333 @@
+{
+  "baseline": {
+    "ndcg": 0.8004,
+    "mrr": 0.9444,
+    "recall": 0.6591
+  },
+  "routed": {
+    "ndcg": 0.8004,
+    "mrr": 0.9444,
+    "recall": 0.6591
+  },
+  "delta_ndcg": 0.0,
+  "delta_pct": 0.0,
+  "per_intent": {
+    "semantic": {
+      "n": 28,
+      "baseline_ndcg": 0.8074,
+      "routed_ndcg": 0.8074
+    },
+    "author": {
+      "n": 1,
+      "baseline_ndcg": 0.7426,
+      "routed_ndcg": 0.7426
+    },
+    "filtered": {
+      "n": 1,
+      "baseline_ndcg": 0.6625,
+      "routed_ndcg": 0.6625
+    }
+  },
+  "decisions": [
+    {
+      "query": "romance set in Scotland",
+      "corrected": "romance set in Scotland",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.8889586667815076,
+      "routed_ndcg": 0.8889586667815076,
+      "delta": 0.0
+    },
+    {
+      "query": "mystery detective noir",
+      "corrected": "mystery detective noir",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.9455126990711952,
+      "routed_ndcg": 0.9455126990711952,
+      "delta": 0.0
+    },
+    {
+      "query": "fantasy adventure for children",
+      "corrected": "fantasy adventure for children",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.9321572773044168,
+      "routed_ndcg": 0.9321572773044168,
+      "delta": 0.0
+    },
+    {
+      "query": "historical fiction about ancient Rome",
+      "corrected": "historical fiction about ancient Rome",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.6999301998378424,
+      "routed_ndcg": 0.6999301998378424,
+      "delta": 0.0
+    },
+    {
+      "query": "horror supernatural ghost story",
+      "corrected": "horror supernatural ghost story",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.9305687780632227,
+      "routed_ndcg": 0.9305687780632227,
+      "delta": 0.0
+    },
+    {
+      "query": "history of computing and the internet",
+      "corrected": "history of computing and the internet",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.815484277989632,
+      "routed_ndcg": 0.815484277989632,
+      "delta": 0.0
+    },
+    {
+      "query": "cooking and food culture",
+      "corrected": "cooking and food culture",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.94497705842548,
+      "routed_ndcg": 0.94497705842548,
+      "delta": 0.0
+    },
+    {
+      "query": "world war 2 memoir",
+      "corrected": "world war 2 memoir",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.6677102839058926,
+      "routed_ndcg": 0.6677102839058926,
+      "delta": 0.0
+    },
+    {
+      "query": "african american literature and identity",
+      "corrected": "african american literature and identity",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.7318021517408717,
+      "routed_ndcg": 0.7318021517408717,
+      "delta": 0.0
+    },
+    {
+      "query": "climate change and environment",
+      "corrected": "climate change and environment",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.9526058178152246,
+      "routed_ndcg": 0.9526058178152246,
+      "delta": 0.0
+    },
+    {
+      "query": "artificial intelligence and machine learning",
+      "corrected": "artificial intelligence and machine learning",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.9451196119874079,
+      "routed_ndcg": 0.9451196119874079,
+      "delta": 0.0
+    },
+    {
+      "query": "psychology of habits and behavior",
+      "corrected": "psychology of habits and behavior",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.9259437498721454,
+      "routed_ndcg": 0.9259437498721454,
+      "delta": 0.0
+    },
+    {
+      "query": "space exploration and astronomy",
+      "corrected": "space exploration and astronomy",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.9668728882728055,
+      "routed_ndcg": 0.9668728882728055,
+      "delta": 0.0
+    },
+    {
+      "query": "philosophy of meaning and suffering",
+      "corrected": "philosophy of meaning and suffering",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.4312995836091173,
+      "routed_ndcg": 0.4312995836091173,
+      "delta": 0.0
+    },
+    {
+      "query": "books about loneliness and isolation",
+      "corrected": "books about loneliness and isolation",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.8175625311320622,
+      "routed_ndcg": 0.8175625311320622,
+      "delta": 0.0
+    },
+    {
+      "query": "stories about redemption and second chances",
+      "corrected": "stories about redemption and second chances",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.8586430378697338,
+      "routed_ndcg": 0.8586430378697338,
+      "delta": 0.0
+    },
+    {
+      "query": "overcoming adversity and personal growth",
+      "corrected": "overcoming adversity and personal growth",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.8911440755318023,
+      "routed_ndcg": 0.8911440755318023,
+      "delta": 0.0
+    },
+    {
+      "query": "the meaning of home and belonging",
+      "corrected": "the meaning of home and belonging",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.6816808362189438,
+      "routed_ndcg": 0.6816808362189438,
+      "delta": 0.0
+    },
+    {
+      "query": "forbidden love across social classes",
+      "corrected": "forbidden love across social classes",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.7294948446972259,
+      "routed_ndcg": 0.7294948446972259,
+      "delta": 0.0
+    },
+    {
+      "query": "Bill Gates book about technology future",
+      "corrected": "Bill Gates book about technology future",
+      "intent": "author",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.7425579601967754,
+      "routed_ndcg": 0.7425579601967754,
+      "delta": 0.0
+    },
+    {
+      "query": "Julie Garwood scottish romance novel",
+      "corrected": "Julie Garwood scottish romance novel",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.6663180938082345,
+      "routed_ndcg": 0.6663180938082345,
+      "delta": 0.0
+    },
+    {
+      "query": "Maya Angelou autobiography",
+      "corrected": "Maya Angelou autobiography",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 1.0,
+      "routed_ndcg": 1.0,
+      "delta": 0.0
+    },
+    {
+      "query": "italian mediterranean cookbook recipes",
+      "corrected": "italian mediterranean cookbook recipes",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.6156012978458393,
+      "routed_ndcg": 0.6156012978458393,
+      "delta": 0.0
+    },
+    {
+      "query": "classic literature from the 1800s",
+      "corrected": "classic literature from the 1800s",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.8826728487262255,
+      "routed_ndcg": 0.8826728487262255,
+      "delta": 0.0
+    },
+    {
+      "query": "modern thriller published after 2010",
+      "corrected": "modern thriller published after 2010",
+      "intent": "filtered",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.6625075042969883,
+      "routed_ndcg": 0.6625075042969883,
+      "delta": 0.0
+    },
+    {
+      "query": "feminist science fiction",
+      "corrected": "feminist science fiction",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.530257021594685,
+      "routed_ndcg": 0.530257021594685,
+      "delta": 0.0
+    },
+    {
+      "query": "coming of age story set in India",
+      "corrected": "coming of age story set in India",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.6135322520167615,
+      "routed_ndcg": 0.6135322520167615,
+      "delta": 0.0
+    },
+    {
+      "query": "mathematical puzzles and recreational math",
+      "corrected": "mathematical puzzles and recreational math",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.8225655500695229,
+      "routed_ndcg": 0.8225655500695229,
+      "delta": 0.0
+    },
+    {
+      "query": "true crime serial killer investigation",
+      "corrected": "true crime serial killer investigation",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.9237337796575488,
+      "routed_ndcg": 0.9237337796575488,
+      "delta": 0.0
+    },
+    {
+      "query": "graphic novel about war",
+      "corrected": "graphic novel about war",
+      "intent": "semantic",
+      "routed_mode": "hybrid",
+      "was_corrected": false,
+      "baseline_ndcg": 0.7952689580846519,
+      "routed_ndcg": 0.7952689580846519,
+      "delta": 0.0
+    }
+  ]
+}

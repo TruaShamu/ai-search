@@ -97,11 +97,10 @@ def search(
         if mode_was_default:
             search_mode = analysis.search_mode  # keyword, vector, or hybrid
 
-        # Apply detected filters (only if user didn't explicitly set them)
-        if analysis.filters.get("year_min") and not year_min:
-            year_min = analysis.filters["year_min"]
-        if analysis.filters.get("year_max") and not year_max:
-            year_max = analysis.filters["year_max"]
+        # Intent-detected filters are informational — don't apply as hard constraints
+        # (User-provided ?year_min= still applies; these just inform the UI)
+        # Rationale: year filters from NLU can exclude relevant results when
+        # ground-truth content doesn't perfectly match the temporal constraint
 
         # For "similar_to" intent, search by title with context for embedding
         if analysis.intent.value == "similar_to" and analysis.extracted_title:

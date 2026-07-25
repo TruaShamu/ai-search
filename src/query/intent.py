@@ -103,22 +103,28 @@ def classify_intent(query: str) -> QueryAnalysis:
             )
 
     # --- Extract year filters ---
+    # Only apply hard filters for explicit temporal language ("published after", "before")
+    # Decade references ("1800s") and bare years ("from 1800") are semantic context, not filters
     filters = {}
-    year_match = re.search(YEAR_PATTERN, query_lower)
     decade_match = re.search(DECADE_PATTERN, query_lower)
-    if year_match:
-        year = int(year_match.group(1))
-        if "after" in query_lower or "since" in query_lower:
-            filters["year_min"] = year
-        elif "before" in query_lower:
-            filters["year_max"] = year
-        else:
-            filters["year_min"] = year
-            filters["year_max"] = year
-    elif decade_match:
+    year_match = re.search(YEAR_PATTERN, query_lower)
+
+    has_explicit_temporal = any(kw in query_lower for kw in ("published", "after", "before", "since", "until"))
+
+    if decade_match and has_explicit_temporal:
         decade = int(decade_match.group(1))
         filters["year_min"] = decade
         filters["year_max"] = decade + 9
+    elif year_match and has_explicit_temporal:
+        year = int(year_match.group(1))
+        if "after" in query_lower or "since" in query_lower:
+            filters["year_min"] = year
+        elif "before" in query_lower or "until" in query_lower:
+            filters["year_max"] = year
+        else:
+            # "published in 2005" → exact year
+            filters["year_min"] = year
+            filters["year_max"] = year
 
     # --- Concept/abstract queries → prefer vector ---
     is_concept = any(signal in query_lower for signal in CONCEPT_SIGNALS)
