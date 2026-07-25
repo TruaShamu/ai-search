@@ -1,15 +1,26 @@
 "use client";
 
+import { useState } from "react";
 import { BookResult } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export function BookCard({ book, compact }: { book: BookResult; compact?: boolean }) {
+  const [expanded, setExpanded] = useState(false);
   const coverUrl =
     book.cover_url || `https://covers.openlibrary.org/b/olid/${book.work_id}-M.jpg`;
 
+  const hasLongDesc = book.description && book.description.length > 100;
+
   return (
-    <Card className="hover:ring-2 hover:ring-primary/30 transition-all">
+    <Card
+      className={`hover:ring-2 hover:ring-primary/30 transition-all ${
+        !compact && hasLongDesc ? "cursor-pointer" : ""
+      }`}
+      onClick={() => {
+        if (!compact && hasLongDesc) setExpanded(!expanded);
+      }}
+    >
       <CardContent className={`flex gap-3 ${compact ? "p-2.5" : "p-4"}`}>
         {/* Cover thumbnail */}
         {!compact && (
@@ -27,18 +38,38 @@ export function BookCard({ book, compact }: { book: BookResult; compact?: boolea
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <h3 className={`font-semibold leading-tight truncate ${compact ? "text-xs" : "text-sm"}`}>
-            {book.title}
-          </h3>
+          <div className="flex items-start justify-between gap-2">
+            <h3 className={`font-semibold leading-tight ${compact ? "text-xs truncate" : "text-sm"}`}>
+              {book.title}
+            </h3>
+            {/* Score */}
+            {book.score > 0 && (
+              <span className="flex-shrink-0 text-[10px] text-muted-foreground font-mono">
+                {book.score.toFixed(3)}
+              </span>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground mt-0.5">
             {book.authors || "Unknown author"}
             {book.year && ` · ${book.year}`}
           </p>
 
+          {/* Description: clamped by default, full on expand */}
           {!compact && book.description && (
-            <p className="text-xs text-muted-foreground mt-1.5 line-clamp-2">
+            <p
+              className={`text-xs text-muted-foreground mt-1.5 ${
+                expanded ? "" : "line-clamp-2"
+              }`}
+            >
               {book.description}
             </p>
+          )}
+
+          {/* Expand hint */}
+          {!compact && hasLongDesc && !expanded && (
+            <span className="text-[10px] text-primary/70 mt-0.5 inline-block">
+              click to expand ↓
+            </span>
           )}
 
           {/* Subject badges */}
@@ -57,15 +88,6 @@ export function BookCard({ book, compact }: { book: BookResult; compact?: boolea
             </div>
           )}
         </div>
-
-        {/* Score */}
-        {book.score > 0 && (
-          <div className="flex-shrink-0 text-right">
-            <span className="text-[10px] text-muted-foreground font-mono">
-              {book.score.toFixed(3)}
-            </span>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
