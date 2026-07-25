@@ -1,0 +1,189 @@
+{
+  "clean_ndcg": 0.8004,
+  "typo_ndcg": 0.5024,
+  "corrected_ndcg": 0.7567,
+  "recovery_rate": 80.0,
+  "ndcg_recovery_pct": 85.3,
+  "corrections": [
+    {
+      "original": "romance set in Scotland",
+      "typo": "rommance set in Scotland",
+      "corrected": "romance set in Scotland",
+      "exact_recovery": true
+    },
+    {
+      "original": "mystery detective noir",
+      "typo": "mysteyr detective noir",
+      "corrected": "mystery detective noir",
+      "exact_recovery": true
+    },
+    {
+      "original": "fantasy adventure for children",
+      "typo": "fantasy adventure for cgildren",
+      "corrected": "fantasy adventure for children",
+      "exact_recovery": true
+    },
+    {
+      "original": "historical fiction about ancient Rome",
+      "typo": "historical fictin about ancient Rome",
+      "corrected": "historical fictin about ancient Rome",
+      "exact_recovery": false
+    },
+    {
+      "original": "horror supernatural ghost story",
+      "typo": "horror supetnatural ghost story",
+      "corrected": "horror supernatural ghost story",
+      "exact_recovery": true
+    },
+    {
+      "original": "history of computing and the internet",
+      "typo": "histry of computing and the internet",
+      "corrected": "history of computing and the internet",
+      "exact_recovery": true
+    },
+    {
+      "original": "cooking and food culture",
+      "typo": "cooking and fod culture",
+      "corrected": "cooking and for culture",
+      "exact_recovery": false
+    },
+    {
+      "original": "world war 2 memoir",
+      "typo": "wolrd war 2 memoir",
+      "corrected": "world war 2 memoir",
+      "exact_recovery": true
+    },
+    {
+      "original": "african american literature and identity",
+      "typo": "african american literaature and identity",
+      "corrected": "african american literature and identity",
+      "exact_recovery": true
+    },
+    {
+      "original": "climate change and environment",
+      "typo": "climate change and environmebt",
+      "corrected": "climate change and environment",
+      "exact_recovery": true
+    },
+    {
+      "original": "artificial intelligence and machine learning",
+      "typo": "artificcial intelligence and mchine learning",
+      "corrected": "artificial intelligence and machine learning",
+      "exact_recovery": true
+    },
+    {
+      "original": "psychology of habits and behavior",
+      "typo": "psychology of habits and behvior",
+      "corrected": "psychology of habits and behavior",
+      "exact_recovery": true
+    },
+    {
+      "original": "space exploration and astronomy",
+      "typo": "spcae exploration and astronomy",
+      "corrected": "space exploration and astronomy",
+      "exact_recovery": true
+    },
+    {
+      "original": "philosophy of meaning and suffering",
+      "typo": "philosophy of meaaning and suffering",
+      "corrected": "philosophy of meaning and suffering",
+      "exact_recovery": true
+    },
+    {
+      "original": "books about loneliness and isolation",
+      "typo": "books about lonelness and isolation",
+      "corrected": "books about loneliness and isolation",
+      "exact_recovery": true
+    },
+    {
+      "original": "stories about redemption and second chances",
+      "typo": "stories about redemption and second chancs",
+      "corrected": "stories about redemption and second chance",
+      "exact_recovery": false
+    },
+    {
+      "original": "overcoming adversity and personal growth",
+      "typo": "overcoming advetsity and personal growth",
+      "corrected": "overcoming adversity and personal growth",
+      "exact_recovery": true
+    },
+    {
+      "original": "the meaning of home and belonging",
+      "typo": "the meaning of home and belonginng",
+      "corrected": "the meaning of home and belonging",
+      "exact_recovery": true
+    },
+    {
+      "original": "forbidden love across social classes",
+      "typo": "forbidden loev across social classes",
+      "corrected": "forbidden love across social classes",
+      "exact_recovery": true
+    },
+    {
+      "original": "Bill Gates book about technology future",
+      "typo": "Bil Gates bok about technology future",
+      "corrected": "big Gates bok about technology future",
+      "exact_recovery": false
+    },
+    {
+      "original": "Julie Garwood scottish romance novel",
+      "typo": "Julie Garwod scottish rommance novel",
+      "corrected": "Julie garwood scottish romance novel",
+      "exact_recovery": true
+    },
+    {
+      "original": "Maya Angelou autobiography",
+      "typo": "Maya Angelou autobiogralhy",
+      "corrected": "Maya Angelou autobiography",
+      "exact_recovery": true
+    },
+    {
+      "original": "italian mediterranean cookbook recipes",
+      "typo": "italian mediterraean cookbook recipes",
+      "corrected": "italian mediterranean cookbook recipes",
+      "exact_recovery": true
+    },
+    {
+      "original": "classic literature from the 1800s",
+      "typo": "clsasic literature frm the 1800s",
+      "corrected": "classic literature from the 1800s",
+      "exact_recovery": true
+    },
+    {
+      "original": "modern thriller published after 2010",
+      "typo": "modern thriller published aftrr 2010",
+      "corrected": "modern thriller published after 2010",
+      "exact_recovery": true
+    },
+    {
+      "original": "feminist science fiction",
+      "typo": "feminist science fcition",
+      "corrected": "feminist science fiction",
+      "exact_recovery": true
+    },
+    {
+      "original": "coming of age story set in India",
+      "typo": "coming of age story set in Inndia",
+      "corrected": "coming of age story set in india",
+      "exact_recovery": true
+    },
+    {
+      "original": "mathematical puzzles and recreational math",
+      "typo": "mathematical puzzles and recreational mah",
+      "corrected": "mathematical puzzles and recreational may",
+      "exact_recovery": false
+    },
+    {
+      "original": "true crime serial killer investigation",
+      "typo": "true crime srial killer investigation",
+      "corrected": "true crime trial killer investigation",
+      "exact_recovery": false
+    },
+    {
+      "original": "graphic novel about war",
+      "typo": "graphic novel aout war",
+      "corrected": "graphic novel about war",
+      "exact_recovery": true
+    }
+  ]
+}
