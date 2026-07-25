@@ -88,7 +88,7 @@ def ensure_collection(client: QdrantClient, collection: str, dense_dim: int, rec
                 "dense": models.VectorParams(size=dense_dim, distance=models.Distance.COSINE),
             },
             sparse_vectors_config={
-                "bm25": models.SparseVectorParams(),
+                "sparse": models.SparseVectorParams(),
             },
         )
         client.create_payload_index(
@@ -121,7 +121,7 @@ def upload_points(
                     id=point_id,
                     vector={
                         "dense": dense_vectors[point_id].tolist(),
-                        "bm25": models.SparseVector(
+                        "sparse": models.SparseVector(
                             indices=sparse_row.indices.tolist(),
                             values=sparse_row.data.astype(float).tolist(),
                         ),

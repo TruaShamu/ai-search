@@ -1,6 +1,6 @@
 """
 FastAPI search API — hybrid search over book catalog.
-Supports BM25, vector, and hybrid (RRF) retrieval modes.
+Supports keyword (TF-IDF sparse), vector, and hybrid (RRF) retrieval modes.
 Backends: Qdrant (default), Azure AI Search, or local FAISS fallback.
 """
 
@@ -92,7 +92,7 @@ def search(
     explain: bool = Query(False, description="Include search metadata"),
     understand: bool = Query(True, description="Apply query understanding (spell + intent)"),
 ):
-    """Search for books. Supports hybrid (BM25+vector+RRF), vector-only, or keyword-only.
+    """Search for books. Supports hybrid (sparse+vector+RRF), vector-only, or keyword-only.
     Query understanding (spell correction + intent classification) is on by default."""
     engine = get_engine()
 
@@ -168,7 +168,7 @@ def search(
                 "reranker": "cross-encoder/ms-marco-MiniLM-L-6-v2" if rerank else None,
                 "dimension": engine.dim,
                 "mode": mode.value,
-                "retrieval": f"{mode.value} (BM25+vector+RRF)" if mode == SearchMode.hybrid else mode.value,
+                "retrieval": f"{mode.value} (TF-IDF+vector+RRF)" if mode == SearchMode.hybrid else mode.value,
                 "pipeline": "spell_correct → retrieve → rerank → top_k" if rerank else "spell_correct → retrieve → top_k",
             }
 

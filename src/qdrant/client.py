@@ -140,7 +140,7 @@ class QdrantSearch:
             response = self.client.query_points(
                 collection_name=self.collection,
                 query=sparse_vector,
-                using="bm25",
+                using="sparse",
                 query_filter=query_filter,
                 with_payload=True,
                 limit=top_k,
@@ -151,7 +151,7 @@ class QdrantSearch:
                 collection_name=self.collection,
                 prefetch=[
                     models.Prefetch(query=dense_vector, using="dense", limit=prefetch_limit),
-                    models.Prefetch(query=sparse_vector, using="bm25", limit=prefetch_limit),
+                    models.Prefetch(query=sparse_vector, using="sparse", limit=prefetch_limit),
                 ],
                 query=models.FusionQuery(fusion=models.Fusion.RRF),
                 query_filter=query_filter,
