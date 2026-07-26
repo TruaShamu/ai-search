@@ -35,7 +35,17 @@ class QdrantSearch:
         self.dim = dim
 
         print(f"Connecting to Qdrant at {self.url}...")
-        self.client = QdrantClient(url=self.url)
+        if self.url.startswith("https://"):
+            self.client = QdrantClient(url=self.url, port=443, https=True, timeout=60)
+        elif "localhost" in self.url or "127.0.0.1" in self.url:
+            self.client = QdrantClient(url=self.url, timeout=60)
+        else:
+            # ACA internal: ingress routes port 80 → targetPort 6333
+            from urllib.parse import urlparse
+            parsed = urlparse(self.url)
+            port = parsed.port or 80
+            host = parsed.hostname
+            self.client = QdrantClient(host=host, port=port, timeout=60)
 
         print(f"Loading embedding model: {model_name}...")
         self.model = SentenceTransformer(model_name, trust_remote_code=True)

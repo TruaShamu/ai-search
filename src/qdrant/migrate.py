@@ -156,7 +156,11 @@ def main() -> None:
     print(f"Saved TF-IDF vectorizer to {VECTORIZER_PATH}")
 
     print(f"Connecting to Qdrant at {args.qdrant_url}...")
-    client = QdrantClient(url=args.qdrant_url)
+    # Handle HTTPS URLs (e.g., ACA ingress) properly
+    if args.qdrant_url.startswith("https://"):
+        client = QdrantClient(url=args.qdrant_url, port=443, https=True, timeout=60)
+    else:
+        client = QdrantClient(url=args.qdrant_url, timeout=60)
 
     print(f"Ensuring collection '{args.collection}' exists...")
     ensure_collection(
