@@ -2,7 +2,8 @@ FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    PYTHONPATH=/app
 
 WORKDIR /app
 
@@ -10,8 +11,12 @@ COPY requirements.txt ./
 
 RUN python -m pip install --upgrade pip && \
     pip install --index-url https://download.pytorch.org/whl/cpu torch && \
-    pip install sentence-transformers faiss-cpu numpy azure-storage-blob einops
+    pip install sentence-transformers faiss-cpu numpy einops \
+               azure-storage-blob azure-storage-queue \
+               qdrant-client scikit-learn tqdm
 
 COPY src ./src
 COPY scripts ./scripts
 
+# Default: process messages from queue until empty
+CMD ["python", "-m", "scripts.embed_worker", "--loop"]

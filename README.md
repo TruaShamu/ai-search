@@ -79,6 +79,26 @@ flowchart LR
     F & G -->|migrate.py| H[(Qdrant)]
 ```
 
+### Embedding Worker (Event-Driven)
+
+```mermaid
+sequenceDiagram
+    participant ETL as Enqueue Script
+    participant Q as Azure Storage Queue
+    participant W as ACA Job (scale 0→1)
+    participant Blob as Azure Blob Storage
+    participant QD as Qdrant
+
+    ETL->>Q: Enqueue N batch messages<br/>(start_idx, end_idx, blob_path)
+    Note over W: Idle (0 replicas)
+    Q-->>W: KEDA trigger (message arrives)
+    W->>Blob: Download book slice [start, end)
+    W->>W: Embed with nomic-embed-text-v1.5
+    W->>QD: Upsert dense + sparse vectors
+    W->>Q: Delete message (ack)
+    Note over W: Scale back to 0
+```
+
 ---
 
 ## Tech Stack

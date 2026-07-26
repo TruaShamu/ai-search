@@ -26,6 +26,7 @@ scikit-learn>=1.5.0
 # Azure
 azure-core>=1.32.0
 azure-identity>=1.19.0
+azure-storage-queue>=12.9.0
 
 # Query Understanding
 symspellpy>=6.7.7

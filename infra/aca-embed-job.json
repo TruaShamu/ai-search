@@ -1,0 +1,200 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.45.15.27210",
+      "templateHash": "18016658092104062112"
+    }
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "containerAppEnvironmentId": {
+      "type": "string",
+      "metadata": {
+        "description": "Existing ACA managed environment resource ID."
+      }
+    },
+    "acrLoginServer": {
+      "type": "string",
+      "metadata": {
+        "description": "ACR login server (e.g., booksearchacr.azurecr.io)."
+      }
+    },
+    "embedImageName": {
+      "type": "string",
+      "defaultValue": "embed-worker:latest",
+      "metadata": {
+        "description": "Embed worker image name with tag."
+      }
+    },
+    "storageAccountName": {
+      "type": "string",
+      "defaultValue": "booksearchblobs",
+      "metadata": {
+        "description": "Storage account name for queue + blob access."
+      }
+    },
+    "queueName": {
+      "type": "string",
+      "defaultValue": "embed-tasks",
+      "metadata": {
+        "description": "Queue name for embed tasks."
+      }
+    },
+    "qdrantUrl": {
+      "type": "string",
+      "defaultValue": "http://qdrant",
+      "metadata": {
+        "description": "Qdrant internal URL within the ACA environment."
+      }
+    },
+    "qdrantCollection": {
+      "type": "string",
+      "defaultValue": "books",
+      "metadata": {
+        "description": "Qdrant collection name."
+      }
+    },
+    "embedDim": {
+      "type": "int",
+      "defaultValue": 256,
+      "metadata": {
+        "description": "Embedding dimension (Matryoshka)."
+      }
+    },
+    "acrName": {
+      "type": "string",
+      "metadata": {
+        "description": "ACR name for credential lookup."
+      }
+    }
+  },
+  "variables": {
+    "embedImage": "[format('{0}/{1}', parameters('acrLoginServer'), parameters('embedImageName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.App/jobs",
+      "apiVersion": "2024-03-01",
+      "name": "embed-worker",
+      "location": "[parameters('location')]",
+      "properties": {
+        "environmentId": "[parameters('containerAppEnvironmentId')]",
+        "configuration": {
+          "replicaTimeout": 3600,
+          "replicaRetryLimit": 2,
+          "triggerType": "Event",
+          "eventTriggerConfig": {
+            "parallelism": 1,
+            "replicaCompletionCount": 1,
+            "scale": {
+              "minExecutions": 0,
+              "maxExecutions": 3,
+              "pollingInterval": 30,
+              "rules": [
+                {
+                  "name": "queue-trigger",
+                  "type": "azure-queue",
+                  "metadata": {
+                    "queueName": "[parameters('queueName')]",
+                    "queueLength": "1",
+                    "accountName": "[parameters('storageAccountName')]"
+                  },
+                  "auth": [
+                    {
+                      "secretRef": "storage-connection",
+                      "triggerParameter": "connection"
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "registries": [
+            {
+              "server": "[parameters('acrLoginServer')]",
+              "username": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('acrName')), '2023-07-01').username]",
+              "passwordSecretRef": "acr-password"
+            }
+          ],
+          "secrets": [
+            {
+              "name": "acr-password",
+              "value": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', parameters('acrName')), '2023-07-01').passwords[0].value]"
+            },
+            {
+              "name": "storage-connection",
+              "value": "[format('DefaultEndpointsProtocol=https;AccountName={0};AccountKey={1};EndpointSuffix={2}', parameters('storageAccountName'), listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2023-05-01').keys[0].value, environment().suffixes.storage)]"
+            }
+          ]
+        },
+        "template": {
+          "containers": [
+            {
+              "name": "embed-worker",
+              "image": "[variables('embedImage')]",
+              "command": [
+                "python",
+                "-m",
+                "scripts.embed_worker",
+                "--loop"
+              ],
+              "env": [
+                {
+                  "name": "AZURE_STORAGE_CONNECTION_STRING",
+                  "secretRef": "storage-connection"
+                },
+                {
+                  "name": "QUEUE_NAME",
+                  "value": "[parameters('queueName')]"
+                },
+                {
+                  "name": "STORAGE_CONTAINER",
+                  "value": "embeddings"
+                },
+                {
+                  "name": "QDRANT_URL",
+                  "value": "[parameters('qdrantUrl')]"
+                },
+                {
+                  "name": "QDRANT_COLLECTION",
+                  "value": "[parameters('qdrantCollection')]"
+                },
+                {
+                  "name": "EMBED_DIM",
+                  "value": "[string(parameters('embedDim'))]"
+                },
+                {
+                  "name": "PYTHONPATH",
+                  "value": "/app"
+                }
+              ],
+              "resources": {
+                "cpu": 4,
+                "memory": "16Gi"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "outputs": {
+    "jobName": {
+      "type": "string",
+      "value": "embed-worker"
+    },
+    "jobId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.App/jobs', 'embed-worker')]"
+    }
+  }
+}

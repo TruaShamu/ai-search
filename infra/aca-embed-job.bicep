@@ -1,136 +1,147 @@
-@description('Location for the ACA job.')
+// Event-driven embedding worker — ACA Job triggered by Azure Storage Queue messages.
+// Scales from 0 when messages arrive, processes embedding batches, upserts to Qdrant.
+
+@description('Location for all resources.')
 param location string = resourceGroup().location
 
-@description('Name of the ACA job to create.')
-param jobName string = 'embed-books-job'
+@description('Existing ACA managed environment resource ID.')
+param containerAppEnvironmentId string
 
-@description('Resource ID of the existing Azure Container Apps managed environment.')
-param containerAppEnvironmentResourceId string
-
-@description('Azure Container Registry name.')
-param acrName string
-
-@description('Azure Container Registry login server, for example myregistry.azurecr.io.')
+@description('ACR login server (e.g., booksearchacr.azurecr.io).')
 param acrLoginServer string
 
-@description('Container image name including tag, for example embed-worker:latest.')
-param imageName string
+@description('Embed worker image name with tag.')
+param embedImageName string = 'embed-worker:latest'
 
-@description('Azure Storage account name used for job input/output blobs.')
-param storageAccountName string
+@description('Storage account name for queue + blob access.')
+param storageAccountName string = 'booksearchblobs'
 
-@description('Blob container name used for the job input/output blobs.')
-param storageContainerName string
+@description('Queue name for embed tasks.')
+param queueName string = 'embed-tasks'
 
-@description('Input blob path inside the container.')
-param inputBlob string = 'inputs/books_augmented.jsonl'
+@description('Qdrant internal URL within the ACA environment.')
+param qdrantUrl string = 'http://qdrant'
 
-@description('Blob prefix to upload outputs under.')
-param outputPrefix string = 'outputs/embed'
+@description('Qdrant collection name.')
+param qdrantCollection string = 'books'
 
-@description('Optional ACA workload profile name. Set this when 4 CPU / 8 Gi requires a dedicated workload profile.')
-param workloadProfileName string = ''
+@description('Embedding dimension (Matryoshka).')
+param embedDim int = 256
+
+@description('ACR name for credential lookup.')
+param acrName string
+
+// Existing resources
+resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
+  name: acrName
+}
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
   name: storageAccountName
 }
 
-resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {
-  name: acrName
-}
-
 var storageConnectionString = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
-var imageReference = '${acrLoginServer}/${imageName}'
-var acrPullRoleDefinitionId = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
-var jobProperties = union({
-  configuration: {
-    triggerType: 'Manual'
-    replicaTimeout: 1800
-    replicaRetryLimit: 0
-    manualTriggerConfig: {
-      parallelism: 1
-      replicaCompletionCount: 1
-    }
-    registries: [
-      {
-        server: acrLoginServer
-        identity: 'system'
-      }
-    ]
-    secrets: [
-      {
-        name: 'azure-storage-connection-string'
-        value: storageConnectionString
-      }
-    ]
-  }
-  environmentId: containerAppEnvironmentResourceId
-  template: {
-    containers: [
-      {
-        name: 'embed-worker'
-        image: imageReference
-        command: [
-          'python'
-        ]
-        args: [
-          'scripts/embed_entrypoint.py'
-        ]
-        env: [
-          {
-            name: 'AZURE_STORAGE_CONNECTION_STRING'
-            secretRef: 'azure-storage-connection-string'
-          }
-          {
-            name: 'STORAGE_CONTAINER'
-            value: storageContainerName
-          }
-          {
-            name: 'INPUT_BLOB'
-            value: inputBlob
-          }
-          {
-            name: 'OUTPUT_PREFIX'
-            value: outputPrefix
-          }
-          {
-            name: 'TIER_FILTER'
-            value: '1'
-          }
-          {
-            name: 'EMBED_DIM'
-            value: '256'
-          }
-        ]
-        resources: {
-          cpu: 4
-          memory: '8Gi'
+var acrCredentials = acr.listCredentials()
+var embedImage = '${acrLoginServer}/${embedImageName}'
+
+resource embedJob 'Microsoft.App/jobs@2024-03-01' = {
+  name: 'embed-worker'
+  location: location
+  properties: {
+    environmentId: containerAppEnvironmentId
+    configuration: {
+      replicaTimeout: 3600  // 1 hour max per execution
+      replicaRetryLimit: 2
+      triggerType: 'Event'
+      eventTriggerConfig: {
+        parallelism: 1        // One worker at a time (memory-bound)
+        replicaCompletionCount: 1
+        scale: {
+          minExecutions: 0    // Scale to zero when queue is empty
+          maxExecutions: 3    // Max concurrent batches
+          pollingInterval: 30
+          rules: [
+            {
+              name: 'queue-trigger'
+              type: 'azure-queue'
+              metadata: {
+                queueName: queueName
+                queueLength: '1'
+                accountName: storageAccountName
+              }
+              auth: [
+                {
+                  secretRef: 'storage-connection'
+                  triggerParameter: 'connection'
+                }
+              ]
+            }
+          ]
         }
       }
-    ]
+      registries: [
+        {
+          server: acrLoginServer
+          username: acrCredentials.username
+          passwordSecretRef: 'acr-password'
+        }
+      ]
+      secrets: [
+        {
+          name: 'acr-password'
+          value: acrCredentials.passwords[0].value
+        }
+        {
+          name: 'storage-connection'
+          value: storageConnectionString
+        }
+      ]
+    }
+    template: {
+      containers: [
+        {
+          name: 'embed-worker'
+          image: embedImage
+          command: ['python', '-m', 'scripts.embed_worker', '--loop']
+          env: [
+            {
+              name: 'AZURE_STORAGE_CONNECTION_STRING'
+              secretRef: 'storage-connection'
+            }
+            {
+              name: 'QUEUE_NAME'
+              value: queueName
+            }
+            {
+              name: 'STORAGE_CONTAINER'
+              value: 'embeddings'
+            }
+            {
+              name: 'QDRANT_URL'
+              value: qdrantUrl
+            }
+            {
+              name: 'QDRANT_COLLECTION'
+              value: qdrantCollection
+            }
+            {
+              name: 'EMBED_DIM'
+              value: string(embedDim)
+            }
+            {
+              name: 'PYTHONPATH'
+              value: '/app'
+            }
+          ]
+          resources: {
+            cpu: 4
+            memory: '16Gi'
+          }
+        }
+      ]
+    }
   }
-}, empty(workloadProfileName) ? {} : {
-  workloadProfileName: workloadProfileName
-})
-
-resource embedJob 'Microsoft.App/jobs@2025-01-01' = {
-  name: jobName
-  location: location
-  identity: {
-    type: 'SystemAssigned'
-  }
-  properties: jobProperties
 }
 
-resource acrPullRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(acr.id, embedJob.name, 'AcrPull')
-  scope: acr
-  properties: {
-    principalId: embedJob.identity.principalId
-    principalType: 'ServicePrincipal'
-    roleDefinitionId: acrPullRoleDefinitionId
-  }
-}
-
-output jobResourceId string = embedJob.id
-output resolvedImage string = imageReference
+output jobName string = embedJob.name
+output jobId string = embedJob.id
