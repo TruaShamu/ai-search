@@ -8,63 +8,75 @@ Built as a portfolio piece demonstrating **backend + ML infrastructure engineeri
 
 ## Architecture
 
+```mermaid
+graph TD
+    subgraph Frontend
+        UI[Next.js + shadcn/ui<br/>Search · Compare · Ask · Rerank Toggle]
+    end
+
+    subgraph API Layer
+        FP[FastAPI]
+        QU[Query Understanding<br/>Spell Correct · Intent Routing]
+        RR[Cross-Encoder Reranker<br/>ONNX · ms-marco-MiniLM]
+        RAG[RAG Pipeline<br/>GPT + Citation Validation]
+    end
+
+    subgraph Vector DB
+        QD[Qdrant · 26,519 points]
+        DV[Dense: nomic-embed-text-v1.5<br/>dim=256, Matryoshka]
+        SV[Sparse: TF-IDF vectors]
+        RRF[RRF Fusion]
+    end
+
+    subgraph Data Pipeline
+        OL[OpenLibrary Dump<br/>250K works]
+        GR[Goodreads Augmentation<br/>+13K descriptions]
+        EMB[Cloud Embedding<br/>ACI · 4 CPU · 16GB]
+        MIG[Migration<br/>FAISS → Qdrant]
+    end
+
+    UI -->|HTTP| FP
+    FP --> QU --> QD
+    QD --> DV & SV
+    DV & SV --> RRF --> FP
+    FP -.->|opt-in| RR --> FP
+    FP --> RAG
+
+    OL --> GR --> EMB --> MIG --> QD
 ```
-┌──────────────────────────────────────────────────────────────────────────┐
-│  FRONTEND (Next.js + shadcn/ui)                                          │
-│  Search UI · Compare View (3-col) · RAG Ask Tab · Rerank Toggle          │
-└────────────────────────────┬─────────────────────────────────────────────┘
-                             │ HTTP
-                             ▼
-┌──────────────────────────────────────────────────────────────────────────┐
-│  API LAYER (FastAPI)                                                      │
-│                                                                          │
-│  /search  →  Query Understanding (spell correct, intent routing)         │
-│           →  Qdrant Hybrid Search (sparse + dense + RRF)                 │
-│           →  Optional: Cross-Encoder Rerank (ONNX, ms-marco-MiniLM)     │
-│                                                                          │
-│  /ask     →  Hybrid Retrieval + Rerank → RAG Generation (GPT)           │
-│              with hallucination guardrails + citation validation          │
-└────────────────────────────┬─────────────────────────────────────────────┘
-                             │ gRPC / HTTP
-                             ▼
-┌──────────────────────────────────────────────────────────────────────────┐
-│  VECTOR DB (Qdrant)                                                      │
-│                                                                          │
-│  Collection: books (26,519 points)                                       │
-│  ├── Dense vectors: nomic-embed-text-v1.5, dim=256 (Matryoshka)         │
-│  ├── Sparse vectors: TF-IDF (scikit-learn TfidfVectorizer)              │
-│  ├── Payload: title, authors, description, subjects, year, cover_url    │
-│  └── Indexes: year (range), tier (keyword)                              │
-│                                                                          │
-│  Query modes:                                                            │
-│    keyword  →  TF-IDF sparse vector search                              │
-│    vector   →  Dense cosine similarity                                   │
-│    hybrid   →  Prefetch both → RRF fusion (default)                     │
-└──────────────────────────────────────────────────────────────────────────┘
+
+### Query Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant API as FastAPI
+    participant QU as Query Understanding
+    participant Q as Qdrant
+    participant RR as Reranker (opt-in)
+
+    User->>API: GET /search?q=love+story+tragedy&rerank=true
+    API->>QU: Spell correct + intent detect
+    QU-->>API: corrected query, mode=hybrid
+    API->>Q: Prefetch dense (top 50) + sparse (top 50)
+    Q-->>API: RRF fused results (top 50)
+    API->>RR: Score 50 candidates
+    RR-->>API: Reranked top 10
+    API-->>User: Romeo & Juliet #1, Carmen #2, ...
 ```
 
 ### Data Pipeline
 
-```
-OpenLibrary Dump (250K works)
-    │
-    ├── Tier 1: 13,431 books with descriptions
-    │
-    ▼
-Goodreads Augmentation (title-match join)
-    │
-    ├── +13,088 books matched by normalized title
-    │
-    ▼
-26,519 books with descriptions ──► Embedding (nomic-embed-text-v1.5, dim=256)
-                                        │
-                                        ├── Cloud: ACI (4 CPU, 16GB RAM, ~3h)
-                                        │
-                                        ▼
-                                   FAISS index + metadata.jsonl
-                                        │
-                                        ▼
-                                   Qdrant migration (TF-IDF sparse + dense)
+```mermaid
+flowchart LR
+    A[OpenLibrary Dump<br/>250K works] -->|Filter: has description| B[13.4K Tier 1]
+    A -->|No description| C[237K Tier 2]
+    C -->|Title-match join| D[Goodreads HF Dataset<br/>~1M books]
+    D -->|+13K matched| E[26,519 books]
+    B --> E
+    E -->|nomic-embed-text-v1.5<br/>dim=256| F[Dense Vectors]
+    E -->|TfidfVectorizer| G[Sparse Vectors]
+    F & G -->|migrate.py| H[(Qdrant)]
 ```
 
 ---
