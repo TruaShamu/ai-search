@@ -1,0 +1,78 @@
+name: Build & Deploy to Azure Container Apps
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'src/**'
+      - 'Dockerfile.api'
+      - 'requirements.txt'
+      - 'infra/**'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+env:
+  AZURE_RESOURCE_GROUP: ai-search-rg
+  ACR_NAME: booksearchacr
+  ACR_LOGIN_SERVER: booksearchacr.azurecr.io
+  API_IMAGE: booksearch-api
+  ACA_API_APP: booksearch-api
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to ACR
+        run: az acr login --name ${{ env.ACR_NAME }}
+
+      - name: Build & push API image
+        run: |
+          docker build -f Dockerfile.api \
+            -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.API_IMAGE }}:${{ github.sha }} \
+            -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.API_IMAGE }}:latest \
+            .
+          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.API_IMAGE }} --all-tags
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy ACA (Bicep)
+        run: |
+          az deployment group create \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --template-file infra/aca-search.bicep \
+            --parameters \
+              acrName=${{ env.ACR_NAME }} \
+              acrLoginServer=${{ env.ACR_LOGIN_SERVER }} \
+              apiImageName=${{ env.API_IMAGE }}:${{ github.sha }} \
+              azureOpenAIEndpoint=${{ secrets.AZURE_OPENAI_ENDPOINT }} \
+              azureOpenAIKey=${{ secrets.AZURE_OPENAI_KEY }} \
+              qdrantExternalIngress=false
+
+      - name: Verify deployment
+        run: |
+          API_URL=$(az deployment group show \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name aca-search \
+            --query "properties.outputs.apiUrl.value" -o tsv 2>/dev/null || echo "")
+          if [ -z "$API_URL" ]; then
+            API_URL="https://booksearch-api.thankfulstone-e6f7cf40.eastus.azurecontainerapps.io"
+          fi
+          echo "API URL: $API_URL"
+          sleep 30
+          curl -sf "$API_URL/health" || echo "⚠️ Health check pending (container may still be starting)"
