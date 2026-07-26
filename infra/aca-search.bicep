@@ -172,7 +172,7 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
           env: [
             {
               name: 'QDRANT_URL'
-              value: 'http://qdrant:6333'
+              value: 'http://qdrant:80'
             }
             {
               name: 'QDRANT_COLLECTION'

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.45.15.27210",
-      "templateHash": "8585016211597711590"
+      "templateHash": "12711364699705245036"
     }
   },
   "parameters": {
@@ -238,7 +238,7 @@
               "env": [
                 {
                   "name": "QDRANT_URL",
-                  "value": "http://qdrant"
+                  "value": "http://qdrant:80"
                 },
                 {
                   "name": "QDRANT_COLLECTION",
