@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -72,9 +73,9 @@ export function AskView() {
               <div className="flex items-start gap-3">
                 <BookOpen className="h-4 w-4 mt-1 text-primary flex-shrink-0" />
                 <div className="flex-1">
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">
-                    {response.answer}
-                  </p>
+                  <div className="text-sm leading-relaxed space-y-2 [&_strong]:font-semibold [&_strong]:text-foreground [&_em]:italic [&_em]:text-muted-foreground [&_ul]:list-disc [&_ul]:pl-4 [&_ol]:list-decimal [&_ol]:pl-4 [&_li]:my-1 [&_p]:my-1.5 [&_a]:text-primary [&_a]:underline [&_h3]:font-semibold [&_h3]:mt-3 [&_h3]:mb-1 [&_blockquote]:border-l-2 [&_blockquote]:pl-3 [&_blockquote]:italic [&_blockquote]:text-muted-foreground">
+                    <ReactMarkdown>{response.answer}</ReactMarkdown>
+                  </div>
                   <div className="flex items-center gap-2 mt-3 pt-3 border-t">
                     <Badge variant="outline" className="text-[10px] font-mono">
                       {response.retrieval_latency_ms?.toFixed(0)}ms retrieval
