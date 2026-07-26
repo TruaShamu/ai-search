@@ -38,11 +38,11 @@ jobs:
           az storage blob download \
             --account-name booksearchblobs --container-name models \
             --name tfidf_vectorizer.pkl --file data/index/tfidf_vectorizer.pkl \
-            --auth-mode login
+            --account-key "${{ secrets.STORAGE_ACCOUNT_KEY }}"
           az storage blob download-batch \
             --account-name booksearchblobs --source models \
             --pattern "reranker-onnx/*" --destination data/models \
-            --auth-mode login
+            --account-key "${{ secrets.STORAGE_ACCOUNT_KEY }}"
 
       - name: Build & push API image
         run: |
