@@ -32,6 +32,16 @@ jobs:
       - name: Login to ACR
         run: az acr login --name ${{ env.ACR_NAME }}
 
+      - name: Download model artifacts from Blob Storage
+        run: |
+          mkdir -p data/index data/models/reranker-onnx
+          az storage blob download \
+            --account-name booksearchblobs --container-name models \
+            --name tfidf_vectorizer.pkl --file data/index/tfidf_vectorizer.pkl
+          az storage blob download-batch \
+            --account-name booksearchblobs --source models \
+            --pattern "reranker-onnx/*" --destination data/models
+
       - name: Build & push API image
         run: |
           docker build -f Dockerfile.api \
