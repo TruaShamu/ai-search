@@ -2,6 +2,9 @@ data/*
 !data/index/
 data/index/*
 !data/index/tfidf_vectorizer.pkl
+!data/models/
+data/models/*
+!data/models/reranker-onnx/
 notebooks/
 web/
 .git/
@@ -11,4 +14,3 @@ __pycache__/
 *.index
 data/processed/
 data/eval/
-data/models/

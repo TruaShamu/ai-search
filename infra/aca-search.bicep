@@ -86,6 +86,9 @@ resource qdrantStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' =
   ]
 }
 
+@description('Whether Qdrant ingress is external (set true for initial data migration, false for prod).')
+param qdrantExternalIngress bool = true
+
 resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: qdrantAppName
   location: location
@@ -94,7 +97,7 @@ resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
-        external: false
+        external: qdrantExternalIngress
         targetPort: 6333
         transport: 'http'
       }
@@ -211,4 +214,5 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
 
 output apiUrl string = 'https://${apiApp.properties.configuration.ingress.fqdn}'
 output qdrantInternalUrl string = 'http://${qdrantApp.name}'
+output qdrantExternalUrl string = qdrantExternalIngress ? 'https://${qdrantApp.properties.configuration.ingress.fqdn}' : 'internal-only'
 output containerAppEnvironmentResourceId string = managedEnvironment.id

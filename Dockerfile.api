@@ -8,6 +8,7 @@ RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu 
 
 COPY src ./src
 COPY data/index/tfidf_vectorizer.pkl ./data/index/tfidf_vectorizer.pkl
+COPY data/models/reranker-onnx ./data/models/reranker-onnx
 
 EXPOSE 8000
 
