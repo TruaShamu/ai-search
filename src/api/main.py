@@ -233,6 +233,17 @@ def health():
     return {"status": "ok", "backend": engine_type}
 
 
+@app.get("/debug/init")
+def debug_init():
+    """Attempt engine initialization and return any error details."""
+    import traceback
+    try:
+        engine = get_engine()
+        return {"status": "ok", "engine": type(engine).__name__}
+    except Exception as e:
+        return {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
+
+
 @app.get("/stats")
 def stats():
     engine = get_engine()
