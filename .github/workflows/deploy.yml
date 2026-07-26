@@ -37,10 +37,12 @@ jobs:
           mkdir -p data/index data/models/reranker-onnx
           az storage blob download \
             --account-name booksearchblobs --container-name models \
-            --name tfidf_vectorizer.pkl --file data/index/tfidf_vectorizer.pkl
+            --name tfidf_vectorizer.pkl --file data/index/tfidf_vectorizer.pkl \
+            --auth-mode login
           az storage blob download-batch \
             --account-name booksearchblobs --source models \
-            --pattern "reranker-onnx/*" --destination data/models
+            --pattern "reranker-onnx/*" --destination data/models \
+            --auth-mode login
 
       - name: Build & push API image
         run: |
