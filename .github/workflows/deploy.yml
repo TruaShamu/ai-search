@@ -100,4 +100,11 @@ jobs:
           fi
           echo "API URL: $API_URL"
           sleep 30
-          curl -sf "$API_URL/health" || echo "⚠️ Health check pending (container may still be starting)"
+          curl -sf "$API_URL/health" || echo "Health check pending (container may still be starting)"
+
+      - name: Known-item regression gate
+        run: |
+          pip install -q requests
+          API_URL="https://booksearch-api.thankfulstone-e6f7cf40.eastus.azurecontainerapps.io"
+          cd ${{ github.workspace }}
+          PYTHONPATH=. python -m src.eval.known_item_eval --api-url "$API_URL" --threshold 0.6
