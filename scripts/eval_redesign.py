@@ -16,6 +16,7 @@ import sys
 import time
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import httpx
@@ -34,8 +35,15 @@ POOLED_FILE = DATA_DIR / "pooled.json"
 JUDGMENTS_FILE = DATA_DIR / "judgments.json"
 RESULTS_FILE = DATA_DIR / "results.json"
 
-MAX_RETRIES = 3
-RETRY_BACKOFF = [2, 5, 15]
+MAX_RETRIES = 4
+RETRY_BACKOFF = [2, 5, 15, 30]
+
+# Cap for honoring a server-sent Retry-After (Azure returns 30-60s under load).
+MAX_RETRY_WAIT = 90
+
+# Concurrent judge calls. Measured against this deployment: 1/2/4 workers all
+# return 200, 8 workers gets 21/24 requests 429'd. Kept at 4 deliberately.
+JUDGE_WORKERS = 4
 
 # Rerank candidate-pool multiplier. Imported from the reranker package so the
 # oracle ceiling is measured over the exact candidate depth production uses —
@@ -189,6 +197,15 @@ def _call_judge(client, url, headers, prompt) -> int | None:
                 raise
             if attempt < MAX_RETRIES - 1:
                 wait = RETRY_BACKOFF[attempt]
+                # Azure sends Retry-After of 30-60s when throttled. The fixed
+                # backoff is far shorter, so every retry lands inside the same
+                # cooldown and the pair is silently left unjudged.
+                retry_after = e.response.headers.get("retry-after")
+                if retry_after:
+                    try:
+                        wait = max(wait, min(int(float(retry_after)), MAX_RETRY_WAIT))
+                    except ValueError:
+                        pass
                 time.sleep(wait)
             else:
                 return None
@@ -264,35 +281,32 @@ def judge_documents(queries: list[dict], pooled: dict):
         if not docs:
             continue
 
-        query_judgments = []
-        for doc in docs:
+        # Judge a query's documents concurrently. Order is preserved by index
+        # because the retry path above realigns judgments to the pool by
+        # position, so a reordered list would silently mismatch work_ids.
+        query_judgments = [None] * len(docs)
+
+        def _judge_one(idx_doc, _query=query):
+            idx, doc = idx_doc
             prompt = JUDGE_PROMPT.format(
-                query=query,
+                query=_query,
                 title=doc["title"],
                 authors=doc.get("authors") or "Unknown",
                 subjects=", ".join(doc.get("subjects", [])[:5]) or "N/A",
                 description=f"Description: {doc['description']}" if doc.get("description") else "",
             )
+            return idx, doc, _call_judge(client, url, headers, prompt)
 
-            relevance = _call_judge(client, url, headers, prompt)
-
-            if relevance is None:
-                errors += 1
-                # Store as None — excluded from metrics, not coerced to 0
-                query_judgments.append({
-                    "work_id": doc["work_id"],
-                    "title": doc["title"],
-                    "relevance": None,
-                })
-            else:
-                query_judgments.append({
+        with ThreadPoolExecutor(max_workers=JUDGE_WORKERS) as pool_exec:
+            for idx, doc, relevance in pool_exec.map(_judge_one, enumerate(docs)):
+                if relevance is None:
+                    errors += 1
+                # Store None as-is — excluded from metrics, not coerced to 0
+                query_judgments[idx] = {
                     "work_id": doc["work_id"],
                     "title": doc["title"],
                     "relevance": relevance,
-                })
-
-            # Rate limit
-            time.sleep(0.5)
+                }
 
         judgments[query] = query_judgments
 
