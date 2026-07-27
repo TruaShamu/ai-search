@@ -1,14 +1,11 @@
 """Tests for corpus-grounded query generation (src.eval.query_gen)."""
 
-import json
 import random
 
 import pytest
 
 from src.eval.query_gen import (
     CATEGORY_WEIGHTS,
-    DIFFICULTY_TARGETS,
-    STOPWORDS,
     _add_typo,
     _broad_genre,
     _book_searchable_text,
@@ -28,7 +25,6 @@ from src.eval.query_gen import (
     gold_is_complete,
     is_near_duplicate,
     lexical_overlap,
-    load_indexed_books,
     sample_seed_books,
     validate_gold_ids,
 )

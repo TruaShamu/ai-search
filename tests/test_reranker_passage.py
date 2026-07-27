@@ -1,6 +1,5 @@
 """Tests for reranker passage building and subject cleaning."""
 
-import pytest
 
 from src.reranker.onnx_reranker import OnnxReranker, _clean_subjects as onnx_clean
 from src.reranker.model import CrossEncoderReranker, _clean_subjects as pt_clean
@@ -191,7 +190,7 @@ def test_dune_passage_before_after(capsys):
     print(f"\n{'='*80}")
     print("BEFORE (old _build_passage):")
     print(f"  {old_passage}")
-    print(f"\nAFTER (new _build_passage):")
+    print("\nAFTER (new _build_passage):")
     print(f"  {new_passage}")
     print(f"{'='*80}")
 

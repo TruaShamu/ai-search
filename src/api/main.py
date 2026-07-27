@@ -8,7 +8,6 @@ import os
 import threading
 from contextlib import asynccontextmanager
 from enum import Enum
-from pathlib import Path
 
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware

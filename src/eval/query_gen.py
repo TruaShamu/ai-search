@@ -38,16 +38,13 @@ from __future__ import annotations
 
 import argparse
 import json
-import math
 import os
 import random
 import re
-import sys
 import textwrap
 from collections import Counter, defaultdict
 from difflib import SequenceMatcher
 from pathlib import Path
-from typing import Any
 
 import httpx
 from dotenv import load_dotenv
@@ -876,7 +873,7 @@ def print_stats(queries: list[dict]) -> None:
     complete = sum(1 for q in queries if q.get("gold_is_complete", False))
     incomplete = n - complete
     print(f"\nGold completeness: {complete} complete, {incomplete} incomplete")
-    print(f"  (MRR reliable for all; Recall@k meaningful only for complete-gold queries)")
+    print("  (MRR reliable for all; Recall@k meaningful only for complete-gold queries)")
 
     # -- Author gold-set sizes --
     author_qs = [q for q in queries if q["category"] == "author"]

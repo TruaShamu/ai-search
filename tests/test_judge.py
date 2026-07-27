@@ -7,7 +7,6 @@ Importing this file has no side effects.
 import csv
 from collections import Counter
 from dataclasses import asdict
-from pathlib import Path
 
 import pytest
 

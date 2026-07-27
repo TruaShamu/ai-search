@@ -12,5 +12,7 @@ __pycache__/
 *.pyc
 .env
 *.index
-data/processed/
+!data/processed/
+data/processed/*
+!data/processed/corpus_dictionary.txt
 data/eval/

@@ -4,9 +4,7 @@ These are unit tests that validate dataset generation, metric computation,
 baseline management, and title-word classification without calling the live API.
 """
 
-import json
 import random
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -26,7 +24,6 @@ from src.eval.known_items import (
 from src.eval.known_item_eval import (
     _eval_items,
     _extract_ids,
-    _print_keyword_split,
     _print_standard_report,
     load_baseline,
     save_baseline,

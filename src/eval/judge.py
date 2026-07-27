@@ -26,7 +26,6 @@ import argparse
 import csv
 import hashlib
 import json
-import math
 import os
 import random
 import re
@@ -34,9 +33,9 @@ import statistics
 import sys
 import time
 from collections import Counter
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 import httpx
 from dotenv import load_dotenv
@@ -813,7 +812,7 @@ def contradiction_report(results: dict[str, list[dict]]) -> list[dict]:
                     "detail": j.get("contradiction_detail", ""),
                 })
 
-    print(f"\n=== Contradiction Detection ===")
+    print("\n=== Contradiction Detection ===")
     print(f"  Flagged: {len(contras)}")
     for c in contras[:5]:
         print(f"    [{c['grade']}] {c['query'][:40]} -- {c['detail']}")
@@ -1209,7 +1208,7 @@ def main(argv: list[str] | None = None) -> None:
 
     # Reports
     grade_distribution(results)
-    sc = self_consistency_report(results)
+    self_consistency_report(results)
     contradiction_report(results)
 
     # Gold-doc check (defensive — file may not exist yet)

@@ -12,10 +12,17 @@ build/
 .venv/
 venv/
 
-# Data — large files excluded from git
-data/processed/
+# Data — large files excluded from git.
+# Note: the directory contents are globbed rather than the directory itself,
+# because git cannot re-include a file whose parent directory is excluded.
+data/processed/*
 data/index/
 data/models/
+
+# ...but the spell dictionary is a small build input the API image needs.
+# Without it, spell correction silently falls back to a generic English
+# wordlist and loses every book title/author term.
+!data/processed/corpus_dictionary.txt
 
 # Keep eval dataset (small, curated)
 !data/eval/
