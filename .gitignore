@@ -43,6 +43,11 @@ web/.next/
 # Notebooks — checkpoints
 .ipynb_checkpoints/
 
-# Eval v2 intermediates — unvalidated dry-run/pooling artifacts.
-# Regenerate with scripts/eval_redesign.py; do not ship as if they were results.
-data/eval/v2/
+# Eval v2. Ship the evidence behind the README numbers -- the query set, the
+# relevance labels, and the computed metrics -- so the results are auditable
+# and `--step eval` can be re-run without paying to re-judge. The pooled
+# candidate file is 3MB and regenerable from the queries via `--step pool`.
+data/eval/v2/*
+!data/eval/v2/queries_grounded.json
+!data/eval/v2/judgments.json
+!data/eval/v2/results.json
