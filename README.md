@@ -267,6 +267,7 @@ data/
 | **Goodreads augmentation** | OpenLibrary lacks descriptions for 95% of books. Title-match join doubled the corpus |
 | **ONNX reranker** | 3.7x faster than PyTorch on CPU (23ms vs 86ms for 4 candidates) |
 | **Cloud embedding (ACI)** | Local GPU unavailable; 4-CPU ACI with 16GB RAM handles 26K docs in ~3h |
+| **API at 2 vCPU, always-on** | Measured, not guessed. At 1 vCPU with `minReplicas: 0`, removing the reranker's passage truncation pushed `rerank=true` past the ingress timeout (3/6 requests failed, one took 98s), and the first request after idle paid a ~20s model load. Separate liveness (`/health`) and readiness (`/ready`) probes stop ingress routing to replicas that are still loading |
 
 ---
 
@@ -277,7 +278,8 @@ data/
 | `/search` | GET | Hybrid search with mode, rerank, filters |
 | `/search/compare` | GET | Side-by-side results across all modes |
 | `/ask` | POST | RAG question answering with citations |
-| `/health` | GET | Liveness probe — reports backend, model warmup state, and reranker availability |
+| `/health` | GET | Liveness probe — reports backend, model warmup state, and reranker availability. Always 200 while the process is up |
+| `/ready` | GET | Readiness probe — 503 until models finish loading, so ingress skips cold replicas |
 | `/stats` | GET | Index statistics |
 
 ### Example

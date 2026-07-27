@@ -196,13 +196,50 @@ resource apiApp 'Microsoft.App/containerApps@2024-03-01' = {
             }
           ]
           resources: {
-            cpu: 1
-            memory: '2Gi'
+            // 2 vCPU: the cross-encoder scores 25 candidates at up to 512
+            // tokens each. On 1 vCPU that exceeded the ingress timeout once
+            // passage truncation was removed. ACA Consumption requires
+            // memory to be 2x cpu in Gi.
+            cpu: 2
+            memory: '4Gi'
           }
+          probes: [
+            {
+              // Keeps ingress from routing to a replica that is still loading
+              // models. /ready returns 503 until warmup completes.
+              // 40 x 10s allows ~6.5min for a cold start before giving up.
+              type: 'Readiness'
+              httpGet: {
+                path: '/ready'
+                port: 8000
+              }
+              initialDelaySeconds: 5
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 40
+            }
+            {
+              // Liveness hits /health, which answers 200 as soon as the
+              // process is up. It must not depend on warmup, or a slow model
+              // load would restart the container in a loop.
+              type: 'Liveness'
+              httpGet: {
+                path: '/health'
+                port: 8000
+              }
+              initialDelaySeconds: 20
+              periodSeconds: 30
+              timeoutSeconds: 10
+              failureThreshold: 5
+            }
+          ]
         }
       ]
       scale: {
-        minReplicas: 0
+        // Warm at all times. At minReplicas 0 the first request after an idle
+        // period paid a ~20s model load, and scale-up sent traffic to cold
+        // replicas faster than they could warm.
+        minReplicas: 1
         maxReplicas: 3
       }
     }

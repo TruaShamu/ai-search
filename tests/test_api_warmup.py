@@ -79,6 +79,40 @@ def test_health_reports_warmup_and_reranker_state(reset_engine):
     assert body["reranker"] == "not_loaded"
 
 
+@pytest.mark.parametrize(
+    "state,expected_code,expected_ready",
+    [
+        ("cold", 503, False),
+        ("warming", 503, False),
+        ("failed", 503, False),
+        ("ready", 200, True),
+    ],
+)
+def test_ready_gates_on_warmup(monkeypatch, state, expected_code, expected_ready):
+    """Ingress must not route to a replica whose models are still loading."""
+    from fastapi.testclient import TestClient
+
+    monkeypatch.setattr(main, "_warmup_state", {"status": state, "error": None})
+    resp = TestClient(main.app).get("/ready")
+    assert resp.status_code == expected_code
+    assert resp.json()["ready"] is expected_ready
+    assert resp.json()["warmup"] == state
+
+
+def test_ready_and_health_disagree_while_warming(monkeypatch):
+    """Liveness stays green while readiness is red.
+
+    If /health went unhealthy during warmup the platform would restart the
+    container mid-load, looping forever.
+    """
+    from fastapi.testclient import TestClient
+
+    monkeypatch.setattr(main, "_warmup_state", {"status": "warming", "error": None})
+    client = TestClient(main.app)
+    assert client.get("/health").status_code == 200
+    assert client.get("/ready").status_code == 503
+
+
 def test_warmup_failure_does_not_raise(reset_engine, monkeypatch):
     """Warmup is best-effort — a failure must not crash the worker thread."""
     def boom():

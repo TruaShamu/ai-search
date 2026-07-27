@@ -129,18 +129,21 @@ jobs:
           echo "API URL: $API_URL"
           echo "API_URL=$API_URL" >> "$GITHUB_ENV"
 
-          # Wait for models to finish loading. /health answers immediately while
-          # still warming, so polling status alone would race the regression gate
-          # against a container that cannot serve a search yet.
+          # Wait for models to finish loading. /ready is the same signal the
+          # ACA readiness probe uses, so this waits on exactly what ingress
+          # waits on. /health would answer 200 while still warming.
           for i in $(seq 1 60); do
-            STATE=$(curl -sf --max-time 10 "$API_URL/health" \
-              | python -c "import sys,json; print(json.load(sys.stdin).get('warmup','unknown'))" \
-              2>/dev/null || echo "unreachable")
-            echo "  attempt $i: warmup=$STATE"
-            case "$STATE" in
-              ready)  echo "Warm after ${i} attempts."; break ;;
-              failed) echo "::error::Warmup failed on the deployed container."; exit 1 ;;
-            esac
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$API_URL/ready" || echo 000)
+            echo "  attempt $i: /ready -> HTTP $CODE"
+            if [ "$CODE" = "200" ]; then
+              echo "Ready after ${i} attempts."
+              break
+            fi
+            if [ "$i" = "60" ]; then
+              echo "::error::Container never became ready."
+              curl -s "$API_URL/health" || true
+              exit 1
+            fi
             sleep 10
           done
 

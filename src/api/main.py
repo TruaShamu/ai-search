@@ -246,6 +246,25 @@ def health():
         return {"status": "healthy", "backend": "unknown", "warmup": "unknown"}
 
 
+@app.get("/ready")
+def ready():
+    """Readiness probe — distinct from liveness on purpose.
+
+    /health answers 200 the moment the process is up, which is correct for
+    liveness but useless for routing: this app scales to zero and needs
+    ~20s to load its models, so ingress was sending real traffic to replicas
+    that could not serve it yet. Returning 503 until warmup finishes keeps
+    cold replicas out of the load balancer.
+    """
+    state = _warmup_state["status"]
+    if state == "ready":
+        return {"ready": True, "warmup": state}
+    return JSONResponse(
+        status_code=503,
+        content={"ready": False, "warmup": state, "error": _warmup_state["error"]},
+    )
+
+
 @app.get("/stats")
 def stats():
     engine = get_engine()
