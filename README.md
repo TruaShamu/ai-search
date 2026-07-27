@@ -142,7 +142,9 @@ Evaluated on a 30-query labeled dataset (LLM-judged relevance, graded 0/1/2) aga
 | Keyword (TF-IDF) | 0.662 | 0.354 | 0.282 | 73ms |
 | Vector (nomic-256d) | 0.625 | 0.295 | 0.205 | 45ms |
 | **Hybrid (RRF)** | **0.665** | **0.385** | **0.306** | 76ms |
-| Hybrid + Rerank | 0.611 | 0.370 | 0.273 | 4340ms |
+| Hybrid + Rerank | 0.611 | 0.370 | 0.273 | 4340ms* |
+
+\* Latency measured during the original run, on the truncated reranker at 1 vCPU. Current warm latency is **~3.6s** with full-length passages on 2 vCPU. The quality columns still reflect the truncated reranker and have not been re-measured.
 
 ### Known-Item Accuracy (50 titles sampled from the corpus)
 
@@ -169,10 +171,10 @@ Degradation is graceful rather than catastrophic, and hybrid has the best top-5 
 ### Key Findings
 
 - **Hybrid is the mode to ship,** but the graded eval cannot prove it beats keyword. The MRR gap is 0.003 against a standard error near 0.07 — indistinguishable from noise. The honest support for hybrid is the NDCG/recall margin plus the known-item result, where hybrid scores 94% and keyword 74%.
-- **Cross-encoder reranking measurably hurt — and the cause turned out to be a bug in my own code, not the model.** The original explanation here blamed book metadata for being too sparse to rerank. That was wrong. `onnx_reranker.py` truncated every passage at `[:300]` characters, discarding **60.2% of all description text across 62% of documents** (descriptions run to a median of 477 characters and a 90th percentile of 1,289). The cross-encoder was scoring truncated fragments while RRF fused the full index — so the comparison was never fair to the reranker. The truncation is fixed, but **the table above still reflects the old code**, and will not be updated until the fix is redeployed and re-measured. Longer passages will also make the 4.3s latency worse, not better.
+- **Cross-encoder reranking measurably hurt — and the cause turned out to be a bug in my own code, not the model.** The original explanation here blamed book metadata for being too sparse to rerank. That was wrong. `onnx_reranker.py` truncated every passage at `[:300]` characters, discarding **60.2% of all description text across 62% of documents** (descriptions run to a median of 477 characters and a 90th percentile of 1,289). The cross-encoder was scoring truncated fragments while RRF fused the full index — so the comparison was never fair to the reranker. The truncation is fixed, but **the table above still reflects the old code**, and will not be updated until it is re-measured. Fixing it also had a cost worth stating: full-length passages take the cross-encoder from ~93 tokens to ~335, which on the original 1 vCPU container pushed `rerank=true` past the ingress timeout — 3 of 6 requests failed and one took 98s. The API now runs on 2 vCPU, where reranking is 10/10 successful at a 3.6s median. A quality bug and a capacity bug were hiding each other.
 - **The two evals disagree about dense retrieval, and the known-item result is the more trustworthy one.** The graded eval ranks vector *below* keyword; known-item puts vector first at 100% versus keyword's 74%. The graded pool was assembled from keyword-friendly candidates and stored no negatives, so dense retrieval was penalized for surfacing books the pool had simply never judged. The earlier claim that "vector alone underperforms keyword" was an artifact of that construction.
 
-> Reranking still helps on exploratory queries where intent doesn't match surface keywords — "love story tragedy" moves Romeo & Juliet from rank 4 to rank 1. It stays an opt-in toggle rather than a default, because 4.3s is too slow to impose on every search.
+> Reranking still helps on exploratory queries where intent doesn't match surface keywords — "love story tragedy" moves Romeo & Juliet from rank 4 to rank 1. It stays an opt-in toggle rather than a default, because 3.6s is too slow to impose on every search when plain hybrid answers in ~220ms.
 
 ### Known Limitations of This Eval
 
@@ -263,7 +265,7 @@ data/
 | **Qdrant over Azure AI Search** | Measured 15x faster at the time of migration (24ms vs 370ms), plus no tier limits, built-in RRF, and self-hosting. The Azure resource has since been decommissioned, so that comparison is no longer reproducible from this repo |
 | **TF-IDF over BM25** | Sufficient at 26K scale; hybrid compensates. BM25's length norm matters more at >100K docs |
 | **Matryoshka dim=256** | nomic-embed-text-v1.5 trained checkpoints: 768/512/256/128/64. 256 balances quality vs. index size |
-| **Reranker opt-in** | Adds ~4.3s. Measured worse than plain RRF on the graded set, though that run predates the truncation fix (see eval). Off by default, toggleable per query |
+| **Reranker opt-in** | Adds ~3.6s. Measured worse than plain RRF on the graded set, though that run predates the truncation fix (see eval). Off by default, toggleable per query |
 | **Goodreads augmentation** | OpenLibrary lacks descriptions for 95% of books. Title-match join doubled the corpus |
 | **ONNX reranker** | 3.7x faster than PyTorch on CPU (23ms vs 86ms for 4 candidates) |
 | **Cloud embedding (ACI)** | Local GPU unavailable; 4-CPU ACI with 16GB RAM handles 26K docs in ~3h |
