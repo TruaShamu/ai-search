@@ -121,30 +121,58 @@ sequenceDiagram
 ## Features
 
 - **Hybrid Search (RRF)** — Reciprocal Rank Fusion of TF-IDF + dense vectors. Best of both worlds: keyword precision + semantic understanding.
-- **Cross-Encoder Reranker** — Optional two-stage retrieval. ONNX-optimized for CPU. Available as a toggle — see eval findings below on when it helps vs. hurts.
+- **Cross-Encoder Reranker** — Optional two-stage retrieval. ONNX-optimized for CPU. Measured at +0.097 NDCG over hybrid; available as a toggle because it costs ~3.3s — see eval findings below for where it helps most.
 - **Query Understanding** — Spell correction (SymSpell), intent detection, query-adaptive mode routing.
 - **RAG with Guardrails** — Natural language Q&A grounded in retrieved books. Citation validation prevents hallucinated titles.
 - **Compare View** — Side-by-side 3-column comparison of keyword vs. hybrid vs. vector results.
-- **Evaluation Framework** — Two independent harnesses: a graded relevance eval (MRR@10, NDCG@10, Recall@10) via `scripts/eval_via_api.py`, and a corpus-sampled known-item accuracy gate via `python -m src.eval.known_item_eval`. Limitations are documented rather than glossed over.
+- **Evaluation Framework** — Two independent harnesses: a graded relevance eval with paired bootstrap confidence intervals (MRR@10, NDCG@10, Recall@10) via `scripts/eval_redesign.py`, and a corpus-sampled known-item accuracy gate via `python -m src.eval.known_item_eval`. Limitations are documented rather than glossed over.
 
 ---
 
 ## Eval Results
 
-Evaluated on a 30-query labeled dataset (LLM-judged relevance, graded 0/1/2) against the live production deployment. Reproducible via `python scripts/eval_via_api.py`.
+Evaluated on **100 corpus-grounded queries** against the live production deployment, with **5,000 query–document pairs** LLM-judged on a graded 0/1/2 scale and **zero unjudged pairs**. Confidence intervals are 1,000-replicate percentile bootstraps; mode comparisons use a **paired** bootstrap on per-query deltas. Reproducible via `python scripts/eval_redesign.py --step all`.
 
-> **Read the caveats before quoting these numbers.** At n=30 the standard error on MRR is roughly ±0.07, so only large gaps are meaningful. The judged pool was also built from an earlier backend and kept only documents already scored relevant, which biases it toward keyword retrieval. See [Known Limitations](#known-limitations-of-this-eval).
+Six queries (all `author`) were dropped for having no relevant document in the pool, leaving **n=94** evaluated across every mode.
 
 ### Retrieval Quality (k=10, 26.5K corpus)
 
-| Mode | MRR@10 | NDCG@10 | Recall@10 | Avg Latency |
-|------|--------|---------|-----------|-------------|
-| Keyword (TF-IDF) | 0.662 | 0.354 | 0.282 | 73ms |
-| Vector (nomic-256d) | 0.625 | 0.295 | 0.205 | 45ms |
-| **Hybrid (RRF)** | **0.665** | **0.385** | **0.306** | 76ms |
-| Hybrid + Rerank | 0.611 | 0.370 | 0.273 | 4340ms* |
+| Mode | MRR@10 | NDCG@10 | Recall@10 | Median Latency |
+|------|--------|---------|-----------|----------------|
+| Keyword (TF-IDF) | 0.851 [0.784, 0.911] | 0.593 [0.534, 0.649] | 0.440 [0.370, 0.508] | 131ms |
+| Vector (nomic-256d) | 0.896 [0.841, 0.946] | 0.698 [0.648, 0.743] | 0.514 [0.451, 0.569] | 213ms |
+| **Hybrid (RRF)** | 0.910 [0.858, 0.954] | 0.703 [0.660, 0.749] | 0.523 [0.459, 0.590] | **209ms** |
+| **Hybrid + Rerank** | **0.985 [0.962, 1.000]** | **0.801 [0.769, 0.835]** | **0.583 [0.525, 0.641]** | 3,268ms |
 
-\* Latency measured during the original run, on the truncated reranker at 1 vCPU. Current warm latency is **~3.6s** with full-length passages on 2 vCPU. The quality columns still reflect the truncated reranker and have not been re-measured.
+Recall@10 is bounded above by **0.794** on average, because a pool can hold more than ten relevant documents while only ten can be returned.
+
+### Paired Comparisons
+
+Bootstrapping per-query *differences* rather than comparing independent means removes query-difficulty variance, which is what makes these gaps resolvable at n=94.
+
+| Comparison | NDCG@10 delta | 95% CI | MRR@10 delta | 95% CI |
+|------------|---------------|--------|--------------|--------|
+| Hybrid − Keyword | **+0.111** | [+0.079, +0.146] | +0.059 | [+0.014, +0.112] |
+| Hybrid+Rerank − Hybrid | **+0.097** | [+0.060, +0.135] | +0.075 | [+0.026, +0.125] |
+| Hybrid+Rerank − Keyword | **+0.208** | [+0.159, +0.260] | +0.134 | [+0.072, +0.197] |
+
+All six intervals exclude zero. Eleven unadjusted intervals were computed in total, so roughly 0.6 would be expected to exclude zero by chance; the observed effects are far larger than that.
+
+### Where Reranking Helps
+
+| Category | n | Hybrid NDCG | +Rerank | Delta | 95% CI |
+|----------|---|-------------|---------|-------|--------|
+| author | 12 | 0.750 | 0.886 | +0.136 | [+0.030, +0.277] |
+| combined | 10 | 0.832 | 0.831 | −0.000 | [−0.146, +0.139] |
+| exploratory | 21 | 0.693 | 0.806 | +0.113 | [+0.042, +0.193] |
+| genre_topic | 32 | 0.647 | 0.739 | +0.092 | [+0.039, +0.143] |
+| title_lookup | 19 | 0.713 | 0.829 | +0.116 | [+0.051, +0.200] |
+
+Reranking helps everywhere except **combined** filter-style queries, where hybrid already scores 0.83 and the interval spans zero. Only `genre_topic` clears n=30; the rest are underpowered individually and should be read as directional.
+
+### Ceiling Analysis
+
+A perfect reranker over the same 25-candidate pool would score **0.917** NDCG against hybrid's **0.703** — headroom of **+0.214**. The cross-encoder captures **+0.097**, or about **45%** of what is theoretically available at that depth. The remaining gap is a retrieval problem, not a ranking one: it can only be closed by getting better candidates into the pool.
 
 ### Known-Item Accuracy (50 titles sampled from the corpus)
 
@@ -170,23 +198,43 @@ Degradation is graceful rather than catastrophic, and hybrid has the best top-5 
 
 ### Key Findings
 
-- **Hybrid is the mode to ship,** but the graded eval cannot prove it beats keyword. The MRR gap is 0.003 against a standard error near 0.07 — indistinguishable from noise. The honest support for hybrid is the NDCG/recall margin plus the known-item result, where hybrid scores 94% and keyword 74%.
-- **Cross-encoder reranking measurably hurt — and the cause turned out to be a bug in my own code, not the model.** The original explanation here blamed book metadata for being too sparse to rerank. That was wrong. `onnx_reranker.py` truncated every passage at `[:300]` characters, discarding **60.2% of all description text across 62% of documents** (descriptions run to a median of 477 characters and a 90th percentile of 1,289). The cross-encoder was scoring truncated fragments while RRF fused the full index — so the comparison was never fair to the reranker. The truncation is fixed, but **the table above still reflects the old code**, and will not be updated until it is re-measured. Fixing it also had a cost worth stating: full-length passages take the cross-encoder from ~93 tokens to ~335, which on the original 1 vCPU container pushed `rerank=true` past the ingress timeout — 3 of 6 requests failed and one took 98s. The API now runs on 2 vCPU, where reranking is 10/10 successful at a 3.6s median. A quality bug and a capacity bug were hiding each other.
-- **The two evals disagree about dense retrieval, and the known-item result is the more trustworthy one.** The graded eval ranks vector *below* keyword; known-item puts vector first at 100% versus keyword's 74%. The graded pool was assembled from keyword-friendly candidates and stored no negatives, so dense retrieval was penalized for surfacing books the pool had simply never judged. The earlier claim that "vector alone underperforms keyword" was an artifact of that construction.
+- **Hybrid beats keyword, and this time the data supports it.** An earlier version of this eval put the gap at 0.003 MRR against a standard error near 0.07 — indistinguishable from noise. That result was an artifact: the query set had been generated by an LLM with no view of the corpus, producing canonical titles (*1984*, *The Great Gatsby*) against an index of mostly obscure OpenLibrary works, and carrying no gold documents. On corpus-grounded queries the margin is **+0.111 NDCG [+0.079, +0.146]**.
+- **Cross-encoder reranking helps, and the earlier finding that it hurt was caused by a bug in my own code.** `onnx_reranker.py` truncated every passage at `[:300]` characters, discarding **60.2% of all description text across 62% of documents** (median description length is 477 characters, 90th percentile 1,289). The cross-encoder was scoring fragments while RRF fused the full index. With truncation fixed, reranking gains **+0.097 NDCG [+0.060, +0.135]** over hybrid and lifts MRR to **0.985** — it puts a relevant book first almost every time.
+- **Fixing the quality bug exposed a capacity bug that had been hiding behind it.** Full-length passages take the cross-encoder from ~93 tokens to ~335. On the original 1 vCPU container that pushed `rerank=true` past the ingress timeout: 3 of 6 requests failed and one took 98 seconds. The API now runs on 2 vCPU with a readiness probe, where reranking is 10/10 successful at a 3.3s median. Truncation had been masking the fact that the container could not afford the work.
+- **Dense retrieval is stronger than lexical here, and both evals now agree.** Vector beats keyword by +0.105 NDCG in the graded eval and 100% vs 74% on known-item. The previous claim that "vector alone underperforms keyword" came from a pool built from keyword-friendly candidates that stored no negatives, so dense retrieval was penalized for surfacing books the pool had never judged.
 
-> Reranking still helps on exploratory queries where intent doesn't match surface keywords — "love story tragedy" moves Romeo & Juliet from rank 4 to rank 1. It stays an opt-in toggle rather than a default, because 3.6s is too slow to impose on every search when plain hybrid answers in ~220ms.
+> Reranking stays an **opt-in toggle** rather than a default. The quality gain is real, but 3.3s is too slow to impose on every search when plain hybrid answers in ~209ms. It is worth the wait on exploratory queries — "love story tragedy" returns Romeo & Juliet first with reranking on.
 
 ### Known Limitations of This Eval
 
-Stated plainly, because they bound what the table above can support:
+Stated plainly, because they bound what the tables above can support:
 
-- **n=30 is underpowered.** SE ≈ 0.07 on MRR. Differences smaller than about 0.08 are not resolvable, which includes the hybrid-vs-keyword gap.
-- **The judged pool is biased.** It was pooled from a since-decommissioned backend over a different corpus, and only documents graded relevant were retained. With no negatives stored, a mode that retrieves good-but-unjudged books is scored as if it retrieved nothing.
-- **Recall is structurally understated.** Roughly 62% of queries have exactly one gold document, so recall@10 is capped far below 1.0 by construction.
-- **The judge is unvalidated by a human.** A Cohen's kappa harness and audit export exist (`src/eval/judge.py`), but no human agreement study has been run.
-- **Query generation and judging share a model family,** so systematic blind spots may be correlated rather than independent.
+- **The judge is unvalidated by a human.** Relevance labels come from a zero-shot `gpt-5.4-nano` judge. A Cohen's kappa harness and audit export exist (`src/eval/judge.py`), but no human agreement study has been run, and the richer calibrated judge in that module is not what produced these labels — `scripts/eval_redesign.py` uses its own simpler prompt.
+- **Query generation and judging share a model family,** so blind spots may be correlated rather than independent. This bears most directly on the reranking result: a cross-encoder and an LLM judge may both reward surface semantic similarity, which would inflate the measured gain. **The reranking number is the one most in need of human validation.**
+- **Per-category results are underpowered.** Four of five categories have n < 30 and are flagged accordingly. Only `genre_topic` (n=32) is individually well-powered.
+- **Recall is capped by construction** at a mean ceiling of 0.794, so recall figures are not comparable to systems evaluated with complete relevance judgments.
+- **Documents outside the judged pool count as non-relevant.** This is standard for pooled evaluation, and was verified not to penalize reranking: across sampled queries, **0 of 120** reranked top-10 documents fell outside the pool.
+- **Six author queries were dropped** for having no relevant document, which slightly biases that category toward the queries the system could already answer.
 
-A rebuilt harness addressing these — corpus-grounded query generation with lexical-leakage checks, top-k pooling across all modes, retained negatives, bootstrap confidence intervals, and per-category breakdowns — lives in `scripts/eval_redesign.py` and `src/eval/`. It has not been run at full scale yet; when it is, this section will be replaced rather than appended to.
+A second, independent eval: sample a book from the index, search its exact title, check whether that book comes back first. No LLM judge, no pooling, no subjective grading — the answer is either right or wrong, and anyone can verify it by hand in a few seconds.
+
+| Mode | Accuracy@1 |
+|------|-----------|
+| **Vector (nomic-256d)** | **100%** |
+| Hybrid (RRF) | 94% |
+| Keyword (TF-IDF) | 74% |
+
+Keyword's failures are concentrated, not random: **81%** accuracy on distinctive titles vs **38%** on titles made of common words. Searching "Crazy little thing" by keyword returns *Serial*, *Crazy Horse*, *Crazy Horse* — the exact match never surfaces. This is inherent to lexical scoring, not an indexing defect.
+
+The same harness also runs 29 **hard variants** — typos, partial titles, and title-plus-author forms — as a robustness check:
+
+| Mode | Acc@1 | Acc@5 |
+|------|-------|-------|
+| Hybrid (RRF) | 72% | **93%** |
+| Vector | 79% | 90% |
+| Keyword (TF-IDF) | 66% | 86% |
+
+Degradation is graceful rather than catastrophic, and hybrid has the best top-5 recovery. This eval doubles as a CI regression gate: it fails the build if hybrid accuracy drops more than 5 points below the recorded baseline (`python -m src.eval.known_item_eval`).
 
 ---
 
@@ -265,7 +313,7 @@ data/
 | **Qdrant over Azure AI Search** | Measured 15x faster at the time of migration (24ms vs 370ms), plus no tier limits, built-in RRF, and self-hosting. The Azure resource has since been decommissioned, so that comparison is no longer reproducible from this repo |
 | **TF-IDF over BM25** | Sufficient at 26K scale; hybrid compensates. BM25's length norm matters more at >100K docs |
 | **Matryoshka dim=256** | nomic-embed-text-v1.5 trained checkpoints: 768/512/256/128/64. 256 balances quality vs. index size |
-| **Reranker opt-in** | Adds ~3.6s. Measured worse than plain RRF on the graded set, though that run predates the truncation fix (see eval). Off by default, toggleable per query |
+| **Reranker opt-in** | Adds ~3.3s but gains +0.097 NDCG [+0.060, +0.135] over hybrid. Too slow to impose on every search, so it is off by default and toggleable per query |
 | **Goodreads augmentation** | OpenLibrary lacks descriptions for 95% of books. Title-match join doubled the corpus |
 | **ONNX reranker** | 3.7x faster than PyTorch on CPU (23ms vs 86ms for 4 candidates) |
 | **Cloud embedding (ACI)** | Local GPU unavailable; 4-CPU ACI with 16GB RAM handles 26K docs in ~3h |
