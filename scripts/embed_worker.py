@@ -40,7 +40,7 @@ from azure.storage.queue import QueueServiceClient
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.search.embed import MODEL_NAME, BATCH_SIZE, build_embedding_texts, load_books
+from src.search.embed import MODEL_NAME, BATCH_SIZE, build_embedding_texts
 from src.etl.clean_descriptions import clean_description
 
 # Config from environment

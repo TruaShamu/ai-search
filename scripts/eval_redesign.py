@@ -222,7 +222,7 @@ def _call_judge(client, url, headers, prompt) -> int | None:
                 time.sleep(wait)
             else:
                 return None
-        except (httpx.TimeoutException, httpx.ConnectError) as e:
+        except (httpx.TimeoutException, httpx.ConnectError):
             if attempt < MAX_RETRIES - 1:
                 wait = RETRY_BACKOFF[attempt]
                 time.sleep(wait)
@@ -586,7 +586,7 @@ def compute_metrics_with_cis(judgments: dict, n_bootstrap: int = 1000):
     # Multiple-comparison disclosure
     print(f"\n  Note: {n_intervals} unadjusted 95% percentile-bootstrap intervals were computed.")
     print(f"  Under the null, ~{n_intervals / 20:.1f} of {n_intervals} would exclude zero by chance alone.")
-    print(f"  p_opp = fraction of bootstrap replicates on the opposite side of zero from the estimate.")
+    print("  p_opp = fraction of bootstrap replicates on the opposite side of zero from the estimate.")
 
     # --- Oracle analysis (best possible reranking of the full candidate pool) ---
     print("\n--- Oracle reranking (ceiling analysis) ---")

@@ -31,7 +31,11 @@ jobs:
           python-version: "3.11"
 
       - name: Lint with ruff
-        run: pip install ruff && ruff check src/ tests/
+        # Version pinned deliberately: this step previously ran `pip install
+        # ruff` unpinned, and 0.16.0 broadened its default rule set enough to
+        # fail the deploy with 58 findings on unchanged code. Rules live in
+        # ruff.toml so local and CI agree.
+        run: pip install ruff==0.16.0 && ruff check src/ tests/ scripts/
 
   test:
     runs-on: ubuntu-latest

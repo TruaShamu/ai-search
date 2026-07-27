@@ -1,7 +1,6 @@
 """Run evaluation against the live API endpoint (no direct Qdrant access needed)."""
 import json
 import sys
-import time
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -51,7 +50,10 @@ def main():
         n = len(metrics_list)
         if n == 0:
             continue
-        avg = lambda attr, ml=metrics_list: sum(getattr(m, attr) for m in ml) / len(ml)
+
+        def avg(attr, ml=metrics_list):
+            return sum(getattr(m, attr) for m in ml) / len(ml)
+
         r = {
             "strategy": mode,
             "queries_evaluated": n,
@@ -84,7 +86,10 @@ def main():
 
     n = len(metrics_list)
     if n > 0:
-        avg = lambda attr, ml=metrics_list: sum(getattr(m, attr) for m in ml) / len(ml)
+
+        def avg(attr, ml=metrics_list):
+            return sum(getattr(m, attr) for m in ml) / len(ml)
+
         r = {
             "strategy": "hybrid+rerank",
             "queries_evaluated": n,
@@ -99,7 +104,7 @@ def main():
 
     # Save
     Path("data/eval/results.json").write_text(json.dumps(results, indent=2))
-    print(f"\nSaved to data/eval/results.json")
+    print("\nSaved to data/eval/results.json")
 
 
 if __name__ == "__main__":
