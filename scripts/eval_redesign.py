@@ -11,6 +11,7 @@ Usage:
 import argparse
 import json
 import os
+import subprocess
 import sys
 import time
 import urllib.parse
@@ -28,7 +29,7 @@ API = os.environ.get("EVAL_API_URL", DEFAULT_API)
 DATA_DIR = Path("data/eval/v2")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-QUERIES_FILE = DATA_DIR / "queries.json"
+QUERIES_FILE = DATA_DIR / "queries_grounded.json"
 POOLED_FILE = DATA_DIR / "pooled.json"
 JUDGMENTS_FILE = DATA_DIR / "judgments.json"
 RESULTS_FILE = DATA_DIR / "results.json"
@@ -45,61 +46,30 @@ except ImportError:  # running standalone without the package on sys.path
     RERANK_DEPTH_MULTIPLIER = 2.5
 
 
-# ─── Step 1: Generate diverse queries ───────────────────────────────────────
-
-GENERATE_PROMPT = """Generate exactly 100 diverse book search queries that a real user might type.
-Requirements:
-- Mix of: exact title lookups (20%), author searches (15%), genre/topic (30%), natural language / exploratory (25%), combined filters (10%)
-- Vary length: single word, 2-3 words, full phrases, questions
-- Include: fiction, non-fiction, children's books, academic, classics, modern
-- Include some with typos or informal phrasing (like real users)
-- Each query should be something that might plausibly match books in a general 26K-book catalog from OpenLibrary
-
-Return as a JSON array of objects with fields:
-- "query": the search string
-- "category": one of ["title_lookup", "author", "genre_topic", "exploratory", "combined"]
-
-Return ONLY the JSON array, no other text."""
-
+# ─── Step 1: Generate corpus-grounded queries ───────────────────────────────
 
 def generate_queries():
-    """Generate 100 diverse queries via Azure OpenAI."""
-    endpoint = os.getenv("AZURE_OPENAI_ENDPOINT", "").rstrip("/")
-    key = os.getenv("AZURE_OPENAI_KEY", "")
-    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-54-nano")
+    """Delegate to the corpus-grounded generator in src/eval/query_gen.py.
 
-    url = f"{endpoint}/openai/deployments/{deployment}/chat/completions?api-version=2024-12-01-preview"
-
-    body = {
-        "messages": [{"role": "user", "content": GENERATE_PROMPT}],
-        "temperature": 0.9,
-        "max_completion_tokens": 8000,
-    }
-    headers = {"api-key": key, "Content-Type": "application/json"}
-
-    print("Generating 100 queries via Azure OpenAI...")
-    client = httpx.Client(timeout=60)
-    resp = client.post(url, json=body, headers=headers)
-    resp.raise_for_status()
-
-    content = resp.json()["choices"][0]["message"]["content"]
-    # Strip markdown code fences if present
-    if content.startswith("```"):
-        content = content.split("\n", 1)[1]
-        content = content.rsplit("```", 1)[0]
-
-    queries = json.loads(content)
-    print(f"Generated {len(queries)} queries")
-
-    # Report category distribution
-    from collections import Counter
-    cats = Counter(q["category"] for q in queries)
-    for cat, count in cats.most_common():
-        print(f"  {cat}: {count}")
-
-    QUERIES_FILE.write_text(json.dumps(queries, indent=2), encoding="utf-8")
-    print(f"Saved to {QUERIES_FILE}")
-    return queries
+    This step used to ask the LLM to invent queries with no view of the corpus.
+    That produced canonical titles ("1984", "The Great Gatsby", "Harry Potter")
+    which are largely absent from this 26.5k OpenLibrary index, and carried no
+    gold_work_ids -- so relevance rested entirely on the judge. Grounded
+    generation instead seeds every query from a real indexed book, attaches
+    gold_work_ids, and rejects queries that copy >=4 verbatim tokens from the
+    seed description (which would hand lexical matching an artificial win).
+    """
+    repo_root = Path(__file__).resolve().parent.parent
+    cmd = [
+        sys.executable, "-m", "src.eval.query_gen",
+        "--n", "100",
+        "--max-verbatim-ngram", "4",
+        "--out", str(QUERIES_FILE),
+    ]
+    print("Delegating to the corpus-grounded generator:")
+    print("  " + " ".join(cmd))
+    subprocess.run(cmd, check=True, cwd=str(repo_root))
+    return json.loads(QUERIES_FILE.read_text(encoding="utf-8"))
 
 
 # ─── Step 2: Pool from all modes (including rerank at depth 50) ──────────────

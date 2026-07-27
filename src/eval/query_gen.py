@@ -734,6 +734,7 @@ def generate_query_set(
     existing_query_texts: list[str] = []
     used_work_ids_per_category: dict[str, set[str]] = defaultdict(set)
     leakage_rejected = 0
+    api_failures = 0
 
     max_retries_per_slot = 3
 
@@ -747,15 +748,21 @@ def generate_query_set(
 
         query_text = None
         leakage = None
+        candidate_source = "template" if dry_run else "api"
         for retry in range(max_retries_per_slot):
             if dry_run:
                 candidate = generate_dry_run_query(book, category, rng)
+                candidate_source = "template"
             else:
                 candidate = generate_api_query(
                     client, api_url, api_headers, book, category
                 )
                 if candidate is None:
+                    api_failures += 1
+                    candidate_source = "template_fallback"
                     candidate = generate_dry_run_query(book, category, rng)
+                else:
+                    candidate_source = "api"
 
             if not candidate or len(candidate.strip()) < 2:
                 continue
@@ -817,6 +824,7 @@ def generate_query_set(
             "gold_is_complete": gold_is_complete(category),
             "difficulty": difficulty,
             "leakage": leakage,
+            "source": candidate_source,
             "seed_book": seed_book_record,
         }
 
@@ -832,6 +840,11 @@ def generate_query_set(
 
     if leakage_rejected:
         print(f"  Rejected {leakage_rejected} queries for max_verbatim_ngram >= {max_verbatim_ngram}")
+
+    if api_failures:
+        n_fallback = sum(1 for q in queries if q.get("source") == "template_fallback")
+        print(f"  WARNING: {api_failures} API call(s) failed; "
+              f"{n_fallback} kept query/queries came from template fallback")
 
     return queries
 
