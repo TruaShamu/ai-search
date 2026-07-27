@@ -884,13 +884,26 @@ def krippendorffs_alpha(labels_a: list[int], labels_b: list[int]) -> float:
 # ---------------------------------------------------------------------------
 # Agreement between two judgment sets
 # ---------------------------------------------------------------------------
+def _read_grade(entry: dict) -> Optional[int]:
+    """Read a grade from either the `grade` or `relevance` field.
+
+    The self-consistency judge in this module writes `grade`; the pooled
+    judge in scripts/eval_redesign.py writes `relevance`. Accept both so
+    the two can be compared without a conversion step.
+    """
+    g = entry.get("grade")
+    if g is None:
+        g = entry.get("relevance")
+    return g
+
+
 def compute_agreement(
     results_a: dict[str, list[dict]],
     results_b: dict[str, list[dict]],
 ) -> dict:
     """Compute inter-rater agreement between two judgment sets.
 
-    Each set is {query: [{work_id, grade, ...}, ...]}.
+    Each set is {query: [{work_id, grade|relevance, ...}, ...]}.
     Returns dict with kappa, alpha, and per-grade confusion.
     """
     # Build aligned label lists
@@ -900,9 +913,13 @@ def compute_agreement(
     for query in results_a:
         if query not in results_b:
             continue
-        map_b = {j["work_id"]: j["grade"] for j in results_b[query] if j.get("grade") is not None}
+        map_b = {
+            j["work_id"]: _read_grade(j)
+            for j in results_b[query]
+            if _read_grade(j) is not None
+        }
         for j in results_a[query]:
-            ga = j.get("grade")
+            ga = _read_grade(j)
             gb = map_b.get(j.get("work_id"))
             if ga is not None and gb is not None:
                 labels_a.append(ga)
