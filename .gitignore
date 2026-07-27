@@ -51,3 +51,5 @@ data/eval/v2/*
 !data/eval/v2/queries_grounded.json
 !data/eval/v2/judgments.json
 !data/eval/v2/results.json
+!data/eval/v2/human.json
+!data/eval/v2/human.meta.json
