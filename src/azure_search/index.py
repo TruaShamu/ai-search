@@ -1,9 +1,7 @@
 """Create and manage Azure AI Search index for book search."""
 
 import os
-import json
 import requests
-from pathlib import Path
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -161,4 +159,4 @@ if __name__ == "__main__":
         delete_index()
         create_index()
     else:
-        print(f"Usage: python -m src.azure_search.index [create|delete|stats|recreate]")
+        print("Usage: python -m src.azure_search.index [create|delete|stats|recreate]")

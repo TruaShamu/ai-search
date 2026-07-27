@@ -14,7 +14,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from transformers import AutoTokenizer, AutoModel
+from transformers import AutoTokenizer
 
 
 MODELS_DIR = Path("data/models")
@@ -246,7 +246,7 @@ def benchmark(model_type: str = "reranker"):
         onnx_time = (time.time() - start) / 10 * 1000
 
         print(f"\n{'='*50}")
-        print(f"Reranker Benchmark (25 candidates)")
+        print("Reranker Benchmark (25 candidates)")
         print(f"{'='*50}")
         print(f"PyTorch:  {pt_time:.1f} ms")
         print(f"ONNX:     {onnx_time:.1f} ms")
@@ -288,7 +288,7 @@ def benchmark(model_type: str = "reranker"):
         onnx_time = (time.time() - start) / 5 * 1000
 
         print(f"\n{'='*50}")
-        print(f"Embedding Benchmark (10 texts)")
+        print("Embedding Benchmark (10 texts)")
         print(f"{'='*50}")
         print(f"PyTorch (sentence-transformers):  {pt_time:.1f} ms")
         print(f"ONNX (raw inference only):        {onnx_time:.1f} ms")

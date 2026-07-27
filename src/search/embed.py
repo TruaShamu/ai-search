@@ -98,7 +98,7 @@ def embed_and_index(
     print(f"  Embeddings shape: {embeddings.shape}")
 
     # 5. Build FAISS index
-    print(f"\nBuilding FAISS index...")
+    print("\nBuilding FAISS index...")
     index = faiss.IndexFlatIP(dim)  # Inner product (cosine sim with normalized vecs)
     index.add(embeddings.astype(np.float32))
     print(f"  Index size: {index.ntotal:,} vectors")

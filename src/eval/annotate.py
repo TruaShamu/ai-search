@@ -7,7 +7,6 @@ This gives us broader coverage than manually pre-assigning specific work_ids.
 
 import json
 from pathlib import Path
-from collections import defaultdict
 
 from src.azure_search.search import HybridSearchEngine
 from src.eval.dataset import get_eval_queries, EvalQuery, RelevanceJudgment
@@ -127,7 +126,7 @@ def annotate_dataset(top_k: int = 10):
     # Stats
     total_judgments = sum(len(q.relevant) for q in annotated_queries)
     queries_with = sum(1 for q in annotated_queries if q.relevant)
-    print(f"\nAnnotation complete:")
+    print("\nAnnotation complete:")
     print(f"  Queries with judgments: {queries_with}/{len(annotated_queries)}")
     print(f"  Total judgments: {total_judgments}")
     print(f"  Saved to: {output_path}")

@@ -207,6 +207,7 @@ class QdrantSearch:
             "reranked": reranked,
             "latency_ms": round(total_latency, 1),
             "retrieval_latency_ms": retrieval_latency_ms,
+            "rerank_latency_ms": rerank_latency_ms,
         }
 
     def compare(self, query: str, top_k: int = 5) -> dict:

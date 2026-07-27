@@ -10,11 +10,10 @@ Usage:
 import argparse
 import json
 import random
-import time
 from pathlib import Path
 
-from src.eval.dataset import load_eval_dataset, EvalQuery
-from src.eval.metrics import compute_query_metrics, QueryMetrics
+from src.eval.dataset import load_eval_dataset
+from src.eval.metrics import compute_query_metrics
 from src.azure_search.search import HybridSearchEngine
 from src.query.spell import SpellCorrector
 
@@ -169,7 +168,7 @@ def run_spell_eval(verbose: bool = False):
     print(f"NDCG recovered: {(corrected_ndcg - typo_ndcg):.4f} of {(clean_ndcg - typo_ndcg):.4f} lost ({(corrected_ndcg - typo_ndcg) / max(clean_ndcg - typo_ndcg, 0.001) * 100:.0f}%)")
 
     if verbose:
-        print(f"\n--- Per-Query Details ---")
+        print("\n--- Per-Query Details ---")
         for i, c in enumerate(corrections):
             delta = corrected_metrics[i].ndcg - typo_metrics[i].ndcg
             marker = "✓" if c["exact_recovery"] else "~" if delta > 0 else "✗"

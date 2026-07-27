@@ -5,7 +5,6 @@ SymSpell uses symmetric delete algorithm — O(1) lookups after dictionary build
 """
 
 import os
-import json
 from pathlib import Path
 
 from symspellpy import SymSpell, Verbosity
@@ -95,7 +94,6 @@ def build_corpus_dictionary(output_path: Path = CORPUS_DICT_PATH):
     Extracts unique terms from titles, authors, and subjects.
     Each term gets frequency=1000 (high enough to prefer over generic English).
     """
-    from src.eval.dataset import load_eval_dataset
     import requests
 
     # Pull terms from Azure AI Search index

@@ -1,0 +1,38 @@
+[
+  {
+    "strategy": "keyword",
+    "queries_evaluated": 30,
+    "mrr_at_10": 0.6622,
+    "ndcg_at_10": 0.3536,
+    "recall_at_10": 0.2819,
+    "precision_at_10": 0.3067,
+    "avg_latency_ms": 73.3
+  },
+  {
+    "strategy": "vector",
+    "queries_evaluated": 30,
+    "mrr_at_10": 0.6247,
+    "ndcg_at_10": 0.2952,
+    "recall_at_10": 0.2053,
+    "precision_at_10": 0.24,
+    "avg_latency_ms": 44.6
+  },
+  {
+    "strategy": "hybrid",
+    "queries_evaluated": 30,
+    "mrr_at_10": 0.665,
+    "ndcg_at_10": 0.3853,
+    "recall_at_10": 0.3056,
+    "precision_at_10": 0.34,
+    "avg_latency_ms": 75.9
+  },
+  {
+    "strategy": "hybrid+rerank",
+    "queries_evaluated": 30,
+    "mrr_at_10": 0.6112,
+    "ndcg_at_10": 0.37,
+    "recall_at_10": 0.2726,
+    "precision_at_10": 0.31,
+    "avg_latency_ms": 4339.8
+  }
+]

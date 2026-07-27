@@ -4,7 +4,6 @@ Uses hybrid search to find relevant books, then generates a natural language
 answer grounded in those sources with hallucination guardrails.
 """
 
-import json
 import os
 import re
 import time

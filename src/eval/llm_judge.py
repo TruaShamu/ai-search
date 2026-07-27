@@ -293,7 +293,7 @@ def run_llm_judging(dry_run: bool = False, compare_heuristic: bool = False):
     if compare_heuristic and agreement_stats["agree"] + agreement_stats["disagree"] > 0:
         total = agreement_stats["agree"] + agreement_stats["disagree"]
         pct = agreement_stats["agree"] / total * 100
-        print(f"\n  Heuristic comparison:")
+        print("\n  Heuristic comparison:")
         print(f"    Agreement:        {pct:.0f}% ({agreement_stats['agree']}/{total})")
         print(f"    LLM rated higher: {agreement_stats['llm_higher']} (semantic relevance missed by heuristic)")
         print(f"    LLM rated lower:  {agreement_stats['llm_lower']} (keyword match != relevance)")

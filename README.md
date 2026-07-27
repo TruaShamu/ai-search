@@ -1,6 +1,6 @@
 # 📚 BookSearch — Hybrid Semantic Search Engine
 
-A production-grade hybrid search engine over 26,500+ books from the OpenLibrary catalog. Combines TF-IDF sparse retrieval with dense vector search (nomic-embed-text-v1.5) using Reciprocal Rank Fusion, plus an optional cross-encoder reranker — all self-hosted on Qdrant.
+A hybrid search engine over 26,500+ books from the OpenLibrary catalog. Combines TF-IDF sparse retrieval with dense vector search (nomic-embed-text-v1.5) using Reciprocal Rank Fusion, plus an optional cross-encoder reranker — all self-hosted on Qdrant and deployed to Azure Container Apps with full CI/CD.
 
 Built as a portfolio piece demonstrating **backend + ML infrastructure engineering**.
 
@@ -121,35 +121,34 @@ sequenceDiagram
 ## Features
 
 - **Hybrid Search (RRF)** — Reciprocal Rank Fusion of TF-IDF + dense vectors. Best of both worlds: keyword precision + semantic understanding.
-- **Cross-Encoder Reranker** — Optional two-stage retrieval. ONNX-optimized for CPU (~600ms for 50 candidates). Promotes semantically relevant results (e.g., "love story tragedy" → Romeo & Juliet #1).
+- **Cross-Encoder Reranker** — Optional two-stage retrieval. ONNX-optimized for CPU. Available as a toggle — see eval findings below on when it helps vs. hurts.
 - **Query Understanding** — Spell correction (SymSpell), intent detection, query-adaptive mode routing.
 - **RAG with Guardrails** — Natural language Q&A grounded in retrieved books. Citation validation prevents hallucinated titles.
 - **Compare View** — Side-by-side 3-column comparison of keyword vs. hybrid vs. vector results.
-- **Evaluation Framework** — MRR@10, NDCG@10, Recall@10 across multiple query categories with synthetic + LLM-judged relevance.
+- **Evaluation Framework** — Reproducible eval harness computing MRR@10, NDCG@10, Recall@10 against a 30-query labeled dataset. Run via `scripts/eval_via_api.py`.
 
 ---
 
 ## Eval Results
 
-### Hybrid vs. Vector vs. Keyword (26.5K corpus)
+Evaluated on a 30-query labeled dataset (LLM-judged relevance, graded 0/1/2) against the live production deployment. Reproducible via `python scripts/eval_via_api.py`.
 
-| Mode | Hit@10 | MRR@10 | Avg Latency |
-|------|--------|--------|-------------|
-| Keyword (TF-IDF) | 33.3% | 0.173 | 44ms |
-| Vector (nomic-256d) | 24.2% | 0.150 | 315ms |
-| **Hybrid (RRF)** | **33.3%** | **0.208** | 278ms |
+### Retrieval Quality (k=10, 26.5K corpus)
 
-### Reranker Impact (natural-language queries)
+| Mode | MRR@10 | NDCG@10 | Recall@10 | Avg Latency |
+|------|--------|---------|-----------|-------------|
+| Keyword (TF-IDF) | 0.662 | 0.354 | 0.282 | 73ms |
+| Vector (nomic-256d) | 0.625 | 0.295 | 0.205 | 45ms |
+| **Hybrid (RRF)** | **0.665** | **0.385** | **0.306** | 76ms |
+| Hybrid + Rerank | 0.611 | 0.370 | 0.273 | 4340ms |
 
-| Query | Without Reranker | With Reranker |
-|-------|-----------------|---------------|
-| "love story tragedy" | Love Stories, In Short | **Romeo & Juliet**, Carmen |
-| "scottish highland romance" | Highland hero | **Seducing the Highlander** |
-| "cooking recipes food" | EveryGirl's guide | **One pot**, Chinese Cookery |
-| "computer programming" | BASIC is child's play | **Python for Software Design** |
-| "ancient Rome historical fiction" | Enemy of Rome, Top 10 Rome | **Child of the Sun**, SPQR |
+### Key Findings
 
-Reranker improves result quality on 9/10 test queries at ~600ms additional latency.
+- **RRF fusion (hybrid) is the clear winner** — +6% NDCG and +10% recall over keyword-only, with negligible latency cost (76ms vs 73ms).
+- **Cross-encoder reranking hurts on this dataset.** MRR drops 0.665 → 0.611, recall drops 0.306 → 0.273, and latency balloons to 4.3s. The likely cause: `ms-marco-MiniLM-L-6-v2` was trained on web passage retrieval, not book metadata. Short book titles + subjects don't give the cross-encoder enough signal to improve over RRF's rank fusion.
+- **Vector alone underperforms keyword** — at this corpus size, TF-IDF captures title/author matches that dense embeddings miss. Hybrid is needed to combine both strengths.
+
+> The reranker still adds value for exploratory/natural-language queries where the user's intent doesn't match exact keywords (e.g., "love story tragedy" → Romeo & Juliet rises from rank 4 to rank 1). It's exposed as an opt-in toggle in the UI.
 
 ---
 
@@ -230,7 +229,7 @@ data/
 | **Qdrant over Azure AI Search** | 15x faster (24ms vs 370ms), no tier limits, built-in RRF, self-hosted |
 | **TF-IDF over BM25** | Sufficient at 26K scale; hybrid compensates. BM25's length norm matters more at >100K docs |
 | **Matryoshka dim=256** | nomic-embed-text-v1.5 trained checkpoints: 768/512/256/128/64. 256 balances quality vs. index size |
-| **Reranker opt-in** | Adds ~600ms; quality improvement is clear but latency tradeoff should be user's choice |
+| **Reranker opt-in** | Adds latency; helps exploratory queries but hurts on keyword-heavy ones (see eval). User's choice via toggle |
 | **Goodreads augmentation** | OpenLibrary lacks descriptions for 95% of books. Title-match join doubled the corpus |
 | **ONNX reranker** | 3.7x faster than PyTorch on CPU (23ms vs 86ms for 4 candidates) |
 | **Cloud embedding (ACI)** | Local GPU unavailable; 4-CPU ACI with 16GB RAM handles 26K docs in ~3h |

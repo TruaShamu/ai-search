@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
     result = reranker.rerank(query, candidates, top_k=4)
     print(f"Latency: {result['latency_ms']}ms")
-    print(f"\nReranked results:")
+    print("\nReranked results:")
     for r in result["results"]:
         change = r["rank_change"]
         arrow = f"+{change}" if change > 0 else str(change) if change < 0 else "="

@@ -11,11 +11,10 @@ Usage:
 
 import argparse
 import json
-import time
 from pathlib import Path
 
-from src.eval.dataset import load_eval_dataset, EvalQuery
-from src.eval.metrics import compute_query_metrics, QueryMetrics
+from src.eval.dataset import load_eval_dataset
+from src.eval.metrics import compute_query_metrics
 from src.azure_search.search import HybridSearchEngine
 from src.query.expansion import QueryExpander
 
@@ -116,7 +115,7 @@ def run_expansion_eval(verbose: bool = False):
     print(f"\nImproved: {improved}/{n} | Neutral: {neutral}/{n} | Regressed: {regressed}/{n}")
 
     if verbose:
-        print(f"\n--- Per-Query Deltas (sorted by impact) ---")
+        print("\n--- Per-Query Deltas (sorted by impact) ---")
         sorted_exp = sorted(expansions, key=lambda x: x["delta"], reverse=True)
         for e in sorted_exp:
             if abs(e["delta"]) > 0.001:

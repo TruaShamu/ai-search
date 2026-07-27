@@ -24,7 +24,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "*"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://black-grass-0df1c7a0f.7.azurestaticapps.net",
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -117,30 +121,47 @@ def search(
     # Fetch more candidates if reranking (need a larger pool to reorder)
     retrieve_k = top_k * 5 if rerank else top_k
 
-    # Azure AI Search backend
+    # Qdrant or Azure AI Search backend (both have .compare)
     if hasattr(engine, "search") and hasattr(engine, "compare"):
-        result = engine.search(
-            query=search_query,
-            top_k=retrieve_k,
-            mode=search_mode,
-            year_min=year_min,
-            year_max=year_max,
-            tier=tier,
-        )
+        # Qdrant handles reranking internally
+        if hasattr(engine, "collection"):
+            result = engine.search(
+                query=search_query,
+                top_k=top_k,
+                mode=search_mode,
+                rerank=rerank,
+            )
 
-        if "error" in result:
-            return JSONResponse(content=result, status_code=502)
+            if "error" in result:
+                return JSONResponse(content=result, status_code=502)
 
-        retrieval_latency = result["latency_ms"]
-        results = result["results"]
+            retrieval_latency = result["latency_ms"]
+            results = result["results"]
+            rerank_latency = result.get("rerank_latency_ms", 0)
 
-        # Apply reranking if requested
-        rerank_latency = 0
-        if rerank and results:
-            reranker = get_reranker()
-            rerank_result = reranker.rerank(query=q, candidates=results, top_k=top_k)
-            results = rerank_result["results"]
-            rerank_latency = rerank_result["latency_ms"]
+        # Azure AI Search — rerank externally
+        else:
+            result = engine.search(
+                query=search_query,
+                top_k=retrieve_k,
+                mode=search_mode,
+                year_min=year_min,
+                year_max=year_max,
+                tier=tier,
+            )
+
+            if "error" in result:
+                return JSONResponse(content=result, status_code=502)
+
+            retrieval_latency = result["latency_ms"]
+            results = result["results"]
+
+            rerank_latency = 0
+            if rerank and results:
+                reranker = get_reranker()
+                rerank_result = reranker.rerank(query=q, candidates=results, top_k=top_k)
+                results = rerank_result["results"]
+                rerank_latency = rerank_result["latency_ms"]
 
         response = {
             "query": q,

@@ -4,17 +4,16 @@ Usage:
     python -m src.eval.run                    # Run full eval
     python -m src.eval.run --strategy hybrid  # Single strategy
     python -m src.eval.run --verbose          # Show per-query results
+    python -m src.eval.run --qdrant-url https://... # Target specific Qdrant
 """
 
 import argparse
-import time
 import json
 from dataclasses import asdict
 from pathlib import Path
 
-from src.eval.dataset import get_eval_queries, EvalQuery
+from src.eval.dataset import get_eval_queries, EvalQuery, load_eval_dataset
 from src.eval.metrics import compute_query_metrics, QueryMetrics
-from src.azure_search.search import HybridSearchEngine
 
 
 STRATEGIES = ["keyword", "vector", "hybrid"]
@@ -23,35 +22,16 @@ K = 10
 
 def run_query(engine, query: str, mode: str, top_k: int = K, rerank: bool = False):
     """Run a single query and return list of retrieved doc IDs."""
-    result = engine.search(query=query, top_k=top_k if not rerank else top_k * 5, mode=mode)
+    result = engine.search(query=query, top_k=top_k, mode=mode, rerank=rerank)
 
     if "error" in result:
         print(f"  ERROR: {result['error']}")
         return [], 0
 
-    retrieved_ids = [r["id"] for r in result["results"]]
+    retrieved_ids = [r["work_id"].replace("/works/", "") for r in result["results"]]
     latency = result["latency_ms"]
 
-    if rerank:
-        from src.reranker.onnx_reranker import OnnxReranker
-        reranker = get_reranker()
-        rerank_result = reranker.rerank(query=query, candidates=result["results"], top_k=top_k)
-        retrieved_ids = [r["id"] for r in rerank_result["results"]]
-        latency += rerank_result["latency_ms"]
-
     return retrieved_ids, latency
-
-
-# Cache reranker instance
-_reranker = None
-
-
-def get_reranker():
-    global _reranker
-    if _reranker is None:
-        from src.reranker.onnx_reranker import OnnxReranker
-        _reranker = OnnxReranker()
-    return _reranker
 
 
 def evaluate_strategy(
@@ -113,13 +93,19 @@ def evaluate_strategy(
     }
 
 
-def run_eval(strategies: list[str] = None, rerank: bool = True, verbose: bool = False, annotated: bool = True, llm_judged: bool = False):
+def run_eval(
+    strategies: list[str] = None,
+    rerank: bool = True,
+    verbose: bool = False,
+    annotated: bool = True,
+    llm_judged: bool = False,
+    qdrant_url: str = None,
+):
     """Run full evaluation across all strategies."""
     if strategies is None:
         strategies = STRATEGIES
 
     # Choose judgment source
-    from src.eval.dataset import load_eval_dataset
     if llm_judged:
         judged_path = Path("data/eval/queries_llm_judged.json")
         if judged_path.exists():
@@ -143,7 +129,13 @@ def run_eval(strategies: list[str] = None, rerank: bool = True, verbose: bool = 
     print(f"k = {K}")
     print()
 
-    engine = HybridSearchEngine()
+    # Use QdrantSearch backend
+    from src.qdrant.client import QdrantSearch
+    kwargs = {}
+    if qdrant_url:
+        kwargs["url"] = qdrant_url
+    engine = QdrantSearch(**kwargs)
+
     results = []
 
     for mode in strategies:
@@ -203,7 +195,14 @@ if __name__ == "__main__":
     parser.add_argument("--no-rerank", action="store_true", help="Skip reranker evaluation")
     parser.add_argument("--verbose", action="store_true", help="Show per-query details")
     parser.add_argument("--llm-judged", action="store_true", help="Use LLM-as-judge annotations")
+    parser.add_argument("--qdrant-url", type=str, help="Qdrant URL (default: QDRANT_URL env or localhost:6333)")
     args = parser.parse_args()
 
     strategies = [args.strategy] if args.strategy else None
-    run_eval(strategies=strategies, rerank=not args.no_rerank, verbose=args.verbose, llm_judged=args.llm_judged)
+    run_eval(
+        strategies=strategies,
+        rerank=not args.no_rerank,
+        verbose=args.verbose,
+        llm_judged=args.llm_judged,
+        qdrant_url=args.qdrant_url,
+    )

@@ -258,11 +258,11 @@ def load_eval_dataset(path: Path = EVAL_DATA_PATH) -> list[EvalQuery]:
 
 if __name__ == "__main__":
     save_eval_dataset()
-    print(f"\nDataset stats:")
+    print("\nDataset stats:")
     print(f"  Total queries: {len(EVAL_QUERIES)}")
     print(f"  With judgments: {sum(1 for q in EVAL_QUERIES if q.relevant)}")
     print(f"  Without judgments (need manual): {sum(1 for q in EVAL_QUERIES if not q.relevant)}")
-    print(f"\n  Categories:")
+    print("\n  Categories:")
     from collections import Counter
     cats = Counter(q.category for q in EVAL_QUERIES)
     for cat, count in cats.most_common():

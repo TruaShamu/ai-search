@@ -5,8 +5,6 @@ Reads works + authors parquet from HuggingFace cache, joins author names,
 cleans text, assigns quality tiers, and exports to JSONL.
 """
 
-import json
-import sys
 import time
 from pathlib import Path
 
