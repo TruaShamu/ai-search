@@ -1,0 +1,6 @@
+{
+  "sampling_strategy": "random",
+  "n_sampled": 40,
+  "n_labeled": 40,
+  "note": "Representative random sample of judged pairs."
+}

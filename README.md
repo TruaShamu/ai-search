@@ -125,13 +125,15 @@ sequenceDiagram
 - **Query Understanding** — Spell correction (SymSpell), intent detection, query-adaptive mode routing.
 - **RAG with Guardrails** — Natural language Q&A grounded in retrieved books. Citation validation prevents hallucinated titles.
 - **Compare View** — Side-by-side 3-column comparison of keyword vs. hybrid vs. vector results.
-- **Evaluation Framework** — Two independent harnesses: a graded relevance eval with paired bootstrap confidence intervals (MRR@10, NDCG@10, Recall@10) via `scripts/eval_redesign.py`, and a corpus-sampled known-item accuracy gate via `python -m src.eval.known_item_eval`. Limitations are documented rather than glossed over.
+- **Evaluation Framework** — Two independent harnesses: a graded relevance eval with paired bootstrap confidence intervals (MRR@10, NDCG@10, Recall@10) via `scripts/eval_redesign.py`, and a corpus-sampled known-item accuracy gate via `python -m src.eval.known_item_eval`. The LLM judge is itself validated against **89 hand-labeled pairs** (`python -m src.eval.label`), which is how a corpus data bug that the automated eval was structurally blind to got caught. Limitations are documented rather than glossed over.
 
 ---
 
 ## Eval Results
 
 Evaluated on **100 corpus-grounded queries** against the live production deployment, with **5,000 query–document pairs** LLM-judged on a graded 0/1/2 scale and **zero unjudged pairs**. Confidence intervals are 1,000-replicate percentile bootstraps; mode comparisons use a **paired** bootstrap on per-query deltas. Reproducible via `python scripts/eval_redesign.py --step all`.
+
+> **These are v1-corpus results.** They are honest measurements of the system as deployed when taken, but the corpus they ran against has a documented description-provenance defect — see [Corpus Provenance](#corpus-provenance-and-a-data-bug-the-eval-could-not-see) below before quoting any absolute number. The relative comparisons between modes are unaffected.
 
 Six queries (all `author`) were dropped for having no relevant document in the pool, leaving **n=94** evaluated across every mode.
 
@@ -145,6 +147,29 @@ Six queries (all `author`) were dropped for having no relevant document in the p
 | **Hybrid + Rerank** | **0.985 [0.962, 1.000]** | **0.801 [0.769, 0.835]** | **0.583 [0.525, 0.641]** | 3,268ms |
 
 Recall@10 is bounded above by **0.794** on average, because a pool can hold more than ten relevant documents while only ten can be returned.
+
+### Threshold Sensitivity — What 0.985 Actually Means
+
+The table above counts a document as relevant at **grade ≥ 1** ("partially relevant" or better). On this pool that is a lenient bar: **11.95 of 50** pooled documents clear it, so simply shuffling the pool scores **0.376**. Quoting 0.985 without that denominator would be the most misleading number in this README.
+
+Recomputing every mode under a **strict** threshold that counts only grade-2 ("fully relevant") documents — same 94 queries, same ranked lists, same judgments:
+
+| Mode | MRR@10 (grade ≥ 1) | MRR@10 (grade = 2) | Recall@10 (grade = 2) |
+|------|--------------------|--------------------|-----------------------|
+| *Random shuffle* | *0.376* | *0.111* | — |
+| Keyword (TF-IDF) | 0.851 | 0.659 [0.568, 0.746] | 0.593 |
+| Vector (nomic-256d) | 0.896 | 0.782 [0.704, 0.858] | 0.739 |
+| Hybrid (RRF) | 0.911 | 0.776 [0.703, 0.849] | 0.743 |
+| **Hybrid + Rerank** | **0.985** | **0.881 [0.815, 0.940]** | **0.818** |
+
+Two things survive the harder bar:
+
+- **The result holds.** 0.881 against a 0.111 random baseline is a **7.9×** lift, which is a far more meaningful claim than 0.985 against 0.376.
+- **Reranking looks better under scrutiny, not worse.** Its margin over hybrid *grows* from **+0.074** at the lenient threshold to **+0.105** at the strict one. The reranker is not just pulling *something* relevant to rank 1; it disproportionately pulls the *best* document to rank 1 — precisely what a lenient MRR is blind to.
+
+Only 87 of the 94 queries have any grade-2 document pooled; the other 7 score zero for every mode, which depresses all four columns equally and leaves the comparison intact. The random baseline is Monte Carlo over actual per-query pool sizes and relevant counts, and agrees with the closed-form expectation to within 0.002. Reproduce with `python scripts/threshold_sensitivity.py --offline`.
+
+The lenient column here was re-fetched from the live API independently of the headline table and reproduces it to within 0.001 on every mode, which doubles as a reproducibility check on the original run. The raw ranked lists are committed to `data/eval/v2/rankings_v1.json` so these numbers remain verifiable after the corpus changes.
 
 ### Paired Comparisons
 
@@ -199,7 +224,7 @@ Degradation is graceful rather than catastrophic, and hybrid has the best top-5 
 ### Key Findings
 
 - **Hybrid beats keyword, and this time the data supports it.** An earlier version of this eval put the gap at 0.003 MRR against a standard error near 0.07 — indistinguishable from noise. That result was an artifact: the query set had been generated by an LLM with no view of the corpus, producing canonical titles (*1984*, *The Great Gatsby*) against an index of mostly obscure OpenLibrary works, and carrying no gold documents. On corpus-grounded queries the margin is **+0.111 NDCG [+0.079, +0.146]**.
-- **Cross-encoder reranking helps, and the earlier finding that it hurt was caused by a bug in my own code.** `onnx_reranker.py` truncated every passage at `[:300]` characters, discarding **60.2% of all description text across 62% of documents** (median description length is 477 characters, 90th percentile 1,289). The cross-encoder was scoring fragments while RRF fused the full index. With truncation fixed, reranking gains **+0.097 NDCG [+0.060, +0.135]** over hybrid and lifts MRR to **0.985** — it puts a relevant book first almost every time.
+- **Cross-encoder reranking helps, and the earlier finding that it hurt was caused by a bug in my own code.** `onnx_reranker.py` truncated every passage at `[:300]` characters, discarding **60.2% of all description text across 62% of documents** (median description length is 477 characters, 90th percentile 1,289). The cross-encoder was scoring fragments while RRF fused the full index. With truncation fixed, reranking gains **+0.097 NDCG [+0.060, +0.135]** over hybrid and lifts MRR to **0.985** — and the gain *grows* to +0.105 MRR under the strict grade-2 threshold, so it is promoting the best document rather than merely a relevant one.
 - **Fixing the quality bug exposed a capacity bug that had been hiding behind it.** Full-length passages take the cross-encoder from ~93 tokens to ~335. On the original 1 vCPU container that pushed `rerank=true` past the ingress timeout: 3 of 6 requests failed and one took 98 seconds. The API now runs on 2 vCPU with a readiness probe, where reranking is 10/10 successful at a 3.3s median. Truncation had been masking the fact that the container could not afford the work.
 - **Dense retrieval is stronger than lexical here, and both evals now agree.** Vector beats keyword by +0.105 NDCG in the graded eval and 100% vs 74% on known-item. The previous claim that "vector alone underperforms keyword" came from a pool built from keyword-friendly candidates that stored no negatives, so dense retrieval was penalized for surfacing books the pool had never judged.
 
@@ -209,32 +234,35 @@ Degradation is graceful rather than catastrophic, and hybrid has the best top-5 
 
 Stated plainly, because they bound what the tables above can support:
 
-- **The judge is unvalidated by a human.** Relevance labels come from a zero-shot `gpt-5.4-nano` judge, and the richer calibrated judge in `src/eval/judge.py` is not what produced them — `scripts/eval_redesign.py` uses its own simpler prompt. Closing this gap is a single command: `python -m src.eval.label` samples judged pairs, hides the machine's grade, and collects your own labels, then `python -m src.eval.judge --agreement data/eval/v2/judgments.json data/eval/v2/human.json` reports Cohen's kappa and Krippendorff's alpha against them. **Until that has been run, every number above rests on one model's definition of relevance.**
-- **Query generation and judging share a model family,** so blind spots may be correlated rather than independent. This bears most directly on the reranking result: a cross-encoder and an LLM judge may both reward surface semantic similarity, which would inflate the measured gain. **The reranking number is the one most in need of human validation.**
+- **The judge has been validated against human labels, and the agreement is only fair.** I hand-labeled **89 pairs** across two rounds with the machine's grade hidden (`python -m src.eval.label`). On the **representative random sample (n=40)** — the round whose kappa is directly interpretable — Cohen's kappa is **0.314 [0.056, 0.562]** at 65% raw agreement. A separate stratified round (n=49) scores 0.542, but stratified sampling over-represents rare grades and inflates kappa; post-stratifying it back to true prevalence gives **0.308**, independently reproducing the random round's 0.314. That is **"fair" agreement, not "substantial."** Every graded number above rests on labels a human agrees with about two-thirds of the time. Reproduce with `python -m src.eval.judge --agreement data/eval/v2/judgments.json data/eval/v2/human_random.json`.
+- **The judge errs strict, not lenient.** Across all 89 human labels, the human graded *higher* than the judge 24 times and *lower* 5 times. Whatever else the labels get wrong, they are more likely to understate this system than to flatter it.
+- **Query generation and judging share a model family,** so blind spots may be correlated rather than independent. The specific concern was that a cross-encoder and an LLM judge both reward surface semantic similarity, which would inflate the measured reranking gain. The human labels are evidence against that: of the **20** pairs the judge graded 2, the human called **zero** irrelevant (18 exact agreements, 2 downgraded to "partial"). The judge's top grade does not look like a false-positive channel — though n=20 is small enough that this argues against the worry rather than closing it.
 - **Per-category results are underpowered.** Four of five categories have n < 30 and are flagged accordingly. Only `genre_topic` (n=32) is individually well-powered.
 - **Recall is capped by construction** at a mean ceiling of 0.794, so recall figures are not comparable to systems evaluated with complete relevance judgments.
 - **Documents outside the judged pool count as non-relevant.** This is standard for pooled evaluation, and was verified not to penalize reranking: across sampled queries, **0 of 120** reranked top-10 documents fell outside the pool.
 - **Six author queries were dropped** for having no relevant document, which slightly biases that category toward the queries the system could already answer.
+- **Labels come from a zero-shot `gpt-5.4-nano` judge**, not the richer calibrated judge in `src/eval/judge.py` — `scripts/eval_redesign.py` uses its own simpler prompt.
 
-A second, independent eval: sample a book from the index, search its exact title, check whether that book comes back first. No LLM judge, no pooling, no subjective grading — the answer is either right or wrong, and anyone can verify it by hand in a few seconds.
+### Corpus Provenance, and a Data Bug the Eval Could Not See
 
-| Mode | Accuracy@1 |
-|------|-----------|
-| **Vector (nomic-256d)** | **100%** |
-| Hybrid (RRF) | 94% |
-| Keyword (TF-IDF) | 74% |
+Everything above was measured against **v1 of the corpus**, which has a data-quality defect worth stating in full. It bounds how the tables should be read, and finding it was the most useful thing the human labeling round did.
 
-Keyword's failures are concentrated, not random: **81%** accuracy on distinctive titles vs **38%** on titles made of common words. Searching "Crazy little thing" by keyword returns *Serial*, *Crazy Horse*, *Crazy Horse* — the exact match never surfaces. This is inherent to lexical scoring, not an indexing defect.
+**Where it came from.** All 26,519 books are OpenLibrary records, but only **5.4%** of OpenLibrary works (13,431 of 250,811 scanned) carry a description — and description is the highest-signal field for semantic retrieval. To raise coverage, an augmentation step joined an external Goodreads description dataset onto the corpus. That dataset (`booksouls/goodreads-book-descriptions`, 1.02M rows) ships **only `title` and `description`** — there is no author column — so normalized title was the only join key available. On a title collision, `choose_better_description` kept the *longest* candidate. That fails **open**: an ambiguous match yields a confident-looking wrong answer instead of no answer.
 
-The same harness also runs 29 **hard variants** — typos, partial titles, and title-plus-author forms — as a robustness check:
+**What it costs.** Measured directly from the index:
 
-| Mode | Acc@1 | Acc@5 |
-|------|-------|-------|
-| Hybrid (RRF) | 72% | **93%** |
-| Vector | 79% | 90% |
-| Keyword (TF-IDF) | 66% | 86% |
+| Description source | Records | Duplicate-description rate |
+|---|---|---|
+| OpenLibrary (native, joined on work ID) | 13,431 | **0.5%** |
+| Goodreads (augmented, joined on title) | 13,088 | **26.5%** |
 
-Degradation is graceful rather than catastrophic, and hybrid has the best top-5 recovery. This eval doubles as a CI regression gate: it fails the build if hybrid accuracy drops more than 5 points below the recorded baseline (`python -m src.eval.known_item_eval`).
+**3,383 records — 12.8% of the index — provably carry a description belonging to a different author's book.** *The Ugly Duckling* by Hans Christian Andersen is described as a thriller about an assassination attempt on a financier's wife. **12.8% is a floor, not an estimate:** it counts only collisions where two books share one description, which is the sole signature detectable from the data. A further 9,743 Goodreads-sourced records matched a unique title and cannot be verified either way.
+
+**Why the eval scored it as fine.** The eval is a closed loop. A wrong description is embedded, retrieved for the query it lexically matches, and then read by the LLM judge — which grades it relevant, because *against the text it was shown*, it is. Mean grades by provenance are statistically indistinguishable (**0.268** OpenLibrary vs **0.263** Goodreads). More LLM judging would never have surfaced this; only a human comparing a description against its own title could, which is exactly how it was found. **583 of 5,000 judged pairs (11.7%) used a provably corrupted description.**
+
+**Why the fix is a migration and not a patch.** Failing closed on collisions is the obvious repair, and it is insufficient: Goodreads holds only one *Ugly Duckling*, so Andersen's title matched 1:1 with no collision to detect. This is a **cross-corpus** mismatch, and with no author or ISBN in the source it is unfixable in principle. The corpus is therefore being migrated to a single-source dataset carrying title, author, and description in the same record, which makes this class of error **impossible to represent** rather than merely less likely.
+
+> **Read the tables above as v1 results.** They are honest measurements of the system as deployed when they were taken, and the retrieval comparisons between modes are unaffected — every mode searched the identical index, so a shared data defect cannot favor one over another. What the defect does undermine is the absolute claim that a top-ranked result is the *right book*. That claim is exactly what the migration is meant to restore.
 
 ---
 

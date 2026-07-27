@@ -53,3 +53,12 @@ data/eval/v2/*
 !data/eval/v2/results.json
 !data/eval/v2/human.json
 !data/eval/v2/human.meta.json
+!data/eval/v2/human_random.json
+!data/eval/v2/human_random.meta.json
+
+# The ranked lists each mode produced are the one part of the eval that cannot
+# be recovered offline: the pool and the judgments are stored, but the ordering
+# is not, and it disappears the moment the corpus is reindexed. Committing it
+# (107KB) keeps the v1 threshold-sensitivity numbers verifiable afterwards.
+!data/eval/v2/rankings_v1.json
+!data/eval/v2/threshold_sensitivity.json

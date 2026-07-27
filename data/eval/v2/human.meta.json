@@ -1,0 +1,6 @@
+{
+  "sampling_strategy": "stratified",
+  "n_sampled": 50,
+  "n_labeled": 49,
+  "note": "Stratified sampling over-represents rare grades. Cohen's kappa depends on class prevalence, so a kappa computed on a stratified sample is not directly comparable to one from a representative sample. Report the strategy alongside it."
+}
