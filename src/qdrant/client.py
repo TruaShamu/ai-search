@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 import pickle
+import threading
 import time
 from pathlib import Path
 
@@ -9,6 +10,8 @@ import numpy as np
 from dotenv import load_dotenv
 from qdrant_client import QdrantClient, models
 from sentence_transformers import SentenceTransformer
+
+from src.reranker.config import rerank_fetch_k
 
 load_dotenv()
 
@@ -18,6 +21,8 @@ DEFAULT_MODEL_NAME = "nomic-ai/nomic-embed-text-v1.5"
 DEFAULT_DIM = 256
 INDEX_DIR = Path(__file__).resolve().parents[2] / "data" / "index"
 VECTORIZER_PATH = INDEX_DIR / "tfidf_vectorizer.pkl"
+
+_UNSET = object()  # sentinel for lazy reranker init
 
 
 class QdrantSearch:
@@ -59,13 +64,30 @@ class QdrantSearch:
         with VECTORIZER_PATH.open("rb") as f:
             self.vectorizer = pickle.load(f)
 
-        # Load reranker (optional — gracefully skip if ONNX model missing)
-        self._reranker = None
-        try:
-            from src.reranker.onnx_reranker import OnnxReranker
-            self._reranker = OnnxReranker()
-        except Exception as e:
-            print(f"Reranker not available: {e}")
+        self._reranker = _UNSET  # lazy — constructed on first access via .reranker
+        self._reranker_lock = threading.Lock()
+
+    @property
+    def reranker(self):
+        """Lazily load the reranker on first access (gracefully returns None)."""
+        if self._reranker is not _UNSET:
+            return self._reranker
+        with self._reranker_lock:
+            if self._reranker is _UNSET:
+                try:
+                    from src.reranker.onnx_reranker import OnnxReranker
+                    self._reranker = OnnxReranker()
+                except Exception as e:
+                    print(f"Reranker not available: {e}")
+                    self._reranker = None
+        return self._reranker
+
+    @property
+    def reranker_state(self) -> str:
+        """Report reranker status without triggering a load."""
+        if self._reranker is _UNSET:
+            return "not_loaded"
+        return "unavailable" if self._reranker is None else "loaded"
 
     def embed_query(self, query: str) -> list[float]:
         """Embed a query using Nomic's search_query prefix convention."""
@@ -142,7 +164,7 @@ class QdrantSearch:
         rerank: bool = False,
     ) -> dict:
         # Over-fetch when reranking to give the reranker more candidates
-        fetch_k = top_k * 5 if rerank and self._reranker else top_k
+        fetch_k = rerank_fetch_k(top_k) if rerank and self.reranker else top_k
         query_filter = self._build_filter(year_min=year_min, year_max=year_max, tier=tier)
         dense_vector = self.embed_query(query) if mode in {"vector", "hybrid"} else None
         sparse_vector = self._build_sparse_query(query) if mode in {"keyword", "hybrid"} else None
@@ -189,8 +211,8 @@ class QdrantSearch:
         # Rerank if requested and reranker is available
         reranked = False
         rerank_latency_ms = 0
-        if rerank and self._reranker and results:
-            rerank_result = self._reranker.rerank(query=query, candidates=results, top_k=top_k)
+        if rerank and self.reranker and results:
+            rerank_result = self.reranker.rerank(query=query, candidates=results, top_k=top_k)
             results = rerank_result["results"]
             rerank_latency_ms = rerank_result["latency_ms"]
             reranked = True

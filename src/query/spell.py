@@ -1,16 +1,12 @@
 """Spell correction using SymSpell with a domain-specific dictionary.
 
-Builds dictionary from book titles, authors, and subjects in the index.
+Builds dictionary from book titles, authors, and subjects in the corpus.
 SymSpell uses symmetric delete algorithm — O(1) lookups after dictionary build.
 """
 
-import os
 from pathlib import Path
 
 from symspellpy import SymSpell, Verbosity
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Default frequency dictionary (English)
 FREQ_DICT_PATH = Path(__file__).parent / "frequency_dictionary.txt"
@@ -91,55 +87,54 @@ class SpellCorrector:
 def build_corpus_dictionary(output_path: Path = CORPUS_DICT_PATH):
     """Build a domain dictionary from our book corpus for SymSpell.
 
+    Reads data/processed/books_augmented.jsonl directly — no network call needed.
+    Only includes the indexed books (those with a non-empty "description" field),
+    which matches the 26,519 books actually searchable in Qdrant.
+
     Extracts unique terms from titles, authors, and subjects.
     Each term gets frequency=1000 (high enough to prefer over generic English).
     """
-    import requests
+    import json
 
-    # Pull terms from Azure AI Search index
-    endpoint = os.environ["AZURE_SEARCH_ENDPOINT"]
-    api_key = os.environ["AZURE_SEARCH_ADMIN_KEY"]
-    index = os.environ.get("AZURE_SEARCH_INDEX", "books-v1")
+    jsonl_path = Path("data/processed/books_augmented.jsonl")
+    if not jsonl_path.exists():
+        raise FileNotFoundError(
+            f"Missing corpus file: {jsonl_path}. "
+            "Download or regenerate books_augmented.jsonl first."
+        )
 
-    headers = {"Content-Type": "application/json", "api-key": api_key}
-    url = f"{endpoint}/indexes/{index}/docs/search?api-version=2024-07-01"
+    all_terms: set[str] = set()
+    indexed_count = 0
 
-    # Fetch a sample of books to build vocab
-    all_terms = set()
-    batch_size = 1000
+    with open(jsonl_path, "r", encoding="utf-8") as f:
+        for line in f:
+            doc = json.loads(line)
+            # Only include indexed books (non-empty description)
+            if not doc.get("description"):
+                continue
+            indexed_count += 1
 
-    for skip in range(0, 13500, batch_size):
-        body = {
-            "search": "*",
-            "top": batch_size,
-            "skip": skip,
-            "select": "title,authors,subjects",
-        }
-        resp = requests.post(url, headers=headers, json=body)
-        if resp.status_code != 200:
-            break
-
-        for doc in resp.json().get("value", []):
             # Extract terms from title
-            title = doc.get("title", "")
+            title = doc.get("title") or ""
             for word in title.lower().split():
                 if len(word) >= 3 and word.isalpha():
                     all_terms.add(word)
 
             # Extract terms from authors
-            authors = doc.get("authors", "")
-            for word in authors.lower().split():
-                if len(word) >= 3 and word.isalpha():
-                    all_terms.add(word)
+            authors = doc.get("authors") or []
+            if isinstance(authors, str):
+                authors = [authors]
+            for author in authors:
+                for word in author.lower().split():
+                    if len(word) >= 3 and word.isalpha():
+                        all_terms.add(word)
 
             # Extract terms from subjects
-            for subject in doc.get("subjects", []):
+            for subject in doc.get("subjects") or []:
                 for word in subject.lower().split():
                     word = word.strip(",.;:()")
                     if len(word) >= 3 and word.isalpha():
                         all_terms.add(word)
-
-        print(f"  Processed {skip + batch_size} docs, {len(all_terms)} unique terms")
 
     # Write dictionary file (term<space>frequency per line)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -147,10 +142,10 @@ def build_corpus_dictionary(output_path: Path = CORPUS_DICT_PATH):
         for term in sorted(all_terms):
             f.write(f"{term} 1000\n")
 
-    print(f"\nCorpus dictionary: {len(all_terms)} terms -> {output_path}")
+    print(f"\nCorpus dictionary: {len(all_terms)} terms from {indexed_count} indexed books -> {output_path}")
     return len(all_terms)
 
 
 if __name__ == "__main__":
-    print("Building corpus dictionary from Azure AI Search index...")
+    print("Building corpus dictionary from books_augmented.jsonl...")
     build_corpus_dictionary()

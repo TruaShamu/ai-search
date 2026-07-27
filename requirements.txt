@@ -19,8 +19,7 @@ einops>=0.8.0
 onnxruntime>=1.20.0
 optimum-onnx>=0.1.0
 
-# Vector search (local fallback)
-faiss-cpu>=1.9.0
+# Vector search
 qdrant-client>=1.12.0
 scikit-learn>=1.5.0
 

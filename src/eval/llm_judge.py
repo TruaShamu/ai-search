@@ -19,7 +19,7 @@ import httpx
 from dotenv import load_dotenv
 
 from src.eval.dataset import EvalQuery, RelevanceJudgment, load_eval_dataset, get_eval_queries
-from src.azure_search.search import HybridSearchEngine
+from src.eval.engine import EvalSearchEngine
 
 
 ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
@@ -163,7 +163,7 @@ class LLMJudge:
 
 
 def pool_results_for_judging(
-    engine: HybridSearchEngine,
+    engine: EvalSearchEngine,
     queries: list[EvalQuery],
     top_k: int = 10,
 ) -> dict[str, list[dict]]:
@@ -195,7 +195,7 @@ def run_llm_judging(dry_run: bool = False, compare_heuristic: bool = False):
     print(f"Loaded {len(queries)} eval queries\n")
 
     print("Pooling search results...")
-    engine = HybridSearchEngine()
+    engine = EvalSearchEngine()
     pooled = pool_results_for_judging(engine, queries)
 
     total_pairs = sum(len(docs) for docs in pooled.values())

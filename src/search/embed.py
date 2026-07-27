@@ -7,7 +7,6 @@ import json
 import time
 from pathlib import Path
 
-import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
@@ -98,6 +97,11 @@ def embed_and_index(
     print(f"  Embeddings shape: {embeddings.shape}")
 
     # 5. Build FAISS index
+    # Imported here, not at module scope: scripts/embed_worker.py imports this
+    # module for load_books/build_embedding_texts only, and its container image
+    # (Dockerfile.embed) does not install faiss-cpu.
+    import faiss
+
     print("\nBuilding FAISS index...")
     index = faiss.IndexFlatIP(dim)  # Inner product (cosine sim with normalized vecs)
     index.add(embeddings.astype(np.float32))

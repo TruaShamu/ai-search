@@ -1,10 +1,12 @@
 """
 FastAPI search API — hybrid search over book catalog.
 Supports keyword (TF-IDF sparse), vector, and hybrid (RRF) retrieval modes.
-Backends: Qdrant (default), Azure AI Search, or local FAISS fallback.
+Backend: Qdrant (required).
 """
 
 import os
+import threading
+from contextlib import asynccontextmanager
 from enum import Enum
 from pathlib import Path
 
@@ -16,10 +18,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if not os.environ.get("DISABLE_WARMUP") and os.environ.get("QDRANT_URL"):
+        threading.Thread(target=_warmup, name="warmup", daemon=True).start()
+    yield
+
+
 app = FastAPI(
     title="Book Search API",
     description="Hybrid semantic search over the OpenLibrary catalog",
     version="0.5.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -40,10 +51,15 @@ class SearchMode(str, Enum):
     keyword = "keyword"
 
 
-# Lazy-load search engine, reranker, and query pipeline
+# Lazy-load search engine and query pipeline.
+# Locks matter: this container scales to zero, so a burst of requests can arrive
+# while nothing is loaded. Without them each concurrent request builds its own
+# SentenceTransformer, which spikes memory and can get the container OOM-killed.
 _engine = None
-_reranker = None
 _query_pipeline = None
+_engine_lock = threading.Lock()
+_query_pipeline_lock = threading.Lock()
+_warmup_state = {"status": "cold", "error": None}
 
 
 def get_engine():
@@ -51,37 +67,55 @@ def get_engine():
     if _engine is not None:
         return _engine
 
-    # Priority: Qdrant → Azure AI Search → local FAISS
-    if os.environ.get("QDRANT_URL"):
-        from src.qdrant.client import QdrantSearch
-        _engine = QdrantSearch(
-            url=os.environ["QDRANT_URL"],
-            collection=os.environ.get("QDRANT_COLLECTION", "books"),
+    qdrant_url = os.environ.get("QDRANT_URL")
+    if not qdrant_url:
+        raise RuntimeError(
+            "QDRANT_URL environment variable is required but not set. "
+            "Set it to your Qdrant instance URL (e.g., http://localhost:6333)."
         )
-    elif os.environ.get("AZURE_SEARCH_ENDPOINT") and os.environ.get("AZURE_SEARCH_ADMIN_KEY"):
-        from src.azure_search.search import HybridSearchEngine
-        _engine = HybridSearchEngine()
-    else:
-        from src.search.engine import BookSearchEngine
-        _engine = BookSearchEngine(Path("data/index"))
 
+    with _engine_lock:
+        if _engine is None:
+            from src.qdrant.client import QdrantSearch
+            _engine = QdrantSearch(
+                url=qdrant_url,
+                collection=os.environ.get("QDRANT_COLLECTION", "books"),
+            )
     return _engine
-
-
-def get_reranker():
-    global _reranker
-    if _reranker is None:
-        from src.reranker.onnx_reranker import OnnxReranker
-        _reranker = OnnxReranker()
-    return _reranker
 
 
 def get_query_pipeline():
     global _query_pipeline
-    if _query_pipeline is None:
-        from src.query.pipeline import QueryPipeline
-        _query_pipeline = QueryPipeline()
+    if _query_pipeline is not None:
+        return _query_pipeline
+    with _query_pipeline_lock:
+        if _query_pipeline is None:
+            from src.query.pipeline import QueryPipeline
+            _query_pipeline = QueryPipeline()
     return _query_pipeline
+
+
+def _warmup() -> None:
+    """Preload models so no user request pays the cold-start cost.
+
+    Runs on a background thread: startup must not block, or the platform health
+    probe fails before the container is ever marked ready. The cross-encoder is
+    included deliberately — it is the slowest component to load, and the first
+    `?rerank=true` request used to stall long enough to return a 500.
+    """
+    try:
+        _warmup_state["status"] = "warming"
+        engine = get_engine()
+        engine.search(query="warmup", top_k=1, mode="hybrid")
+        get_query_pipeline()
+        if engine.reranker is not None:
+            engine.search(query="warmup", top_k=1, mode="hybrid", rerank=True)
+        _warmup_state["status"] = "ready"
+        print("Warmup complete: engine, query pipeline, and reranker loaded.")
+    except Exception as exc:  # warmup is best-effort; requests still lazy-load
+        _warmup_state["status"] = "failed"
+        _warmup_state["error"] = str(exc)
+        print(f"Warmup failed (requests will lazy-load instead): {exc}")
 
 
 @app.get("/search")
@@ -91,8 +125,8 @@ def search(
     mode: SearchMode = Query(SearchMode.hybrid, description="Retrieval mode"),
     rerank: bool = Query(False, description="Apply cross-encoder reranking"),
     tier: int | None = Query(None, ge=1, le=3, description="Tier filter"),
-    year_min: int | None = Query(None, description="Min publication year"),
-    year_max: int | None = Query(None, description="Max publication year"),
+    year_min: int | None = Query(None, description="Min publication year (NOTE: 'year' is unpopulated for the entire current index, so this filter matches nothing until the ETL backfills it)"),
+    year_max: int | None = Query(None, description="Max publication year (see year_min caveat)"),
     explain: bool = Query(False, description="Include search metadata"),
     understand: bool = Query(True, description="Apply query understanding (spell + intent)"),
 ):
@@ -118,97 +152,53 @@ def search(
             "confidence": analysis.confidence,
         }
 
-    # Fetch more candidates if reranking (need a larger pool to reorder)
-    retrieve_k = top_k * 5 if rerank else top_k
-
-    # Qdrant or Azure AI Search backend (both have .compare)
-    if hasattr(engine, "search") and hasattr(engine, "compare"):
-        # Qdrant handles reranking internally
-        if hasattr(engine, "collection"):
-            result = engine.search(
-                query=search_query,
-                top_k=top_k,
-                mode=search_mode,
-                rerank=rerank,
-            )
-
-            if "error" in result:
-                return JSONResponse(content=result, status_code=502)
-
-            retrieval_latency = result["latency_ms"]
-            results = result["results"]
-            rerank_latency = result.get("rerank_latency_ms", 0)
-
-        # Azure AI Search — rerank externally
-        else:
-            result = engine.search(
-                query=search_query,
-                top_k=retrieve_k,
-                mode=search_mode,
-                year_min=year_min,
-                year_max=year_max,
-                tier=tier,
-            )
-
-            if "error" in result:
-                return JSONResponse(content=result, status_code=502)
-
-            retrieval_latency = result["latency_ms"]
-            results = result["results"]
-
-            rerank_latency = 0
-            if rerank and results:
-                reranker = get_reranker()
-                rerank_result = reranker.rerank(query=q, candidates=results, top_k=top_k)
-                results = rerank_result["results"]
-                rerank_latency = rerank_result["latency_ms"]
-
-        response = {
-            "query": q,
-            "mode": mode.value,
-            "reranked": rerank,
-            "total_results": result["total_count"],
-            "latency_ms": round(retrieval_latency + rerank_latency, 1),
-            "retrieval_latency_ms": retrieval_latency,
-            "results": results[:top_k],
-        }
-
-        if query_info:
-            response["query_understanding"] = query_info
-
-        if rerank:
-            response["rerank_latency_ms"] = rerank_latency
-            response["candidates_reranked"] = len(result["results"])
-
-        if explain:
-            backend_name = "qdrant" if hasattr(engine, "collection") else "azure_ai_search"
-            response["explain"] = {
-                "backend": backend_name,
-                "index": engine.collection if hasattr(engine, "collection") else os.environ.get("AZURE_SEARCH_INDEX", "books-v1"),
-                "model": "nomic-ai/nomic-embed-text-v1.5",
-                "reranker": "cross-encoder/ms-marco-MiniLM-L-6-v2" if rerank else None,
-                "dimension": engine.dim,
-                "mode": mode.value,
-                "retrieval": f"{mode.value} (TF-IDF+vector+RRF)" if mode == SearchMode.hybrid else mode.value,
-                "pipeline": "spell_correct → retrieve → rerank → top_k" if rerank else "spell_correct → retrieve → top_k",
-            }
-
-        return JSONResponse(content=response)
-
-    # FAISS fallback (local mode)
-    results = engine.search(
-        query=q,
+    result = engine.search(
+        query=search_query,
         top_k=top_k,
-        tier_filter=tier,
+        mode=search_mode,
+        rerank=rerank,
+        tier=tier,
         year_min=year_min,
         year_max=year_max,
     )
-    return JSONResponse(content={
+
+    if "error" in result:
+        return JSONResponse(content=result, status_code=502)
+
+    retrieval_latency = result["retrieval_latency_ms"]
+    results = result["results"]
+    rerank_latency = result.get("rerank_latency_ms", 0)
+
+    response = {
         "query": q,
-        "mode": "vector",
-        "total_results": len(results),
-        "results": results,
-    })
+        "mode": mode.value,
+        "reranked": rerank,
+        "total_results": result["total_count"],
+        "latency_ms": round(retrieval_latency + rerank_latency, 1),
+        "retrieval_latency_ms": retrieval_latency,
+        "results": results[:top_k],
+    }
+
+    if query_info:
+        response["query_understanding"] = query_info
+
+    if rerank:
+        response["rerank_latency_ms"] = rerank_latency
+        response["candidates_reranked"] = len(result["results"])
+
+    if explain:
+        response["explain"] = {
+            "backend": "qdrant",
+            "index": engine.collection,
+            "model": "nomic-ai/nomic-embed-text-v1.5",
+            "reranker": "cross-encoder/ms-marco-MiniLM-L-6-v2" if rerank else None,
+            "dimension": engine.dim,
+            "mode": mode.value,
+            "retrieval": f"{mode.value} (TF-IDF+vector+RRF)" if mode == SearchMode.hybrid else mode.value,
+            "pipeline": "spell_correct → retrieve → rerank → top_k" if rerank else "spell_correct → retrieve → top_k",
+        }
+
+    return JSONResponse(content=response)
 
 
 @app.get("/search/compare")
@@ -243,50 +233,32 @@ def compare(
 
 @app.get("/health")
 def health():
-    engine_type = "not_loaded"
-    if _engine is not None:
-        if hasattr(_engine, "collection"):
-            engine_type = "qdrant"
-        elif hasattr(_engine, "compare"):
-            engine_type = "azure_ai_search"
-        else:
-            engine_type = "faiss_local"
-    return {"status": "ok", "backend": engine_type}
+    # Never raise: this is the platform liveness probe. A 500 here gets a
+    # perfectly healthy container restarted.
+    try:
+        engine = _engine
+        return {
+            "status": "healthy",
+            "backend": "qdrant" if engine is not None else "not_loaded",
+            "warmup": _warmup_state["status"],
+            "reranker": getattr(engine, "reranker_state", "not_loaded"),
+        }
+    except Exception:
+        return {"status": "healthy", "backend": "unknown", "warmup": "unknown"}
 
 
 @app.get("/stats")
 def stats():
     engine = get_engine()
-    if hasattr(engine, "collection"):
-        # Qdrant backend
-        info = engine.client.get_collection(engine.collection)
-        return {
-            "backend": "qdrant",
-            "collection": engine.collection,
-            "documents": info.points_count,
-            "model": "nomic-ai/nomic-embed-text-v1.5",
-            "dimension": engine.dim,
-            "qdrant_url": engine.url,
-        }
-    elif hasattr(engine, "compare"):
-        # Azure backend
-        from src.azure_search.index import get_index_stats
-        idx_stats = get_index_stats()
-        return {
-            "backend": "azure_ai_search",
-            "index": os.environ.get("AZURE_SEARCH_INDEX", "books-v1"),
-            "documents": idx_stats["documentCount"] if idx_stats else "unknown",
-            "storage_mb": round(idx_stats["storageSize"] / 1024 / 1024, 1) if idx_stats else "unknown",
-            "model": "nomic-ai/nomic-embed-text-v1.5",
-            "dimension": engine.dim,
-        }
-    else:
-        return {
-            "backend": "faiss_local",
-            "index_size": engine.index.ntotal,
-            "dimension": engine.dim,
-            "model": "nomic-ai/nomic-embed-text-v1.5",
-        }
+    info = engine.client.get_collection(engine.collection)
+    return {
+        "backend": "qdrant",
+        "collection": engine.collection,
+        "documents": info.points_count,
+        "model": "nomic-ai/nomic-embed-text-v1.5",
+        "dimension": engine.dim,
+        "qdrant_url": engine.url,
+    }
 
 
 # --- RAG /ask endpoint ---
@@ -320,15 +292,11 @@ def ask(req: AskRequest):
 
     # Step 1: Retrieve relevant books (with reranker for better source quality)
     engine = get_engine()
-    if hasattr(engine, "search") and hasattr(engine, "compare"):
-        result = engine.search(query=req.question, top_k=req.max_sources * 2, mode=req.mode.value, rerank=True)
-        if "error" in result:
-            return JSONResponse(content={"error": "Search failed", "detail": result["error"]}, status_code=502)
-        search_results = result["results"]
-        retrieval_ms = result["latency_ms"]
-    else:
-        search_results = engine.search(query=req.question, top_k=req.max_sources * 2)
-        retrieval_ms = 0
+    result = engine.search(query=req.question, top_k=req.max_sources * 2, mode=req.mode.value, rerank=True)
+    if "error" in result:
+        return JSONResponse(content={"error": "Search failed", "detail": result["error"]}, status_code=502)
+    search_results = result["results"]
+    retrieval_ms = result["latency_ms"]
 
     if not search_results:
         return JSONResponse(content={

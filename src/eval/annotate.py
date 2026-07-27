@@ -8,11 +8,11 @@ This gives us broader coverage than manually pre-assigning specific work_ids.
 import json
 from pathlib import Path
 
-from src.azure_search.search import HybridSearchEngine
+from src.eval.engine import EvalSearchEngine
 from src.eval.dataset import get_eval_queries, EvalQuery, RelevanceJudgment
 
 
-def pool_results(engine: HybridSearchEngine, queries: list[EvalQuery], top_k: int = 10):
+def pool_results(engine: EvalSearchEngine, queries: list[EvalQuery], top_k: int = 10):
     """Run each query through all modes and pool unique results."""
     pooled = {}  # query -> {doc_id: best_result_dict}
 
@@ -77,7 +77,7 @@ def annotate_dataset(top_k: int = 10):
     queries = get_eval_queries()
     
     print("Loading search engine...")
-    engine = HybridSearchEngine()
+    engine = EvalSearchEngine()
     
     print(f"\nPooling results for {len(queries)} queries...")
     pooled = pool_results(engine, queries, top_k=top_k)

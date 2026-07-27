@@ -58,9 +58,9 @@ sequenceDiagram
     User->>API: GET /search?q=love+story+tragedy&rerank=true
     API->>QU: Spell correct + intent detect
     QU-->>API: corrected query, mode=hybrid
-    API->>Q: Prefetch dense (top 50) + sparse (top 50)
-    Q-->>API: RRF fused results (top 50)
-    API->>RR: Score 50 candidates
+    API->>Q: Prefetch dense (top 25) + sparse (top 25)
+    Q-->>API: RRF fused results (top 25)
+    API->>RR: Score 25 candidates (2.5x top_k)
     RR-->>API: Reranked top 10
     API-->>User: Romeo & Juliet #1, Carmen #2, ...
 ```
@@ -125,13 +125,15 @@ sequenceDiagram
 - **Query Understanding** — Spell correction (SymSpell), intent detection, query-adaptive mode routing.
 - **RAG with Guardrails** — Natural language Q&A grounded in retrieved books. Citation validation prevents hallucinated titles.
 - **Compare View** — Side-by-side 3-column comparison of keyword vs. hybrid vs. vector results.
-- **Evaluation Framework** — Reproducible eval harness computing MRR@10, NDCG@10, Recall@10 against a 30-query labeled dataset. Run via `scripts/eval_via_api.py`.
+- **Evaluation Framework** — Two independent harnesses: a graded relevance eval (MRR@10, NDCG@10, Recall@10) via `scripts/eval_via_api.py`, and a corpus-sampled known-item accuracy gate via `python -m src.eval.known_item_eval`. Limitations are documented rather than glossed over.
 
 ---
 
 ## Eval Results
 
 Evaluated on a 30-query labeled dataset (LLM-judged relevance, graded 0/1/2) against the live production deployment. Reproducible via `python scripts/eval_via_api.py`.
+
+> **Read the caveats before quoting these numbers.** At n=30 the standard error on MRR is roughly ±0.07, so only large gaps are meaningful. The judged pool was also built from an earlier backend and kept only documents already scored relevant, which biases it toward keyword retrieval. See [Known Limitations](#known-limitations-of-this-eval).
 
 ### Retrieval Quality (k=10, 26.5K corpus)
 
@@ -142,13 +144,47 @@ Evaluated on a 30-query labeled dataset (LLM-judged relevance, graded 0/1/2) aga
 | **Hybrid (RRF)** | **0.665** | **0.385** | **0.306** | 76ms |
 | Hybrid + Rerank | 0.611 | 0.370 | 0.273 | 4340ms |
 
+### Known-Item Accuracy (50 titles sampled from the corpus)
+
+A second, independent eval: sample a book from the index, search its exact title, check whether that book comes back first. No LLM judge, no pooling, no subjective grading — the answer is either right or wrong, and anyone can verify it by hand in a few seconds.
+
+| Mode | Accuracy@1 |
+|------|-----------|
+| **Vector (nomic-256d)** | **100%** |
+| Hybrid (RRF) | 94% |
+| Keyword (TF-IDF) | 74% |
+
+Keyword's failures are concentrated, not random: **81%** accuracy on distinctive titles vs **38%** on titles made of common words. Searching "Crazy little thing" by keyword returns *Serial*, *Crazy Horse*, *Crazy Horse* — the exact match never surfaces. This is inherent to lexical scoring, not an indexing defect.
+
+The same harness also runs 29 **hard variants** — typos, partial titles, and title-plus-author forms — as a robustness check:
+
+| Mode | Acc@1 | Acc@5 |
+|------|-------|-------|
+| Hybrid (RRF) | 72% | **93%** |
+| Vector | 79% | 90% |
+| Keyword (TF-IDF) | 66% | 86% |
+
+Degradation is graceful rather than catastrophic, and hybrid has the best top-5 recovery. This eval doubles as a CI regression gate: it fails the build if hybrid accuracy drops more than 5 points below the recorded baseline (`python -m src.eval.known_item_eval`).
+
 ### Key Findings
 
-- **RRF fusion (hybrid) is the clear winner** — +6% NDCG and +10% recall over keyword-only, with negligible latency cost (76ms vs 73ms).
-- **Cross-encoder reranking hurts on this dataset.** MRR drops 0.665 → 0.611, recall drops 0.306 → 0.273, and latency balloons to 4.3s. The likely cause: `ms-marco-MiniLM-L-6-v2` was trained on web passage retrieval, not book metadata. Short book titles + subjects don't give the cross-encoder enough signal to improve over RRF's rank fusion.
-- **Vector alone underperforms keyword** — at this corpus size, TF-IDF captures title/author matches that dense embeddings miss. Hybrid is needed to combine both strengths.
+- **Hybrid is the mode to ship,** but the graded eval cannot prove it beats keyword. The MRR gap is 0.003 against a standard error near 0.07 — indistinguishable from noise. The honest support for hybrid is the NDCG/recall margin plus the known-item result, where hybrid scores 94% and keyword 74%.
+- **Cross-encoder reranking measurably hurt — and the cause turned out to be a bug in my own code, not the model.** The original explanation here blamed book metadata for being too sparse to rerank. That was wrong. `onnx_reranker.py` truncated every passage at `[:300]` characters, discarding **60.2% of all description text across 62% of documents** (descriptions run to a median of 477 characters and a 90th percentile of 1,289). The cross-encoder was scoring truncated fragments while RRF fused the full index — so the comparison was never fair to the reranker. The truncation is fixed, but **the table above still reflects the old code**, and will not be updated until the fix is redeployed and re-measured. Longer passages will also make the 4.3s latency worse, not better.
+- **The two evals disagree about dense retrieval, and the known-item result is the more trustworthy one.** The graded eval ranks vector *below* keyword; known-item puts vector first at 100% versus keyword's 74%. The graded pool was assembled from keyword-friendly candidates and stored no negatives, so dense retrieval was penalized for surfacing books the pool had simply never judged. The earlier claim that "vector alone underperforms keyword" was an artifact of that construction.
 
-> The reranker still adds value for exploratory/natural-language queries where the user's intent doesn't match exact keywords (e.g., "love story tragedy" → Romeo & Juliet rises from rank 4 to rank 1). It's exposed as an opt-in toggle in the UI.
+> Reranking still helps on exploratory queries where intent doesn't match surface keywords — "love story tragedy" moves Romeo & Juliet from rank 4 to rank 1. It stays an opt-in toggle rather than a default, because 4.3s is too slow to impose on every search.
+
+### Known Limitations of This Eval
+
+Stated plainly, because they bound what the table above can support:
+
+- **n=30 is underpowered.** SE ≈ 0.07 on MRR. Differences smaller than about 0.08 are not resolvable, which includes the hybrid-vs-keyword gap.
+- **The judged pool is biased.** It was pooled from a since-decommissioned backend over a different corpus, and only documents graded relevant were retained. With no negatives stored, a mode that retrieves good-but-unjudged books is scored as if it retrieved nothing.
+- **Recall is structurally understated.** Roughly 62% of queries have exactly one gold document, so recall@10 is capped far below 1.0 by construction.
+- **The judge is unvalidated by a human.** A Cohen's kappa harness and audit export exist (`src/eval/judge.py`), but no human agreement study has been run.
+- **Query generation and judging share a model family,** so systematic blind spots may be correlated rather than independent.
+
+A rebuilt harness addressing these — corpus-grounded query generation with lexical-leakage checks, top-k pooling across all modes, retained negatives, bootstrap confidence intervals, and per-category breakdowns — lives in `scripts/eval_redesign.py` and `src/eval/`. It has not been run at full scale yet; when it is, this section will be replaced rather than appended to.
 
 ---
 
@@ -205,17 +241,15 @@ src/
 ├── reranker/       Cross-encoder reranker (ONNX + PyTorch fallback)
 ├── rag/            RAG generation with hallucination guardrails
 ├── query/          Query understanding (spell, intent, expansion)
-├── eval/           Evaluation framework (MRR, NDCG, Recall)
-├── etl/            Data pipelines (OpenLibrary + Goodreads augmentation)
-└── azure_search/   Azure AI Search client (legacy, superseded by Qdrant)
+├── eval/           Evaluation framework (MRR, NDCG, Recall, known-item, LLM judge)
+└── etl/            Data pipelines (OpenLibrary + Goodreads augmentation)
 
 web/                Next.js frontend (search UI, compare view, ask tab)
 infra/              Bicep templates (ACA deployment)
-scripts/            Cloud embedding automation
+scripts/            Cloud embedding automation + eval harnesses
 data/
-├── raw/            OpenLibrary dumps
 ├── processed/      Augmented catalog (books_augmented.jsonl)
-├── index/          FAISS index, metadata, TF-IDF vectorizer
+├── index/          Legacy FAISS index + TF-IDF vectorizer (pre-Qdrant; kept for the migration script only)
 ├── eval/           Evaluation datasets + results
 └── models/         ONNX reranker model
 ```
@@ -226,10 +260,10 @@ data/
 
 | Decision | Rationale |
 |----------|-----------|
-| **Qdrant over Azure AI Search** | 15x faster (24ms vs 370ms), no tier limits, built-in RRF, self-hosted |
+| **Qdrant over Azure AI Search** | Measured 15x faster at the time of migration (24ms vs 370ms), plus no tier limits, built-in RRF, and self-hosting. The Azure resource has since been decommissioned, so that comparison is no longer reproducible from this repo |
 | **TF-IDF over BM25** | Sufficient at 26K scale; hybrid compensates. BM25's length norm matters more at >100K docs |
 | **Matryoshka dim=256** | nomic-embed-text-v1.5 trained checkpoints: 768/512/256/128/64. 256 balances quality vs. index size |
-| **Reranker opt-in** | Adds latency; helps exploratory queries but hurts on keyword-heavy ones (see eval). User's choice via toggle |
+| **Reranker opt-in** | Adds ~4.3s. Measured worse than plain RRF on the graded set, though that run predates the truncation fix (see eval). Off by default, toggleable per query |
 | **Goodreads augmentation** | OpenLibrary lacks descriptions for 95% of books. Title-match join doubled the corpus |
 | **ONNX reranker** | 3.7x faster than PyTorch on CPU (23ms vs 86ms for 4 candidates) |
 | **Cloud embedding (ACI)** | Local GPU unavailable; 4-CPU ACI with 16GB RAM handles 26K docs in ~3h |
@@ -243,7 +277,7 @@ data/
 | `/search` | GET | Hybrid search with mode, rerank, filters |
 | `/search/compare` | GET | Side-by-side results across all modes |
 | `/ask` | POST | RAG question answering with citations |
-| `/health` | GET | Service health check |
+| `/health` | GET | Liveness probe — reports backend, model warmup state, and reranker availability |
 | `/stats` | GET | Index statistics |
 
 ### Example

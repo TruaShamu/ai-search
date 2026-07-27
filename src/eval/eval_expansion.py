@@ -15,7 +15,7 @@ from pathlib import Path
 
 from src.eval.dataset import load_eval_dataset
 from src.eval.metrics import compute_query_metrics
-from src.azure_search.search import HybridSearchEngine
+from src.eval.engine import EvalSearchEngine
 from src.query.expansion import QueryExpander
 
 K = 10
@@ -32,7 +32,7 @@ def run_expansion_eval(verbose: bool = False):
     print(f"Eval dataset: {len(queries_with_judgments)} queries with LLM judgments")
     print(f"k = {K}\n")
 
-    engine = HybridSearchEngine()
+    engine = EvalSearchEngine()
     expander = QueryExpander()
 
     # --- Baseline: hybrid with raw query ---

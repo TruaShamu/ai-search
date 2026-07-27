@@ -8,14 +8,57 @@ Usage:
     result = reranker.rerank("query", candidates, top_k=10)
 """
 
+import re
 import time
 from pathlib import Path
 
 import numpy as np
 from transformers import AutoTokenizer
 
+from src.reranker.config import (  # noqa: F401  (re-exported for callers)
+    MAX_DESCRIPTION_CHARS,
+    MAX_SEQUENCE_TOKENS,
+    RERANK_DEPTH_MULTIPLIER,
+)
+
 ONNX_DIR = Path("data/models/reranker-onnx")
 MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+
+_MACHINE_METADATA_RE = re.compile(r"^\w+:\S+=|=\d{4}\b")
+_WHITESPACE_RE = re.compile(r"\s+")
+
+
+def _clean_subjects(raw: list[str], max_subjects: int = 5) -> list[str]:
+    """Clean and deduplicate subject tags for natural prose rendering.
+
+    Splits comma-separated entries, drops machine-metadata tokens,
+    deduplicates case-insensitively, and removes strict substrings.
+    """
+    # Flatten comma-separated multi-topic entries
+    flat = []
+    for entry in raw:
+        flat.extend(part.strip() for part in entry.split(",") if part.strip())
+
+    # Drop machine-metadata tokens (e.g. "Nyt:Mass-Market-Monthly=2021-11-07")
+    filtered = [s for s in flat if not _MACHINE_METADATA_RE.search(s)]
+
+    # Case-insensitive dedupe (normalizing hyphens), preserving first-seen order
+    seen: set[str] = set()
+    deduped: list[str] = []
+    for s in filtered:
+        key = s.lower().replace("-", " ")
+        if key not in seen:
+            seen.add(key)
+            deduped.append(s)
+
+    # Drop entries that are a strict substring of any other kept entry
+    result = []
+    for s in deduped:
+        s_lower = s.lower()
+        if not any(s_lower != o.lower() and s_lower in o.lower() for o in deduped):
+            result.append(s)
+
+    return result[:max_subjects]
 
 
 class OnnxReranker:
@@ -50,7 +93,7 @@ class OnnxReranker:
             passages,
             padding=True,
             truncation=True,
-            max_length=512,
+            max_length=MAX_SEQUENCE_TOKENS,
             return_tensors="np",
         )
 
@@ -61,19 +104,36 @@ class OnnxReranker:
         return scores
 
     def _build_passage(self, doc: dict) -> str:
-        """Build passage text from document."""
+        """Build passage text from document as natural prose for cross-encoder.
+
+        ms-marco was trained on web prose, so we avoid pipe-delimited metadata.
+        The tokenizer's MAX_SEQUENCE_TOKENS limit handles final truncation;
+        MAX_DESCRIPTION_CHARS is a cheap guard sized to keep the token limit as
+        the binding constraint.  These two constants are coupled — see config.py.
+        """
         parts = []
-        if doc.get("title"):
-            parts.append(doc["title"])
-        if doc.get("authors"):
-            parts.append(f"by {doc['authors']}")
+        title = doc.get("title", "")
+        authors = doc.get("authors", "")
+        if title and authors:
+            parts.append(f"{title} by {authors}.")
+        elif title:
+            parts.append(f"{title}.")
+
         if doc.get("description"):
-            parts.append(doc["description"][:300])
+            # Strip stray quote wrapping and collapse whitespace (\r\n, tabs, etc.)
+            desc = doc["description"].strip("\"'")
+            desc = _WHITESPACE_RE.sub(" ", desc).strip()
+            if desc:
+                parts.append(desc[:MAX_DESCRIPTION_CHARS])
+
         if doc.get("subjects"):
             subjects = doc["subjects"]
             if isinstance(subjects, list):
-                parts.append(f"Subjects: {', '.join(subjects[:5])}")
-        return " | ".join(parts)
+                cleaned = _clean_subjects(subjects)
+                if cleaned:
+                    parts.append(f"This book covers {', '.join(cleaned)}.")
+
+        return " ".join(parts)
 
     def rerank(self, query: str, candidates: list[dict], top_k: int = 10) -> dict:
         """Rerank candidates. Uses ONNX if available, else PyTorch."""

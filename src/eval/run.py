@@ -4,7 +4,13 @@ Usage:
     python -m src.eval.run                    # Run full eval
     python -m src.eval.run --strategy hybrid  # Single strategy
     python -m src.eval.run --verbose          # Show per-query results
+    python -m src.eval.run --api-url https://... # Target live HTTP API
     python -m src.eval.run --qdrant-url https://... # Target specific Qdrant
+
+NOTE: Historical numbers in this repo were measured against a ~13K-book Azure AI Search
+index (BM25 keyword scoring).  The current backend is Qdrant over a 26.5K-book corpus
+using TF-IDF sparse vectors for keyword mode and RRF fusion for hybrid mode, so old
+numbers are not directly comparable.
 """
 
 import argparse
@@ -99,6 +105,7 @@ def run_eval(
     verbose: bool = False,
     annotated: bool = True,
     llm_judged: bool = False,
+    api_url: str = None,
     qdrant_url: str = None,
 ):
     """Run full evaluation across all strategies."""
@@ -129,12 +136,9 @@ def run_eval(
     print(f"k = {K}")
     print()
 
-    # Use QdrantSearch backend
-    from src.qdrant.client import QdrantSearch
-    kwargs = {}
-    if qdrant_url:
-        kwargs["url"] = qdrant_url
-    engine = QdrantSearch(**kwargs)
+    # Use EvalSearchEngine (HTTP API or local Qdrant)
+    from src.eval.engine import EvalSearchEngine
+    engine = EvalSearchEngine(api_url=api_url, qdrant_url=qdrant_url)
 
     results = []
 
@@ -195,6 +199,7 @@ if __name__ == "__main__":
     parser.add_argument("--no-rerank", action="store_true", help="Skip reranker evaluation")
     parser.add_argument("--verbose", action="store_true", help="Show per-query details")
     parser.add_argument("--llm-judged", action="store_true", help="Use LLM-as-judge annotations")
+    parser.add_argument("--api-url", type=str, help="HTTP API URL (default: EVAL_API_URL env or live API)")
     parser.add_argument("--qdrant-url", type=str, help="Qdrant URL (default: QDRANT_URL env or localhost:6333)")
     args = parser.parse_args()
 
@@ -204,5 +209,6 @@ if __name__ == "__main__":
         rerank=not args.no_rerank,
         verbose=args.verbose,
         llm_judged=args.llm_judged,
+        api_url=args.api_url,
         qdrant_url=args.qdrant_url,
     )

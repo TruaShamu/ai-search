@@ -1,0 +1,455 @@
+[
+  {
+    "query": "Yume no machi",
+    "work_id": "OL32228627W",
+    "title": "Yume no machi",
+    "authors": [
+      "Kineo Kuwahara"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Wolverine Volume 2",
+    "work_id": "OL21522180W",
+    "title": "Wolverine Volume 2",
+    "authors": [
+      "Paul Cornell",
+      "Alan Davis",
+      "Mirco Pierfederici"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "The Janson directive",
+    "work_id": "OL15396531W",
+    "title": "The Janson directive",
+    "authors": [
+      "Robert Ludlum"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Crazy little thing",
+    "work_id": "OL16184352W",
+    "title": "Crazy little thing",
+    "authors": [
+      "Liz Langley"
+    ],
+    "title_word_class": "common_words"
+  },
+  {
+    "query": "In the kingdom of men",
+    "work_id": "OL16682267W",
+    "title": "In the kingdom of men",
+    "authors": [
+      "Kim Barnes"
+    ],
+    "title_word_class": "common_words"
+  },
+  {
+    "query": "A tall story and other tales",
+    "work_id": "OL15012864W",
+    "title": "A tall story and other tales",
+    "authors": [
+      "Margaret Mahy"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "The hungry little urchin",
+    "work_id": "OL845778W",
+    "title": "The hungry little urchin",
+    "authors": [
+      "Olamide Modupe Bamtefa"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Santa's new suit!",
+    "work_id": "OL2588254W",
+    "title": "Santa's new suit!",
+    "authors": [
+      "Lisa Rojany-Buccieri"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "The lawman's legacy",
+    "work_id": "OL15964419W",
+    "title": "The lawman's legacy",
+    "authors": [
+      "Phyllis Halldorson"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Digory and the lost king",
+    "work_id": "OL20864689W",
+    "title": "Digory and the lost king",
+    "authors": [
+      "Angela McAllister"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "The light of meridian",
+    "work_id": "OL5813846W",
+    "title": "The light of meridian",
+    "authors": [
+      "Julie Komorn"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "The stylist's guide to NYC",
+    "work_id": "OL16152085W",
+    "title": "The stylist's guide to NYC",
+    "authors": [
+      "Sibella Court"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Introduction to psychology",
+    "work_id": "OL19224210W",
+    "title": "Introduction to psychology",
+    "authors": [
+      "Robert J. Sternberg"
+    ],
+    "title_word_class": "common_words"
+  },
+  {
+    "query": "Geometric Methods in Physics",
+    "work_id": "OL19852555W",
+    "title": "Geometric Methods in Physics",
+    "authors": [
+      "P. Kielanowski"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Bod kyi śer rtogs rig paʼi rigs śes",
+    "work_id": "OL2308653W",
+    "title": "Bod kyi śer rtogs rig paʼi rigs śes",
+    "authors": [
+      "Tshe-riṅ-rdo-rje ʼBroṅ-bu."
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Dkon mchog gsum rjes su dran paʼi mdo rnam par ʼgrel ba bkra śis mi zad paʼi sgra dbyaṅs źes bya ba bźugs so",
+    "work_id": "OL392004W",
+    "title": "Dkon mchog gsum rjes su dran paʼi mdo rnam par ʼgrel ba bkra śis mi zad paʼi sgra dbyaṅs źes bya ba bźugs so",
+    "authors": [
+      "Jamgon Ju Mipham Gyatso"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Pedoman perilaku penyiaran (P3) & standar program siaran (SPS)",
+    "work_id": "OL15898947W",
+    "title": "Pedoman perilaku penyiaran (P3) & standar program siaran (SPS)",
+    "authors": [
+      "Komisi Penyiaran Indonesia"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Zero at the Bone",
+    "work_id": "OL15723964W",
+    "title": "Zero at the Bone",
+    "authors": [
+      "Elizabeth Ferrars"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Reiki for life",
+    "work_id": "OL20034671W",
+    "title": "Reiki for life",
+    "authors": [
+      "Penelope Quest"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Nights On, Nights Off",
+    "work_id": "OL7921146W",
+    "title": "Nights On, Nights Off",
+    "authors": [
+      "Maggie Bennett"
+    ],
+    "title_word_class": "common_words"
+  },
+  {
+    "query": "Sarala nāgarika jñāna",
+    "work_id": "OL1062094W",
+    "title": "Sarala nāgarika jñāna",
+    "authors": [
+      "Bhagavānadāsa Kelā"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Nareśa Mehatā kī kāvya-bhāshā",
+    "work_id": "OL16004274W",
+    "title": "Nareśa Mehatā kī kāvya-bhāshā",
+    "authors": [
+      "Rītā Gauṛa"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Poet Dr. Mahendra Bhatnagar",
+    "work_id": "OL24078897W",
+    "title": "Poet Dr. Mahendra Bhatnagar",
+    "authors": [
+      "Shubha Dwivedi"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Forum Inovasi Teknologi Akuakultur 2009",
+    "work_id": "OL15491626W",
+    "title": "Forum Inovasi Teknologi Akuakultur 2009",
+    "authors": [
+      "Forum Inovasi Teknologi Akuakultur (2009 Surabaya, Indonesia)"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Top 10 Prague",
+    "work_id": "OL19967010W",
+    "title": "Top 10 Prague",
+    "authors": [
+      "Theodore Schwinke"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Udviklingstendenser for Grønland",
+    "work_id": "OL5653098W",
+    "title": "Udviklingstendenser for Grønland",
+    "authors": [
+      "H. C. Bach"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "The art of memory",
+    "work_id": "OL14861574W",
+    "title": "The art of memory",
+    "authors": [
+      "Frances Amelia Yates"
+    ],
+    "title_word_class": "common_words"
+  },
+  {
+    "query": "Blow the Man Down",
+    "work_id": "OL34488029W",
+    "title": "Blow the Man Down",
+    "authors": [
+      "Sarah Branson"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Welcome to Happy, Texas \"the Town Without a Frown\", Country Cooking",
+    "work_id": "OL9718972W",
+    "title": "Welcome to Happy, Texas \"the Town Without a Frown\", Country Cooking",
+    "authors": [
+      "Mary Vasek (Compiled by) Wilhelm"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Malaysia sebagai sebuah negara Islam",
+    "work_id": "OL19168269W",
+    "title": "Malaysia sebagai sebuah negara Islam",
+    "authors": [],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Deep Blue Sea",
+    "work_id": "OL37817713W",
+    "title": "Deep Blue Sea",
+    "authors": [
+      "Dorling Kindersley Publishing Staff"
+    ],
+    "title_word_class": "common_words"
+  },
+  {
+    "query": "Complexity & Innovation in Organizations",
+    "work_id": "OL8097292W",
+    "title": "Complexity & Innovation in Organizations",
+    "authors": [
+      "Jose Fonseca"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Every time I climb a tree",
+    "work_id": "OL611276W",
+    "title": "Every time I climb a tree",
+    "authors": [
+      "David Thompson Watson McCord"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Wikhro̜ rư̄a samphao bōrān thī khonphop nai ʻĀo Thai",
+    "work_id": "OL22820584W",
+    "title": "Wikhro̜ rư̄a samphao bōrān thī khonphop nai ʻĀo Thai",
+    "authors": [
+      "Pensak C. Howitz"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "The Mammoth book of chess",
+    "work_id": "OL16982988W",
+    "title": "The Mammoth book of chess",
+    "authors": [
+      "Graham Burgess"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Behind the Badge",
+    "work_id": "OL21030306W",
+    "title": "Behind the Badge",
+    "authors": [
+      "Sharon M. Freeman Clevenger",
+      "Bret A. Moore",
+      "Laurence Miller",
+      "Arthur Freeman"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Hindustānī saṅgīta ke marmajña, Hazarata Amīra K̲h̲usaro",
+    "work_id": "OL32366135W",
+    "title": "Hindustānī saṅgīta ke marmajña, Hazarata Amīra K̲h̲usaro",
+    "authors": [
+      "Paṅkaja Lāhaurā"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "The electoral college",
+    "work_id": "OL1195960W",
+    "title": "The electoral college",
+    "authors": [
+      "Wilmerding, Lucius"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "How Kittens Grow",
+    "work_id": "OL17587833W",
+    "title": "How Kittens Grow",
+    "authors": [
+      "Larry Wells"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Charlotte the Baby Princess Fairy",
+    "work_id": "OL20868028W",
+    "title": "Charlotte the Baby Princess Fairy",
+    "authors": [
+      "Daisy Meadows"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "The McAlpin House",
+    "work_id": "OL31908350W",
+    "title": "The McAlpin House",
+    "authors": [
+      "Starrett Housing Corporation"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Sins of the Fathers",
+    "work_id": "OL9027771W",
+    "title": "Sins of the Fathers",
+    "authors": [
+      "John Richmond"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Around the corner on Sesame Street",
+    "work_id": "OL3949951W",
+    "title": "Around the corner on Sesame Street",
+    "authors": [
+      "Norman Stiles"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Miss Winthorpe's Elopement",
+    "work_id": "OL21442474W",
+    "title": "Miss Winthorpe's Elopement",
+    "authors": [
+      "Christine Merrill"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "The Best of 2600, Collector's Edition",
+    "work_id": "OL16970133W",
+    "title": "The Best of 2600, Collector's Edition",
+    "authors": [
+      "Emmanuel Goldstein"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "The Crystal Cage",
+    "work_id": "OL2942687W",
+    "title": "The Crystal Cage",
+    "authors": [
+      "Juliet Gray"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "Chief Joseph of the Nez Perce",
+    "work_id": "OL7201419W",
+    "title": "Chief Joseph of the Nez Perce",
+    "authors": [
+      "Matthew G. Grant"
+    ],
+    "title_word_class": "distinctive"
+  },
+  {
+    "query": "We visit Indonesia",
+    "work_id": "OL17910437W",
+    "title": "We visit Indonesia",
+    "authors": [
+      "Roberts, Russell"
+    ],
+    "title_word_class": "common_words"
+  },
+  {
+    "query": "One Thousand Things",
+    "work_id": "OL21100744W",
+    "title": "One Thousand Things",
+    "authors": [
+      "Anna Kovecses"
+    ],
+    "title_word_class": "common_words"
+  },
+  {
+    "query": "Ancient Near Eastern Texts Relating to the Old Testament with Supplement",
+    "work_id": "OL20829693W",
+    "title": "Ancient Near Eastern Texts Relating to the Old Testament with Supplement",
+    "authors": [
+      "James B. Pritchard"
+    ],
+    "title_word_class": "distinctive"
+  }
+]

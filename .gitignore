@@ -35,3 +35,7 @@ web/.next/
 
 # Notebooks — checkpoints
 .ipynb_checkpoints/
+
+# Eval v2 intermediates — unvalidated dry-run/pooling artifacts.
+# Regenerate with scripts/eval_redesign.py; do not ship as if they were results.
+data/eval/v2/
