@@ -1,6 +1,6 @@
 # 📚 BookSearch — Hybrid Semantic Search Engine
 
-A hybrid search engine over 26,500+ books from the OpenLibrary catalog. Combines TF-IDF sparse retrieval with dense vector search (nomic-embed-text-v1.5) using Reciprocal Rank Fusion, plus an optional cross-encoder reranker — all self-hosted on Qdrant and deployed to Azure Container Apps with full CI/CD.
+A hybrid search engine over 84,801 books. Combines TF-IDF sparse retrieval with dense vector search (nomic-embed-text-v1.5) using Reciprocal Rank Fusion, plus an optional cross-encoder reranker — all self-hosted on Qdrant and deployed to Azure Container Apps with full CI/CD.
 
 Built as a portfolio piece demonstrating **backend + ML infrastructure engineering**.
 
@@ -22,17 +22,17 @@ graph TD
     end
 
     subgraph Vector DB
-        QD[Qdrant · 26,519 points]
+        QD[Qdrant · 84,801 points]
         DV[Dense: nomic-embed-text-v1.5<br/>dim=256, Matryoshka]
         SV[Sparse: TF-IDF vectors]
         RRF[RRF Fusion]
     end
 
     subgraph Data Pipeline
-        OL[OpenLibrary Dump<br/>250K works]
-        GR[Goodreads Augmentation<br/>+13K descriptions]
-        EMB[Cloud Embedding<br/>ACI · 4 CPU · 16GB]
-        MIG[Migration<br/>FAISS → Qdrant]
+        GR[Goodreads dump<br/>100K single-source rows]
+        HY[Text hygiene<br/>ftfy · langdetect]
+        EMB[Cloud Embedding<br/>ACA job · 30 replicas]
+        MIG[Migration<br/>shards → FAISS → Qdrant]
     end
 
     UI -->|HTTP| FP
@@ -69,15 +69,17 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    A[OpenLibrary Dump<br/>250K works] -->|Filter: has description| B[13.4K Tier 1]
-    A -->|No description| C[237K Tier 2]
-    C -->|Title-match join| D[Goodreads HF Dataset<br/>~1M books]
-    D -->|+13K matched| E[26,519 books]
-    B --> E
-    E -->|nomic-embed-text-v1.5<br/>dim=256| F[Dense Vectors]
-    E -->|TfidfVectorizer| G[Sparse Vectors]
+    A[Goodreads dump<br/>100K rows] -->|title+author+description<br/>from one row| B[Repair mojibake<br/>ftfy]
+    B -->|drop 8.37% non-English| C[Filter: has description]
+    C --> D[84,801 books]
+    D -->|nomic-embed-text-v1.5<br/>dim=256, 170 slices| F[Dense Vectors]
+    D -->|TfidfVectorizer, global fit| G[Sparse Vectors]
     F & G -->|migrate.py| H[(Qdrant)]
 ```
+
+Every field on a record comes from the same source row, so a description can
+never be attached to another author's book. That is the whole reason for the
+migration — see [Corpus Provenance](#corpus-provenance-and-a-data-bug-the-eval-could-not-see).
 
 ### Embedding Worker (Event-Driven)
 
@@ -133,11 +135,11 @@ sequenceDiagram
 
 Evaluated on **100 corpus-grounded queries** against the live production deployment, with **5,000 query–document pairs** LLM-judged on a graded 0/1/2 scale and **zero unjudged pairs**. Confidence intervals are 1,000-replicate percentile bootstraps; mode comparisons use a **paired** bootstrap on per-query deltas. Reproducible via `python scripts/eval_redesign.py --step all`.
 
-> **These are v1-corpus results.** They are honest measurements of the system as deployed when taken, but the corpus they ran against has a documented description-provenance defect — see [Corpus Provenance](#corpus-provenance-and-a-data-bug-the-eval-could-not-see) below before quoting any absolute number. The relative comparisons between modes are unaffected.
+> **Scope note: the graded tables in this section (NDCG / MRR / Recall) are v1-corpus results.** They are honest measurements of the system as deployed when taken, but the corpus they ran against has a documented description-provenance defect — see [Corpus Provenance](#corpus-provenance-and-a-data-bug-the-eval-could-not-see) before quoting any absolute number. The relative comparisons between modes are unaffected. The [Known-Item Accuracy](#known-item-accuracy-50-titles-sampled-from-the-corpus) results further down **are** measured on the current v2 84,801-book index and are labeled accordingly.
 
 Six queries (all `author`) were dropped for having no relevant document in the pool, leaving **n=94** evaluated across every mode.
 
-### Retrieval Quality (k=10, 26.5K corpus)
+### Retrieval Quality (k=10, v1 26.5K corpus)
 
 | Mode | MRR@10 | NDCG@10 | Recall@10 | Median Latency |
 |------|--------|---------|-----------|----------------|
@@ -203,30 +205,38 @@ A perfect reranker over the same 25-candidate pool would score **0.917** NDCG ag
 
 A second, independent eval: sample a book from the index, search its exact title, check whether that book comes back first. No LLM judge, no pooling, no subjective grading — the answer is either right or wrong, and anyone can verify it by hand in a few seconds.
 
-| Mode | Accuracy@1 |
-|------|-----------|
-| **Vector (nomic-256d)** | **100%** |
-| Hybrid (RRF) | 94% |
-| Keyword (TF-IDF) | 74% |
+**Measured on the v2 84,801-book index** (`python -m src.eval.known_item_eval`):
 
-Keyword's failures are concentrated, not random: **81%** accuracy on distinctive titles vs **38%** on titles made of common words. Searching "Crazy little thing" by keyword returns *Serial*, *Crazy Horse*, *Crazy Horse* — the exact match never surfaces. This is inherent to lexical scoring, not an indexing defect.
+| Mode | Acc@1 | Acc@5 | MRR | v1 Acc@1 (26.5K) |
+|------|-------|-------|-----|------------------|
+| **Vector (nomic-256d)** | **94%** | 96% | 0.950 | 100% |
+| Hybrid (RRF) | 86% | **98%** | 0.917 | 94% |
+| Keyword (TF-IDF) | 66% | 80% | 0.732 | 74% |
 
-The same harness also runs 29 **hard variants** — typos, partial titles, and title-plus-author forms — as a robustness check:
+Every mode scores lower than it did on v1, and that is the expected cost of an index **3.2× larger**: the same query now competes against three times as many plausible titles. The v1 column is shown for scale, not as a regression — the two numbers describe different systems, which is why the v1 baseline was archived rather than reused as a CI gate.
+
+**The interesting result is that hybrid no longer wins at rank 1.** On v1, hybrid (94%) sat between vector (100%) and keyword (74%). On v2 the keyword arm degrades from 74% to 66%, and RRF fusion propagates that: hybrid's Acc@1 (86%) now falls *below* pure vector (94%). Hybrid still has the best top-5 recovery (**98%**, above vector's 96%), so fusion is still buying recall — it is buying it at a cost in top-1 precision that did not exist at 26K. This is the concrete evidence behind the "TF-IDF over BM25" entry in the decisions table being the closest call in this project: TF-IDF's lack of length normalization is exactly the weakness that shows up as a corpus grows.
+
+Keyword's failures remain concentrated rather than random: **74%** accuracy on distinctive titles (31/42) vs **25%** on titles made of common words (2/8). This is inherent to lexical scoring, not an indexing defect.
+
+The same harness also runs 30 **hard variants** — typos, partial titles, and title-plus-author forms — as a robustness check:
 
 | Mode | Acc@1 | Acc@5 |
 |------|-------|-------|
-| Hybrid (RRF) | 72% | **93%** |
-| Vector | 79% | 90% |
-| Keyword (TF-IDF) | 66% | 86% |
+| Hybrid (RRF) | **73%** | **87%** |
+| Vector | **73%** | 80% |
+| Keyword (TF-IDF) | 67% | 87% |
 
-Degradation is graceful rather than catastrophic, and hybrid has the best top-5 recovery. This eval doubles as a CI regression gate: it fails the build if hybrid accuracy drops more than 5 points below the recorded baseline (`python -m src.eval.known_item_eval`).
+Degradation is graceful rather than catastrophic, and hybrid retains the best combined top-5 recovery. This eval doubles as a CI regression gate: it fails the build if hybrid accuracy drops more than 5 points below the recorded baseline.
+
+**Serving latency at 84.8K points** (warm, hybrid, k=10, n=32 against the live deployment): median **182 ms**, p95 **434 ms**. A cold first request costs ~4 s while the embedding model loads, which is why readiness gating exists.
 
 ### Key Findings
 
 - **Hybrid beats keyword, and this time the data supports it.** An earlier version of this eval put the gap at 0.003 MRR against a standard error near 0.07 — indistinguishable from noise. That result was an artifact: the query set had been generated by an LLM with no view of the corpus, producing canonical titles (*1984*, *The Great Gatsby*) against an index of mostly obscure OpenLibrary works, and carrying no gold documents. On corpus-grounded queries the margin is **+0.111 NDCG [+0.079, +0.146]**.
 - **Cross-encoder reranking helps, and the earlier finding that it hurt was caused by a bug in my own code.** `onnx_reranker.py` truncated every passage at `[:300]` characters, discarding **60.2% of all description text across 62% of documents** (median description length is 477 characters, 90th percentile 1,289). The cross-encoder was scoring fragments while RRF fused the full index. With truncation fixed, reranking gains **+0.097 NDCG [+0.060, +0.135]** over hybrid and lifts MRR to **0.985** — and the gain *grows* to +0.105 MRR under the strict grade-2 threshold, so it is promoting the best document rather than merely a relevant one.
 - **Fixing the quality bug exposed a capacity bug that had been hiding behind it.** Full-length passages take the cross-encoder from ~93 tokens to ~335. On the original 1 vCPU container that pushed `rerank=true` past the ingress timeout: 3 of 6 requests failed and one took 98 seconds. The API now runs on 2 vCPU with a readiness probe, where reranking is 10/10 successful at a 3.3s median. Truncation had been masking the fact that the container could not afford the work.
-- **Dense retrieval is stronger than lexical here, and both evals now agree.** Vector beats keyword by +0.105 NDCG in the graded eval and 100% vs 74% on known-item. The previous claim that "vector alone underperforms keyword" came from a pool built from keyword-friendly candidates that stored no negatives, so dense retrieval was penalized for surfacing books the pool had never judged.
+- **Dense retrieval is stronger than lexical here, and both evals agree.** Vector beats keyword by +0.105 NDCG in the graded eval and by 28 points of known-item Acc@1 on the v2 index (94% vs 66%). The previous claim that "vector alone underperforms keyword" came from a pool built from keyword-friendly candidates that stored no negatives, so dense retrieval was penalized for surfacing books the pool had never judged.
 
 > Reranking stays an **opt-in toggle** rather than a default. The quality gain is real, but 3.3s is too slow to impose on every search when plain hybrid answers in ~209ms. It is worth the wait on exploratory queries — "love story tragedy" returns Romeo & Juliet first with reranking on.
 
@@ -242,6 +252,7 @@ Stated plainly, because they bound what the tables above can support:
 - **Documents outside the judged pool count as non-relevant.** This is standard for pooled evaluation, and was verified not to penalize reranking: across sampled queries, **0 of 120** reranked top-10 documents fell outside the pool.
 - **Six author queries were dropped** for having no relevant document, which slightly biases that category toward the queries the system could already answer.
 - **Labels come from a zero-shot `gpt-5.4-nano` judge**, not the richer calibrated judge in `src/eval/judge.py` — `scripts/eval_redesign.py` uses its own simpler prompt.
+- **The graded eval has not been re-run on the v2 corpus.** The NDCG/MRR/Recall tables above are v1 measurements. Re-running them means regenerating corpus-grounded queries and re-judging 5,000 pairs; until that happens, the only v2 numbers in this README are the known-item results and latency, both of which are labeled as such. The v1 raw ranked lists are committed to `data/eval/v2/rankings_v1.json` so the old numbers stay verifiable.
 
 ### Corpus Provenance, and a Data Bug the Eval Could Not See
 
@@ -260,9 +271,31 @@ Everything above was measured against **v1 of the corpus**, which has a data-qua
 
 **Why the eval scored it as fine.** The eval is a closed loop. A wrong description is embedded, retrieved for the query it lexically matches, and then read by the LLM judge — which grades it relevant, because *against the text it was shown*, it is. Mean grades by provenance are statistically indistinguishable (**0.268** OpenLibrary vs **0.263** Goodreads). More LLM judging would never have surfaced this; only a human comparing a description against its own title could, which is exactly how it was found. **583 of 5,000 judged pairs (11.7%) used a provably corrupted description.**
 
-**Why the fix is a migration and not a patch.** Failing closed on collisions is the obvious repair, and it is insufficient: Goodreads holds only one *Ugly Duckling*, so Andersen's title matched 1:1 with no collision to detect. This is a **cross-corpus** mismatch, and with no author or ISBN in the source it is unfixable in principle. The corpus is therefore being migrated to a single-source dataset carrying title, author, and description in the same record, which makes this class of error **impossible to represent** rather than merely less likely.
+**Why the fix is a migration and not a patch.** Failing closed on collisions is the obvious repair, and it is insufficient: Goodreads holds only one *Ugly Duckling*, so Andersen's title matched 1:1 with no collision to detect. This is a **cross-corpus** mismatch, and with no author or ISBN in the source it is unfixable in principle. The corpus was therefore migrated to a single-source dataset carrying title, author, and description in the same record, which makes this class of error **impossible to represent** rather than merely less likely.
 
-> **Read the tables above as v1 results.** They are honest measurements of the system as deployed when they were taken, and the retrieval comparisons between modes are unaffected — every mode searched the identical index, so a shared data defect cannot favor one over another. What the defect does undermine is the absolute claim that a top-ranked result is the *right book*. That claim is exactly what the migration is meant to restore.
+> **Read the tables above as v1 results.** They are honest measurements of the system as deployed when they were taken, and the retrieval comparisons between modes are unaffected — every mode searched the identical index, so a shared data defect cannot favor one over another. What the defect does undermine is the absolute claim that a top-ranked result is the *right book*. That claim is what the migration below restores.
+
+### v2: What the Migration Changed
+
+The index now holds **84,801 books** whose title, author, and description all come from the same source row. Two further defects surfaced while building it, both found by measuring rather than assuming:
+
+| Property | v1 | v2 |
+|---|---|---|
+| Records | 26,519 | **84,801** |
+| Cross-author description corruption | ≥12.8% (floor) | **0 by construction** |
+| Mojibake (`Ã©`, `â€™`) | 26.16% of rows | **0.000%** |
+| Duplicate work IDs | present | **0** |
+| Languages | mixed, unmeasured | English only (8.37% dropped) |
+
+**Mojibake.** 26.16% of source rows had been written as UTF-8 and re-read as cp1252. The correct inverse is **cp1252, not latin-1** — latin-1 silently leaves the Windows-1252 punctuation range (curly quotes, em dashes) still broken, which is most of the damage in book descriptions. `ftfy` repairs it; the post-repair rate is 0.000%.
+
+**Language.** Embedding several languages into one space sounds harmless and is not, for this corpus. Measured against the same English sentence: an English paraphrase scores **0.787**, Spanish **0.635**, French **0.571**, German **0.536**, and an unrelated English sentence **0.274**. A foreign-language translation of an unrelated book therefore outranks a genuine English near-match, and the cross-encoder reranker (English-only `ms-marco-MiniLM`) cannot repair it. The 8.37% non-English rows are dropped.
+
+**What was rebuilt.** Every corpus-derived artifact desyncs silently if left stale, so all were regenerated together: dense vectors (170 shards, 100% coverage, all norms 1.0000), the **globally-fit** TF-IDF vectorizer, the SymSpell dictionary (45,606 → 67,263 terms), and the known-item fixtures. The v1 known-item baseline is archived rather than reused — it was measured on a 26.5K index, so gating an 84.8K index against it would compare two different systems.
+
+> **Absolute numbers are not comparable across v1 and v2.** The v2 index is **3.2× larger**, which makes known-item retrieval strictly harder: there are simply more plausible confusable titles. A lower v2 score is the expected cost of a corpus that is 3× bigger and no longer lying about which book a description belongs to.
+
+**One open infrastructure issue, stated rather than hidden.** Qdrant reports the collection as `status: red` with `IO Error: Input/output error (os error 5)` from its segment optimizer. The storage volume is an Azure Files (SMB) share, which does not give Qdrant the mmap and fsync semantics it expects; this predates the migration (the v1 collection reported the same error). Measured impact on serving: none detectable — all 84,801 points are present and queryable, and warm hybrid latency is 182 ms median / 434 ms p95. A failed optimization degrades toward exact search, which costs latency rather than correctness. The real fix is block storage rather than SMB, which means a workload profile the Consumption tier does not offer.
 
 ---
 
@@ -320,13 +353,13 @@ src/
 ├── rag/            RAG generation with hallucination guardrails
 ├── query/          Query understanding (spell, intent, expansion)
 ├── eval/           Evaluation framework (MRR, NDCG, Recall, known-item, LLM judge)
-└── etl/            Data pipelines (OpenLibrary + Goodreads augmentation)
+└── etl/            Data pipelines (single-source Goodreads corpus build)
 
 web/                Next.js frontend (search UI, compare view, ask tab)
 infra/              Bicep templates (ACA deployment)
 scripts/            Cloud embedding automation + eval harnesses
 data/
-├── processed/      Augmented catalog (books_augmented.jsonl)
+├── processed/      Indexed catalog (books_goodreads_v2.jsonl)
 ├── index/          Legacy FAISS index + TF-IDF vectorizer (pre-Qdrant; kept for the migration script only)
 ├── eval/           Evaluation datasets + results
 └── models/         ONNX reranker model
@@ -339,12 +372,13 @@ data/
 | Decision | Rationale |
 |----------|-----------|
 | **Qdrant over Azure AI Search** | Measured 15x faster at the time of migration (24ms vs 370ms), plus no tier limits, built-in RRF, and self-hosting. The Azure resource has since been decommissioned, so that comparison is no longer reproducible from this repo |
-| **TF-IDF over BM25** | Sufficient at 26K scale; hybrid compensates. BM25's length norm matters more at >100K docs |
+| **TF-IDF over BM25** | Sufficient at the current scale; hybrid compensates. BM25's length norm matters more as the index grows — at 84.8K docs this is now the closest call in the table and the most likely next change |
 | **Matryoshka dim=256** | nomic-embed-text-v1.5 trained checkpoints: 768/512/256/128/64. 256 balances quality vs. index size |
 | **Reranker opt-in** | Adds ~3.3s but gains +0.097 NDCG [+0.060, +0.135] over hybrid. Too slow to impose on every search, so it is off by default and toggleable per query |
-| **Goodreads augmentation** | OpenLibrary lacks descriptions for 95% of books. Title-match join doubled the corpus |
+| **Single-source corpus** | Replaced a title-matched OpenLibrary+Goodreads join that provably mislabeled ≥12.8% of descriptions. Title, author, and description now come from one row, so the error cannot be represented |
+| **English-only index** | Measured: a Spanish translation scores 0.635 against an English query where an English paraphrase scores 0.787 and an unrelated English sentence scores 0.274 — foreign text outranks genuine matches, and the English-only reranker cannot fix it |
 | **ONNX reranker** | 3.7x faster than PyTorch on CPU (23ms vs 86ms for 4 candidates) |
-| **Cloud embedding (ACI)** | Local GPU unavailable; 4-CPU ACI with 16GB RAM handles 26K docs in ~3h |
+| **Cloud embedding (ACA job)** | Local GPU unavailable. 30 parallel replicas embed 84.8K docs in ~50 min. Each reads one pre-cut slice blob rather than the whole corpus: measured +4.9 MB resident vs +429 MB, which is what fixed the OOMKill |
 | **API at 2 vCPU, always-on** | Measured, not guessed. At 1 vCPU with `minReplicas: 0`, removing the reranker's passage truncation pushed `rerank=true` past the ingress timeout (3/6 requests failed, one took 98s), and the first request after idle paid a ~20s model load. Separate liveness (`/health`) and readiness (`/ready`) probes stop ingress routing to replicas that are still loading |
 
 ---
