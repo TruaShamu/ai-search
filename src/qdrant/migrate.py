@@ -52,11 +52,19 @@ def build_payload(book: dict, point_id: int) -> dict:
     payload["id"] = point_id
     payload["authors"] = ", ".join(author for author in authors if author)
     payload["year"] = book.get("first_publish_year")
-    payload["cover_url"] = (
-        f"https://covers.openlibrary.org/b/id/{book['cover_id']}-M.jpg"
-        if book.get("cover_id")
-        else None
-    )
+    # OpenLibrary-sourced books carry a numeric cover_id; the v2 Goodreads
+    # corpus carries an ISBN instead. OpenLibrary serves covers by either key.
+    # `default=false` makes it 404 on a miss rather than return a 43-byte blank
+    # JPEG, which would load successfully and defeat the frontend's onError
+    # fallback, leaving an empty box instead of the placeholder.
+    if book.get("cover_id"):
+        payload["cover_url"] = f"https://covers.openlibrary.org/b/id/{book['cover_id']}-M.jpg"
+    elif book.get("isbn"):
+        payload["cover_url"] = (
+            f"https://covers.openlibrary.org/b/isbn/{book['isbn']}-M.jpg?default=false"
+        )
+    else:
+        payload["cover_url"] = None
     return payload
 
 

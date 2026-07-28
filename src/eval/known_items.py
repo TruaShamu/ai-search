@@ -33,7 +33,7 @@ from typing import Any
 
 # Paths relative to repo root (resolved at call time, never hardcoded absolute)
 _REPO_ROOT = Path(__file__).resolve().parents[2]
-_DEFAULT_CORPUS = _REPO_ROOT / "data" / "processed" / "books_augmented.jsonl"
+_DEFAULT_CORPUS = _REPO_ROOT / "data" / "processed" / "books_goodreads_v2.jsonl"
 _OUTPUT_DIR = _REPO_ROOT / "data" / "eval"
 _KNOWN_ITEMS_PATH = _OUTPUT_DIR / "known_items.json"
 _HARD_VARIANTS_PATH = _OUTPUT_DIR / "known_item_hard_variants.json"
@@ -335,7 +335,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--corpus", type=Path, default=_DEFAULT_CORPUS,
-        help="Path to books_augmented.jsonl",
+        help="Path to the indexed corpus JSONL (must match what is in Qdrant)",
     )
     parser.add_argument("--count", type=int, default=50,
                         help="Number of known items to sample (default: 50)")

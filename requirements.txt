@@ -27,6 +27,14 @@ scikit-learn>=1.5.0
 azure-core>=1.32.0
 azure-identity>=1.19.0
 azure-storage-queue>=12.9.0
+azure-storage-blob>=12.19.0
+
+# ETL text hygiene
+# ftfy repairs mojibake in the source dataset (26% of rows arrived as UTF-8
+# decoded as cp1252); langdetect keeps the index to the language the embedding
+# model and reranker actually handle.
+ftfy>=6.3.0
+langdetect>=1.0.9
 
 # Query Understanding
 symspellpy>=6.7.7

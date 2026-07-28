@@ -28,6 +28,34 @@ param qdrantCollection string = 'books'
 @description('Embedding dimension (Matryoshka).')
 param embedDim int = 256
 
+@description('Where workers write results. "blob" writes dense shards for offline assembly; "qdrant" upserts directly.')
+@allowed([
+  'blob'
+  'qdrant'
+])
+param embedOutputMode string = 'blob'
+
+@description('Blob prefix for dense shards when embedOutputMode is "blob".')
+param shardPrefix string = 'shards'
+
+@description('Max concurrent job executions. Each execution embeds one slice.')
+param maxExecutions int = 30
+
+@description('vCPU per replica. The Consumption plan tops out at 2.0.')
+param workerCpu string = '2.0'
+
+@description('Memory per replica. Must pair with workerCpu at a 1:2 ratio.')
+param workerMemory string = '4.0Gi'
+
+@description('Seconds a single execution may run before ACA kills it.')
+param replicaTimeoutSeconds int = 10800
+
+@description('Sentence-transformer encode batch size. Sized against workerMemory, not throughput.')
+param embedBatchSize int = 32
+
+@description('Token cap per document. Measured max for this corpus is ~600 tokens, so 1024 is lossless.')
+param embedMaxSeqLen int = 1024
+
 @description('ACR name for credential lookup.')
 param acrName string
 
@@ -50,15 +78,15 @@ resource embedJob 'Microsoft.App/jobs@2024-03-01' = {
   properties: {
     environmentId: containerAppEnvironmentId
     configuration: {
-      replicaTimeout: 3600  // 1 hour max per execution
+      replicaTimeout: replicaTimeoutSeconds
       replicaRetryLimit: 2
       triggerType: 'Event'
       eventTriggerConfig: {
-        parallelism: 1        // One worker at a time (memory-bound)
+        parallelism: 1        // One replica per execution; concurrency comes from maxExecutions
         replicaCompletionCount: 1
         scale: {
           minExecutions: 0    // Scale to zero when queue is empty
-          maxExecutions: 3    // Max concurrent batches
+          maxExecutions: maxExecutions
           pollingInterval: 30
           rules: [
             {
@@ -129,13 +157,33 @@ resource embedJob 'Microsoft.App/jobs@2024-03-01' = {
               value: string(embedDim)
             }
             {
+              name: 'EMBED_OUTPUT_MODE'
+              value: embedOutputMode
+            }
+            {
+              name: 'SHARD_PREFIX'
+              value: shardPrefix
+            }
+            {
+              name: 'EMBED_BATCH_SIZE'
+              value: string(embedBatchSize)
+            }
+            {
+              name: 'EMBED_MAX_SEQ_LEN'
+              value: string(embedMaxSeqLen)
+            }
+            {
               name: 'PYTHONPATH'
               value: '/app'
             }
           ]
+          // The Consumption plan only accepts fixed cpu/memory pairs at a 1:2
+          // ratio and tops out at 2.0 vCPU / 4.0Gi. Asking for 4 vCPU is
+          // rejected at deploy time with ContainerAppInvalidResourceTotal, so
+          // throughput comes from maxExecutions rather than bigger replicas.
           resources: {
-            cpu: 4
-            memory: '16Gi'
+            cpu: json(workerCpu)
+            memory: workerMemory
           }
         }
       ]

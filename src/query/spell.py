@@ -11,6 +11,7 @@ from symspellpy import SymSpell, Verbosity
 # Default frequency dictionary (English)
 FREQ_DICT_PATH = Path(__file__).parent / "frequency_dictionary.txt"
 CORPUS_DICT_PATH = Path("data/processed/corpus_dictionary.txt")
+DEFAULT_CORPUS_PATH = Path("data/processed/books_goodreads_v2.jsonl")
 
 
 class SpellCorrector:
@@ -84,23 +85,32 @@ class SpellCorrector:
         return [s.term for s in suggestions[:max_suggestions] if s.term != query.lower()]
 
 
-def build_corpus_dictionary(output_path: Path = CORPUS_DICT_PATH):
+def build_corpus_dictionary(
+    output_path: Path = CORPUS_DICT_PATH,
+    corpus_path: Path = DEFAULT_CORPUS_PATH,
+):
     """Build a domain dictionary from our book corpus for SymSpell.
 
-    Reads data/processed/books_augmented.jsonl directly — no network call needed.
-    Only includes the indexed books (those with a non-empty "description" field),
-    which matches the 26,519 books actually searchable in Qdrant.
+    Reads the corpus JSONL directly — no network call needed. Only includes
+    books with a non-empty "description", which is exactly the set indexed
+    into Qdrant, so the dictionary can never contain terms the searcher
+    cannot reach.
+
+    The corpus path is a parameter because the dictionary must be rebuilt from
+    whichever corpus is actually indexed. A dictionary left over from an older
+    corpus degrades silently: spell correction keeps "fixing" queries toward
+    titles and authors that are no longer in the index.
 
     Extracts unique terms from titles, authors, and subjects.
     Each term gets frequency=1000 (high enough to prefer over generic English).
     """
     import json
 
-    jsonl_path = Path("data/processed/books_augmented.jsonl")
+    jsonl_path = Path(corpus_path)
     if not jsonl_path.exists():
         raise FileNotFoundError(
             f"Missing corpus file: {jsonl_path}. "
-            "Download or regenerate books_augmented.jsonl first."
+            "Build the corpus first (see src/etl/build_goodreads_corpus.py)."
         )
 
     all_terms: set[str] = set()
@@ -147,5 +157,18 @@ def build_corpus_dictionary(output_path: Path = CORPUS_DICT_PATH):
 
 
 if __name__ == "__main__":
-    print("Building corpus dictionary from books_augmented.jsonl...")
-    build_corpus_dictionary()
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Build the SymSpell corpus dictionary.")
+    parser.add_argument(
+        "--corpus", type=Path, default=DEFAULT_CORPUS_PATH,
+        help="Corpus JSONL to build the dictionary from",
+    )
+    parser.add_argument(
+        "--output", type=Path, default=CORPUS_DICT_PATH,
+        help="Where to write the dictionary",
+    )
+    args = parser.parse_args()
+
+    print(f"Building corpus dictionary from {args.corpus}...")
+    build_corpus_dictionary(output_path=args.output, corpus_path=args.corpus)

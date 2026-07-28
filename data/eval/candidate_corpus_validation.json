@@ -1,0 +1,50 @@
+{
+  "dataset": "euclaise/goodreads_100k",
+  "rows": 100000,
+  "columns": [
+    "author",
+    "desc",
+    "genre",
+    "isbn",
+    "link",
+    "pages",
+    "rating",
+    "reviews",
+    "title",
+    "totalratings"
+  ],
+  "field_mapping": {
+    "title": "title",
+    "author": "author",
+    "description": "desc",
+    "isbn": "isbn",
+    "genre": "genre"
+  },
+  "completeness": {
+    "missing_title": 1,
+    "missing_author": 0,
+    "missing_description": 6772,
+    "boilerplate_description": 1,
+    "has_isbn": 85518
+  },
+  "usable_rows": 92872,
+  "cross_author_duplicate_descriptions": {
+    "distinct_shared_descriptions": 115,
+    "rows_affected": 569,
+    "rate": 0.0061,
+    "v1_goodreads_rate": 0.265,
+    "v1_openlibrary_rate": 0.005
+  },
+  "duplicates": {
+    "duplicate_title_rows": 4042,
+    "duplicate_title_author_rows": 86
+  },
+  "zero_vocab_overlap_rate": 0.1955,
+  "description_length": {
+    "p10": 259,
+    "median": 782,
+    "p90": 1588,
+    "max": 18458
+  },
+  "mostly_non_ascii_rate": 0.0184
+}

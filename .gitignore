@@ -62,3 +62,7 @@ data/eval/v2/*
 # (107KB) keeps the v1 threshold-sensitivity numbers verifiable afterwards.
 !data/eval/v2/rankings_v1.json
 !data/eval/v2/threshold_sensitivity.json
+
+# Local scratch file holding an Azure storage connection string (account key) - never commit
+.storage_cs.tmp
+
