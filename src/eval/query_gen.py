@@ -53,7 +53,13 @@ load_dotenv()
 
 # ── Paths ────────────────────────────────────────────────────────────────────
 
-BOOKS_PATH = Path("data/processed/books_augmented.jsonl")
+# Corpus the queries are grounded in. This MUST match the corpus that is
+# actually indexed and served: generated queries carry gold doc_ids drawn from
+# this file, so pointing it at a stale corpus does not fail loudly -- it emits
+# a query set whose gold ids resolve to nothing, and the eval reports a
+# catastrophic-looking regression that is really just a wiring error.
+# (The v1 file books_augmented.jsonl is still on disk, so this is a live trap.)
+DEFAULT_CORPUS_PATH = Path("data/processed/books_goodreads_v2.jsonl")
 DEFAULT_OUT = Path("data/eval/v2/queries_grounded.json")
 
 # ── Category targets (match existing pipeline vocabulary) ────────────────────
@@ -154,7 +160,7 @@ def _tokenize_no_stop(text: str) -> list[str]:
 
 # ── Corpus loading ──────────────────────────────────────────────────────────
 
-def load_indexed_books(path: Path = BOOKS_PATH) -> list[dict]:
+def load_indexed_books(path: Path = DEFAULT_CORPUS_PATH) -> list[dict]:
     """Load books that have a non-empty description (the indexed subset)."""
     books: list[dict] = []
     with open(path, encoding="utf-8") as f:
@@ -961,6 +967,13 @@ def main(argv: list[str] | None = None) -> None:
         help="Random seed for reproducibility (default: 42)",
     )
     parser.add_argument(
+        "--corpus", type=str, default=str(DEFAULT_CORPUS_PATH),
+        help=(
+            "Corpus to ground queries in. Must match the corpus that is "
+            f"indexed and served (default: {DEFAULT_CORPUS_PATH})"
+        ),
+    )
+    parser.add_argument(
         "--max-verbatim-ngram", type=int, default=None,
         help=("Reject and resample queries whose longest verbatim n-gram "
               "overlap with the gold doc >= N tokens. Default: no filtering "
@@ -968,8 +981,9 @@ def main(argv: list[str] | None = None) -> None:
     )
     args = parser.parse_args(argv)
 
-    print(f"Loading indexed books from {BOOKS_PATH}...")
-    books = load_indexed_books()
+    corpus_path = Path(args.corpus)
+    print(f"Loading indexed books from {corpus_path}...")
+    books = load_indexed_books(corpus_path)
     print(f"Loaded {len(books)} indexed books (with non-empty description)")
 
     print("Building corpus document-frequency index...")

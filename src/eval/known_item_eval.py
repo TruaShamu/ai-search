@@ -123,12 +123,32 @@ def save_baseline(
 # API helpers
 # ---------------------------------------------------------------------------
 
-def _search(api_url: str, query: str, mode: str, top_k: int = 10) -> dict:
+def _parse_mode(mode: str) -> tuple[str, bool]:
+    """Split a mode label into ``(api_mode, rerank)``.
+
+    ``"hybrid+rerank"`` -> ``("hybrid", True)``. Encoding the reranker arm in
+    the mode label keeps a paired comparison (same queries, same index, same
+    run) in a single result dict, so the only variable between the two arms is
+    the reranker itself.
+    """
+    if mode.endswith("+rerank"):
+        return mode[: -len("+rerank")], True
+    return mode, False
+
+
+def _search(
+    api_url: str,
+    query: str,
+    mode: str,
+    top_k: int = 10,
+    rerank: bool = False,
+) -> dict:
     """Call the search API. Raises on HTTP / network errors."""
     url = (
         f"{api_url}/search"
         f"?q={urllib.parse.quote(query)}"
         f"&mode={mode}&top_k={top_k}&understand=false"
+        f"&rerank={'true' if rerank else 'false'}"
     )
     resp = urllib.request.urlopen(url, timeout=_REQUEST_TIMEOUT)
     return json.loads(resp.read())
@@ -157,6 +177,7 @@ def _eval_items(
     results: dict[str, Any] = {}
 
     for mode in modes:
+        api_mode, rerank = _parse_mode(mode)
         reciprocal_ranks: list[float] = []
         hits_at_1 = 0
         hits_at_5 = 0
@@ -174,7 +195,7 @@ def _eval_items(
             }
 
             try:
-                data = _search(api_url, query, mode, top_k)
+                data = _search(api_url, query, api_mode, top_k, rerank=rerank)
             except Exception as exc:
                 entry.update(rank=None, error=str(exc))
                 reciprocal_ranks.append(0.0)
@@ -210,6 +231,7 @@ def _eval_items(
             "hits_at_1": hits_at_1,
             "hits_at_5": hits_at_5,
             "total": n,
+            "errors": sum(1 for d in details if d.get("error")),
             "details": details,
         }
 
@@ -313,6 +335,17 @@ def _print_standard_report(
             f"({r['hits_at_1']}/{r['total']} at rank 1)"
             f"{status}"
         )
+
+        # A failed request is scored as a miss, so a client-side fault (bad
+        # signature, wrong URL, timeout) is otherwise indistinguishable from
+        # genuinely poor retrieval. Surface it unconditionally, not just -v.
+        n_err = r.get("errors", 0)
+        if n_err:
+            print(
+                f"           !! {n_err}/{r['total']} queries ERRORED and were "
+                f"scored as misses -- metrics for {mode} are not "
+                f"trustworthy (re-run with -v for details)"
+            )
 
     # Keyword distinctive vs common split
     _print_keyword_split(results)
@@ -485,7 +518,31 @@ def main() -> int:
         "--baseline-file", type=Path, default=None,
         help="Path to known_item_baseline.json",
     )
+    parser.add_argument(
+        "--modes", type=str, default=None,
+        help=(
+            "Comma-separated modes to evaluate (default: "
+            f"{','.join(_MODES)}). Append '+rerank' to any mode to run it "
+            "through the cross-encoder, e.g. 'hybrid,hybrid+rerank' for a "
+            "paired reranker comparison."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.modes:
+        eval_modes = tuple(m.strip() for m in args.modes.split(",") if m.strip())
+    else:
+        eval_modes = _MODES
+
+    # Refuse to baseline on a custom mode set: save_baseline writes whatever
+    # modes it was given, so a partial run would silently shrink the gate.
+    if args.update_baseline and eval_modes != _MODES:
+        print(
+            "ERROR: --update-baseline requires the default mode set. "
+            "Remove --modes.",
+            file=sys.stderr,
+        )
+        return 1
 
     # Refuse to baseline on --fast (too much sampling noise)
     if args.update_baseline and args.fast:
@@ -556,7 +613,9 @@ def main() -> int:
     t0 = time.time()
 
     # Standard eval
-    standard_results = _eval_items(args.api_url, items, top_k=args.top_k)
+    standard_results = _eval_items(
+        args.api_url, items, modes=eval_modes, top_k=args.top_k
+    )
     passed = _print_standard_report(
         standard_results, baseline, max_drop_pp, gated_modes,
         verbose=args.verbose,
@@ -576,7 +635,7 @@ def main() -> int:
 
         if hard_items:
             hard_results = _eval_items(
-                args.api_url, hard_items, top_k=args.top_k
+                args.api_url, hard_items, modes=eval_modes, top_k=args.top_k
             )
             _print_diagnostic_report(hard_results, verbose=args.verbose)
 

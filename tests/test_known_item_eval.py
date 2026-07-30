@@ -222,7 +222,7 @@ class TestExtractIds:
 class TestEvalMetrics:
     """Test metric computation with mocked API responses."""
 
-    def _mock_search(self, api_url, query, mode, top_k=10):
+    def _mock_search(self, api_url, query, mode, top_k=10, rerank=False):
         return {
             "results": [
                 {"work_id": "/works/OL1W", "title": "Book One", "score": 1.0},
@@ -230,7 +230,7 @@ class TestEvalMetrics:
             ]
         }
 
-    def _mock_search_rank2(self, api_url, query, mode, top_k=10):
+    def _mock_search_rank2(self, api_url, query, mode, top_k=10, rerank=False):
         return {
             "results": [
                 {"work_id": "/works/OL999W", "title": "Other", "score": 1.0},
