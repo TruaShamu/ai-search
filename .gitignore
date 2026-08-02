@@ -2,6 +2,10 @@
 .env
 .env.*
 
+# ...but the template listing which variables exist (no values) is committed,
+# since a fresh clone otherwise has no way to discover them.
+!.env.example
+
 # Python
 __pycache__/
 *.pyc
