@@ -534,16 +534,6 @@ def main() -> int:
     else:
         eval_modes = _MODES
 
-    # Refuse to baseline on a custom mode set: save_baseline writes whatever
-    # modes it was given, so a partial run would silently shrink the gate.
-    if args.update_baseline and eval_modes != _MODES:
-        print(
-            "ERROR: --update-baseline requires the default mode set. "
-            "Remove --modes.",
-            file=sys.stderr,
-        )
-        return 1
-
     # Refuse to baseline on --fast (too much sampling noise)
     if args.update_baseline and args.fast:
         print(
@@ -566,6 +556,22 @@ def main() -> int:
     # Load baseline (if any)
     baseline = load_baseline(args.baseline_file)
 
+    # Baselining a narrower mode set than the one already recorded would
+    # silently shrink the gate: save_baseline writes exactly the modes it is
+    # handed, so a dropped mode stops being checked without anything failing.
+    # Adding modes is fine and is how the reranker arm was introduced.
+    if args.update_baseline and baseline:
+        dropped = set(baseline.get("modes", {})) - set(eval_modes)
+        if dropped:
+            print(
+                f"ERROR: --update-baseline would drop {sorted(dropped)} from "
+                f"the baseline, which silently removes them from the gate. "
+                f"Include them in --modes, or delete the baseline file to "
+                f"start over deliberately.",
+                file=sys.stderr,
+            )
+            return 1
+
     # Resolve gated_modes and max_drop from baseline or CLI
     if args.gated_modes:
         gated_modes = [m.strip() for m in args.gated_modes.split(",")]
@@ -573,6 +579,17 @@ def main() -> int:
         gated_modes = baseline.get("gated_modes", ["hybrid"])
     else:
         gated_modes = ["hybrid"]
+
+    # A gated mode that is not being evaluated can never fail, so the gate
+    # would silently pass. Catch the mismatch instead of trusting it.
+    ungated = [m for m in gated_modes if m not in eval_modes]
+    if ungated:
+        print(
+            f"ERROR: gated modes {ungated} are not in the evaluated set "
+            f"{list(eval_modes)}; the gate would pass without checking them.",
+            file=sys.stderr,
+        )
+        return 1
 
     if args.max_drop is not None:
         max_drop_pp = args.max_drop

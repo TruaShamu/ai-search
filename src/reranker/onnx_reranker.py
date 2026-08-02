@@ -18,6 +18,7 @@ from transformers import AutoTokenizer
 from src.reranker.config import (  # noqa: F401  (re-exported for callers)
     MAX_DESCRIPTION_CHARS,
     MAX_SEQUENCE_TOKENS,
+    RERANK_BATCH_SIZE,
     RERANK_DEPTH_MULTIPLIER,
 )
 
@@ -87,20 +88,61 @@ class OnnxReranker:
             print("Reranker loaded (PyTorch fallback — run onnx_export for speedup)")
 
     def _predict_onnx(self, query: str, passages: list[str]) -> np.ndarray:
-        """Score (query, passage) pairs using ONNX Runtime."""
+        """Score (query, passage) pairs using ONNX Runtime.
+
+        Passages are sorted by token length and scored in length-bucketed
+        sub-batches, each padded only to its own longest member.
+
+        This does not change any score. Padding is masked out by
+        attention_mask, so the arithmetic on real tokens is identical; the
+        only difference is how many pad tokens the model multiplies by zero.
+        Scoring one flat batch let a single long description set the tensor
+        width for every short one -- measured at ~47% wasted tokens on a
+        25-candidate set.
+        """
+        if not passages:
+            return np.empty(0, dtype=np.float32)
+
         encoded = self.tokenizer(
             [query] * len(passages),
             passages,
-            padding=True,
+            padding=False,
             truncation=True,
             max_length=MAX_SEQUENCE_TOKENS,
-            return_tensors="np",
         )
 
-        ort_inputs = {k: v for k, v in encoded.items() if k in [n.name for n in self.session.get_inputs()]}
-        outputs = self.session.run(None, ort_inputs)
-        # Output shape: (batch, 1) — squeeze to (batch,)
-        scores = outputs[0].squeeze(-1) if outputs[0].ndim > 1 else outputs[0]
+        input_names = {n.name for n in self.session.get_inputs()}
+        keys = [k for k in encoded.keys() if k in input_names]
+        lengths = [len(ids) for ids in encoded["input_ids"]]
+
+        # Pad with the tokenizer's own pad id; attention_mask marks these
+        # positions dead, so the value only matters for embedding-table bounds.
+        pad_id = self.tokenizer.pad_token_id or 0
+
+        order = sorted(range(len(passages)), key=lambda i: lengths[i])
+        scores = np.empty(len(passages), dtype=np.float32)
+
+        for start in range(0, len(order), RERANK_BATCH_SIZE):
+            idx = order[start:start + RERANK_BATCH_SIZE]
+            width = max(lengths[i] for i in idx)
+
+            batch = {}
+            for key in keys:
+                fill = pad_id if key == "input_ids" else 0
+                batch[key] = np.array(
+                    [
+                        encoded[key][i] + [fill] * (width - lengths[i])
+                        for i in idx
+                    ],
+                    dtype=np.int64,
+                )
+
+            out = self.session.run(None, batch)[0]
+            out = out.squeeze(-1) if out.ndim > 1 else out
+            # Scatter back: idx holds original positions, so this undoes the
+            # length sort rather than returning scores in sorted order.
+            scores[idx] = out.astype(np.float32)
+
         return scores
 
     def _build_passage(self, doc: dict) -> str:
