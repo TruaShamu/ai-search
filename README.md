@@ -123,7 +123,7 @@ sequenceDiagram
 ## Features
 
 - **Hybrid Search (RRF)** — Reciprocal Rank Fusion of TF-IDF + dense vectors. Best of both worlds: keyword precision + semantic understanding.
-- **Cross-Encoder Reranker** — Optional two-stage retrieval. ONNX-optimized for CPU. On the current v2 index it lifts known-item Acc@1 from 86% to 98% with **zero regressions across 80 paired queries**; an earlier v1 graded eval put the gain at +0.097 NDCG. Available as a toggle because it costs ~3.7s — see eval findings below for where it helps most.
+- **Cross-Encoder Reranker** — Optional two-stage retrieval. ONNX-optimized for CPU with length-bucketed batching. On the current v2 index it lifts known-item Acc@1 from 86% to 98% with **zero regressions across 80 paired queries**; an earlier v1 graded eval put the gain at +0.097 NDCG. Available as a toggle because it costs ~2.1s — see eval findings below for where it helps most.
 - **Query Understanding** — Spell correction (SymSpell), intent detection, query-adaptive mode routing.
 - **RAG with Guardrails** — Natural language Q&A grounded in retrieved books. Citation validation prevents hallucinated titles.
 - **Compare View** — Side-by-side 3-column comparison of keyword vs. hybrid vs. vector results.
@@ -227,7 +227,7 @@ The same harness also runs 30 **hard variants** — typos, partial titles, and t
 | Vector | **73%** | 80% |
 | Keyword (TF-IDF) | 67% | 87% |
 
-Degradation is graceful rather than catastrophic, and hybrid retains the best combined top-5 recovery. This eval doubles as a CI regression gate: it fails the build if hybrid accuracy drops more than 5 points below the recorded baseline.
+Degradation is graceful rather than catastrophic, and hybrid retains the best combined top-5 recovery. This eval doubles as a CI regression gate: every deploy re-runs all four modes against the live container and fails the build if **hybrid or hybrid+rerank** accuracy drops more than 5 points below the recorded baseline.
 
 #### Reranking on v2: a paired test
 
@@ -249,9 +249,23 @@ The aggregate (+12.0pp and +16.7pp Acc@1) understates the result, because an ave
 
 **Zero regressions across 80 paired queries.** The hard-variant *p* of 0.0625 looks like a failure to reach significance, but it is the *floor* for five discordant pairs pointing the same way (2 × 2⁻⁵) — it is as significant as that sample size permits, not weak evidence.
 
+> Hybrid's un-reranked Acc@1 moves between **86% and 88%** across runs (one item is 2pp at n=50); the recorded CI baseline happens to sit at 88%. The paired comparison is unaffected by that drift, because both arms are measured in the same run against the same index — which is the reason it is run paired rather than compared against a stored number.
+
 Two details worth more than the headline number. Most gains are **rank 2 → 1**, which is the fine-grained top-of-list discrimination a cross-encoder is supposed to provide rather than a wholesale reshuffle. And two documents were promoted from *outside* the top 10 — evidence the 2.5× candidate pool does real work, since a reranker confined to the original top 10 could not have found them.
 
-The cost is the reason this stays opt-in: the same query goes from **302 ms to 4.1 s**. Roughly 47% of the tokens the cross-encoder processes are padding (`padding=True` pads every candidate to the batch maximum), so a length-bucketed batch would return a large share of that latency with bit-identical output. That optimization is not yet implemented.
+The cost is the reason this stays opt-in: a reranked query runs **~2.1 s end-to-end vs ~200 ms** for plain hybrid.
+
+That cost used to be roughly twice as high. The cross-encoder scored all 25 candidates in one batch with `padding=True`, so a single long description set the tensor width for every short one — **45.2% of processed tokens were padding**. Sorting candidates by length and scoring them in sub-batches of 4, each padded only to its own longest member, cuts padding to 17.7% (33.4% fewer tokens overall). Because padding is masked by `attention_mask`, this changes no score: measured max absolute difference vs. the flat batch is **exactly 0.0** across 12 trials of 25 real candidates, with zero ranking changes.
+
+| | Flat batch | Length-bucketed | Change |
+|---|---|---|---|
+| Rerank stage (production) | 3642 ms | **1812 ms** | **2.01× faster** |
+| End-to-end (production) | 4096 ms | **2089 ms** | 1.96× faster |
+| Padding share of tokens | 45.2% | **17.7%** | 33.4% fewer tokens |
+
+Batch size 4 was picked from a measured sweep rather than by feel. At 25 candidates the curve is flat between 2 and 6 (676–781 ms locally); 4 captures nearly all of the win with half the ONNX Runtime invocations of 2, which is the cost most likely to grow on a smaller container. Setting it to 25 reproduces the flat-batch time exactly, which is the sanity check that one bucket spanning everything *is* the old behaviour.
+
+The riskiest part is the scatter-back: returning scores in sorted order would mis-attribute every score while still producing a plausible-looking ranking. `tests/test_reranker_batching.py` covers it with fakes rather than the 86 MB ONNX model, so it runs on a clean clone — and reverting the scatter to sequential assignment fails 8 of its 11 tests.
 
 **Serving latency at 84.8K points** (warm, hybrid, k=10, n=32 against the live deployment): median **182 ms**, p95 **434 ms**. A cold first request costs ~4 s while the embedding model loads, which is why readiness gating exists.
 
@@ -259,10 +273,10 @@ The cost is the reason this stays opt-in: the same query goes from **302 ms to 4
 
 - **Hybrid beats keyword, and this time the data supports it.** An earlier version of this eval put the gap at 0.003 MRR against a standard error near 0.07 — indistinguishable from noise. That result was an artifact: the query set had been generated by an LLM with no view of the corpus, producing canonical titles (*1984*, *The Great Gatsby*) against an index of mostly obscure OpenLibrary works, and carrying no gold documents. On corpus-grounded queries the margin is **+0.111 NDCG [+0.079, +0.146]**.
 - **Cross-encoder reranking helps, and the earlier finding that it hurt was caused by a bug in my own code.** `onnx_reranker.py` truncated every passage at `[:300]` characters, discarding **60.2% of all description text across 62% of documents** (median description length is 477 characters, 90th percentile 1,289). The cross-encoder was scoring fragments while RRF fused the full index. With truncation fixed, reranking gains **+0.097 NDCG [+0.060, +0.135]** over hybrid and lifts MRR to **0.985** — and the gain *grows* to +0.105 MRR under the strict grade-2 threshold, so it is promoting the best document rather than merely a relevant one. This finding **replicated on the v2 corpus under a different method**: a paired known-item test moved Acc@1 from 86% to 98% with 11 queries fixed and 0 broken. Two independent evals, two corpora, same direction.
-- **Fixing the quality bug exposed a capacity bug that had been hiding behind it.** Full-length passages take the cross-encoder from ~93 tokens to ~335. On the original 1 vCPU container that pushed `rerank=true` past the ingress timeout: 3 of 6 requests failed and one took 98 seconds. The API now runs on 2 vCPU with a readiness probe, where reranking is 10/10 successful at a 3.3s median. Truncation had been masking the fact that the container could not afford the work.
+- **Fixing the quality bug exposed a capacity bug that had been hiding behind it.** Full-length passages take the cross-encoder from ~93 tokens to ~335. On the original 1 vCPU container that pushed `rerank=true` past the ingress timeout: 3 of 6 requests failed and one took 98 seconds. The API now runs on 2 vCPU with a readiness probe, where reranking is 10/10 successful — at a 3.3s median then, and ~1.8s now that length-bucketed batching stopped the model padding every candidate to the longest one. Truncation had been masking the fact that the container could not afford the work.
 - **Dense retrieval is stronger than lexical here, and both evals agree.** Vector beats keyword by +0.105 NDCG in the graded eval and by 28 points of known-item Acc@1 on the v2 index (94% vs 66%). The previous claim that "vector alone underperforms keyword" came from a pool built from keyword-friendly candidates that stored no negatives, so dense retrieval was penalized for surfacing books the pool had never judged.
 
-> Reranking stays an **opt-in toggle** rather than a default. The quality gain is real and reproduced on v2, but ~3.7s is too slow to impose on every search when plain hybrid answers in ~182ms. It is worth the wait on exploratory queries — "love story tragedy" returns Romeo & Juliet first with reranking on.
+> Reranking stays an **opt-in toggle** rather than a default. The quality gain is real and reproduced on v2, but ~2.1s is still too slow to impose on every search when plain hybrid answers in ~200ms. It is worth the wait on exploratory queries — "love story tragedy" returns Romeo & Juliet first with reranking on.
 
 ### Known Limitations of This Eval
 
@@ -412,7 +426,7 @@ data/
 | **Qdrant over Azure AI Search** | Measured 15x faster at the time of migration (24ms vs 370ms), plus no tier limits, built-in RRF, and self-hosting. The Azure resource has since been decommissioned, so that comparison is no longer reproducible from this repo |
 | **TF-IDF over BM25** | Sufficient at the current scale; hybrid compensates. BM25's length norm matters more as the index grows — at 84.8K docs this is now the closest call in the table and the most likely next change |
 | **Matryoshka dim=256** | nomic-embed-text-v1.5 trained checkpoints: 768/512/256/128/64. 256 balances quality vs. index size |
-| **Reranker opt-in** | Adds ~3.7s. Gains +12pp known-item Acc@1 on v2 (86%→98%, 11 queries fixed / 0 broken, McNemar p=0.031) and +0.097 NDCG [+0.060, +0.135] on the v1 graded eval. Too slow to impose on every search, so it is off by default and toggleable per query |
+| **Reranker opt-in** | Adds ~1.8s of cross-encoder time (down from ~3.6s after length-bucketed batching). Gains +12pp known-item Acc@1 on v2 (86%→98%, 11 queries fixed / 0 broken, McNemar p=0.031) and +0.097 NDCG [+0.060, +0.135] on the v1 graded eval. Still too slow to impose on every search, so it is off by default and toggleable per query |
 | **Single-source corpus** | Replaced a title-matched OpenLibrary+Goodreads join that provably mislabeled ≥12.8% of descriptions. Title, author, and description now come from one row, so the error cannot be represented |
 | **English-only index** | Measured: a Spanish translation scores 0.635 against an English query where an English paraphrase scores 0.787 and an unrelated English sentence scores 0.274 — foreign text outranks genuine matches, and the English-only reranker cannot fix it |
 | **ONNX reranker** | 3.7x faster than PyTorch on CPU (23ms vs 86ms for 4 candidates) |
