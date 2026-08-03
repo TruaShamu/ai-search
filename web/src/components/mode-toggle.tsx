@@ -9,9 +9,9 @@ interface SearchMode {
 }
 
 const MODES: SearchMode[] = [
-  { value: "hybrid", label: "Hybrid", description: "BM25 + Vector + RRF" },
+  { value: "hybrid", label: "Hybrid", description: "TF-IDF + Vector + RRF" },
   { value: "vector", label: "Semantic", description: "Vector similarity only" },
-  { value: "keyword", label: "Keyword", description: "BM25 text matching" },
+  { value: "keyword", label: "Keyword", description: "TF-IDF text matching" },
 ];
 
 interface ModeToggleProps {

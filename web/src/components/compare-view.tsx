@@ -56,14 +56,14 @@ export function CompareView({ query, spellCorrection }: CompareViewProps) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground text-center">
-        Side-by-side: how BM25, Vector, and Hybrid (RRF) rank results for the same query
+        Side-by-side: how TF-IDF, Vector, and Hybrid (RRF) rank results for the same query
       </p>
 
       <div className="grid grid-cols-3 gap-4">
-        {/* Keyword (BM25) column */}
+        {/* Keyword (TF-IDF) column */}
         <div>
           <div className="flex items-center gap-2 mb-3 pb-2 border-b">
-            <Badge variant="outline">BM25</Badge>
+            <Badge variant="outline">TF-IDF</Badge>
             <span className="text-[10px] text-muted-foreground font-mono">
               {keywordResult.latency_ms.toFixed(0)}ms
             </span>
@@ -108,8 +108,8 @@ export function CompareView({ query, spellCorrection }: CompareViewProps) {
 
       {/* Overlap analysis */}
       <div className="mt-4 p-3 bg-muted/50 rounded-lg text-center space-y-1">
-        <OverlapBadge label="BM25 ∩ Vector" left={keywordResult} right={vectorResult} />
-        <OverlapBadge label="BM25 ∩ Hybrid" left={keywordResult} right={hybridResult} />
+        <OverlapBadge label="TF-IDF ∩ Vector" left={keywordResult} right={vectorResult} />
+        <OverlapBadge label="TF-IDF ∩ Hybrid" left={keywordResult} right={hybridResult} />
         <OverlapBadge label="Vector ∩ Hybrid" left={vectorResult} right={hybridResult} />
       </div>
     </div>
