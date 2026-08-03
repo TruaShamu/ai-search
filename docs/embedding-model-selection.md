@@ -1,5 +1,21 @@
 # Embedding Model Selection — Decision Document
 
+> **Status: historical.** This records the model evaluation as it stood *before* the
+> system was built, when the corpus was still 250K–1.6M OpenLibrary records. Two
+> things changed afterwards:
+>
+> - **The shipped model is `nomic-embed-text-v1.5`, not the `jina-v5-nano`
+>   recommended below.** jina scores ~3 MTEB points higher but is 900 MB against
+>   nomic's 274 MB — 3.3x the size and container image for a ~5% quality gain, on a
+>   CPU-only deployment with no GPU budget. That tradeoff is recorded in
+>   [embedding-strategy.md](embedding-strategy.md#alternatives-evaluated).
+> - **The corpus is now 84,801 single-source Goodreads records**, not OpenLibrary.
+>   See [CORPUS_HISTORY.md](CORPUS_HISTORY.md) for why it moved.
+>
+> The comparison is kept because the reasoning still holds — only the inputs changed.
+> Measured retrieval quality for what actually shipped is in
+> [EVALUATION.md](EVALUATION.md).
+
 ## Context
 
 We need an embedding model for a book search engine over ~250K–1.6M OpenLibrary
@@ -175,13 +191,14 @@ it on quality-per-parameter and is more CPU-friendly.
 - Batch API available (50% cheaper)
 
 **Cons:**
-- Proprietary — can't show model deployment/ONNX/infra skills in portfolio
+- Proprietary and hosted — no control over versioning, and it cannot be exported to
+  ONNX or run inside the existing container
 - API rate limits slow down batch embedding
 - Per-token cost adds up: 250K docs x ~50 tokens avg = ~$0.25 (negligible)
-- No PyTorch involvement — weakens the portfolio story
+- Adds a network hop and an external dependency to every query
 
-**Verdict:** Easiest path but defeats the portfolio purpose. Could use as a
-comparison baseline in eval.
+**Verdict:** Easiest path, but it trades away self-hosting and ONNX CPU inference,
+which the rest of the deployment depends on. Useful as a comparison baseline in eval.
 
 ---
 
@@ -192,7 +209,6 @@ comparison baseline in eval.
 | **Retrieval quality** | ★★ (47) | ★★★★ (62) | ★★★★★ (65) | ★★★★ (61) | ★★★★ (61) | ★★★★ (64) |
 | **CPU speed** | ★★★★★ | ★★★★★ | ★★★★ | ★★ | ★★ | N/A (API) |
 | **Model size** | 80MB | 274MB | 900MB | 2.2GB | 2.3GB | N/A |
-| **Portfolio value** | ★★★ | ★★★★ | ★★★★★ | ★★★★ | ★★★★ | ★ |
 | **Azure Foundry fit** | ★★★ | ★★★ | ★★★★ | ★★★ | ★★★★★ | ★★★★★ |
 | **Matryoshka dims** | No | Yes (64-768) | Yes (32-768) | No | No | Yes |
 | **Max tokens** | 256 | 8192 | 8192 | 8192 | 8192 | 8191 |
@@ -209,8 +225,7 @@ comparison baseline in eval.
 2. Matryoshka dims let us use 384d for prototype, upgrade to 768d later (same model!)
 3. Fast enough on CPU for both batch embedding and real-time queries
 4. 8192 token context future-proofs for longer descriptions
-5. Strong portfolio story: "I evaluated 6 models, chose the optimal quality/cost tradeoff"
-6. ONNX-exportable for production CPU inference
+5. ONNX-exportable for production CPU inference
 
 ### Strong alternative: nomic-embed-text-v1.5
 
@@ -231,8 +246,9 @@ compare quality in your eval framework.
 
 ### Eval baseline: Azure OpenAI text-embedding-3-small
 
-Include in your /search/compare evaluation to show how your open-source model
-compares to a proprietary API. Great portfolio talking point.
+Include in the /search/compare evaluation to quantify how far the self-hosted
+open-source model sits from a proprietary hosted API, so the cost of self-hosting is
+a measured number rather than an assumption.
 
 ---
 

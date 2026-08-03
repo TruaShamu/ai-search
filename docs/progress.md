@@ -1,8 +1,16 @@
 # Project Progress Log
 
-## Project: AI-Powered Book Search (OpenLibrary)
-**Goal:** Portfolio piece for backend + infra AI engineering roles
-**Stack:** Python, PyTorch, FastAPI, Azure (AI Search, Container Apps, Foundry)
+> **Status: historical log.** Kept as a running record of how the project was built,
+> including decisions that were later reversed. Two headline items below were
+> replaced: the corpus moved from **OpenLibrary to single-source Goodreads** after a
+> description-provenance defect ([CORPUS_HISTORY.md](CORPUS_HISTORY.md)), and the
+> vector store moved from **Azure AI Search to self-hosted Qdrant** (measured 15x
+> faster; the Azure resource has since been decommissioned). For the current
+> architecture read the [README](../README.md); for current results,
+> [EVALUATION.md](EVALUATION.md).
+
+## Project: AI-Powered Book Search
+**Stack:** Python, PyTorch, FastAPI, Qdrant, Azure Container Apps
 
 ---
 
@@ -23,7 +31,7 @@
 | Reranker | cross-encoder/ms-marco-MiniLM-L-6-v2 | Runs on CPU, scores 50 candidates in <500ms |
 | RAG model | gpt-4.1-nano | 3x cheaper than gpt-4o-mini, good enough for grounded answers |
 | Cache | Redis sidecar (Container Apps) | $0 extra, scale-to-zero |
-| IaC | Bicep | Native Azure, aligns with the Azure-focused portfolio |
+| IaC | Bicep | Native Azure, no extra toolchain to install in CI |
 
 ### EDA Findings
 - [x] Dataset: `storytracer/openlibrary_dump_2024-04-30` on HuggingFace (Parquet)
@@ -305,7 +313,7 @@ LLM expanded                   0.632      -21.0%
 
 ### Search Features (Exploration Ideas)
 - [ ] **"More like this"** — `GET /similar?work_id=X` → nearest neighbors by embedding. Dead simple, very demoable.
-- [ ] **Result explanations** — "Why did this match?" Show which signals contributed (BM25 score, vector similarity, matched subjects). Portfolio differentiator.
+- [ ] **Result explanations** — "Why did this match?" Show which signals contributed (sparse score, vector similarity, matched subjects). Makes ranking debuggable and gives users a reason to trust a result.
 - [ ] **Faceted browse** — filter/aggregate by genre, decade, author. Exposes AI Search facets.
 - [ ] **Autocomplete/typeahead** — prefix search on titles + authors. Good UX touch.
 - [ ] **Personalization** — if we had user signals, weight results by reading history (overlaps with two-tower rec model).

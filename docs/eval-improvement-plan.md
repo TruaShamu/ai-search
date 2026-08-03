@@ -1,5 +1,19 @@
 # Evaluation Improvement Plan
 
+> **Status: completed and superseded.** Every item in this plan was built. The
+> heuristic annotator was replaced by an LLM judge, the judge was calibrated against
+> 89 hand-labeled pairs (Cohen's kappa **0.314** — disclosed, not buried), the query
+> set grew from 30 hand-written to **100 corpus-grounded** queries, and per-category
+> breakdowns now ship with bootstrap confidence intervals.
+>
+> The plan also predates two later corrections: the sparse arm is **TF-IDF, not
+> BM25** as written below, and the original query set turned out to be the dominant
+> source of error — it had been generated without reference to the corpus, so it
+> asked for books the index did not contain.
+>
+> **Current results and methodology: [EVALUATION.md](EVALUATION.md).** Kept as a
+> record of what the eval looked like before it was rebuilt.
+
 ## Current State
 
 We have a working eval framework (`src/eval/`) with:
@@ -78,7 +92,7 @@ Even with LLM-as-judge, manual judgments are the ground truth.
 
 **Use for:**
 - Calibrating the LLM judge (measure agreement)
-- Final numbers in README/portfolio
+- Final reported numbers
 - CI regression detection
 
 ### 3. Category-Specific Analysis

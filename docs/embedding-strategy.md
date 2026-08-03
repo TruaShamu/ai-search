@@ -1,5 +1,30 @@
 # Embedding Strategy — Decision Document
 
+> **Status: partly superseded.** The template and field mapping below were designed
+> against the OpenLibrary corpus. On the current 84,801-record Goodreads corpus
+> ([why it moved](CORPUS_HISTORY.md)) several source fields do not exist, so
+> `build_goodreads_corpus.py` writes them empty and the corresponding template
+> branches never fire. What is actually embedded today is:
+>
+> ```
+> search_document: {title} by {authors}. {description[:512]}. {subjects[:10]}
+> ```
+>
+> | Field | Designed for | On the v2 corpus |
+> |---|---|---|
+> | title, authors, description | included | included |
+> | subjects | OpenLibrary subjects | Goodreads `genre` column |
+> | subject_people / subject_places | "39% places, 10% people" | **always empty** — branch is dead |
+> | first_publish_year | AI Search filterable field | **always `None`** across the index |
+>
+> Two other assumptions also changed: the sparse arm is **TF-IDF, not BM25**, and
+> **Azure AI Search was replaced by self-hosted Qdrant** (measured 15x faster; the
+> Azure resource has since been decommissioned). Shipped dimensionality is **256d**,
+> not the 384d planned here.
+>
+> The reasoning about *why* to embed these fields still holds, which is why the
+> document is kept rather than deleted.
+
 ## What We Embed
 
 ### Template (Strategy 4 — Tiered with Nomic task prefixes)
@@ -56,4 +81,4 @@
 | jina-v5-text-nano | 65 | 900MB | Close second — 3pts better but 3x larger |
 | BGE-M3 | 61 | 2.2GB | Overkill — hybrid overlaps with AI Search BM25 |
 | harrier-oss-v1 | 61 | 2.3GB | Azure-aligned but too large for CPU |
-| Azure OpenAI 3-small | 64 | API | No portfolio value, eval baseline only |
+| Azure OpenAI 3-small | 64 | API | Hosted only — no ONNX export or self-hosting; eval baseline |

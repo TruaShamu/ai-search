@@ -331,6 +331,13 @@ data/
 |---|---|
 | [docs/EVALUATION.md](docs/EVALUATION.md) | Full eval methodology, all result tables, threshold sensitivity, judge validation, limitations, and how to reproduce |
 | [docs/CORPUS_HISTORY.md](docs/CORPUS_HISTORY.md) | Where the data came from, the v1 description-provenance bug, what the v2 migration changed, and the archived v1 results |
+| [docs/embedding-model-selection.md](docs/embedding-model-selection.md) | Six embedding models compared on MTEB retrieval, CPU throughput, size and Matryoshka support, and why the 274 MB model beat the 900 MB one |
+
+Three further documents — [embedding-strategy.md](docs/embedding-strategy.md),
+[eval-improvement-plan.md](docs/eval-improvement-plan.md) and
+[progress.md](docs/progress.md) — are kept as a historical record. Each opens with a
+status banner naming what it got wrong and what replaced it, because several were
+written before the corpus migration and the move off Azure AI Search.
 
 ---
 
