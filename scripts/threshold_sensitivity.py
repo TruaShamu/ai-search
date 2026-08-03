@@ -203,6 +203,7 @@ def main() -> int:
         print(f"Loaded saved rankings from {rankings_file.name}")
     else:
         rankings = {}
+        fetch_failures = []
         for mode in MODES:
             print(f"  Fetching {mode} ...")
             rankings[mode] = {}
@@ -210,8 +211,21 @@ def main() -> int:
                 ids = fetch_ranked_ids(query, mode)
                 if ids is not None:
                     rankings[mode][query] = ids
+                else:
+                    fetch_failures.append((mode, query))
                 if i % 25 == 0:
                     print(f"    {i}/{len(queries)}")
+        # Abort before writing. A partial fetch silently changes the denominator
+        # every threshold in this report is computed over, and the output still
+        # looks like a finished run.
+        if fetch_failures:
+            modes_hit = sorted({m for m, _ in fetch_failures})
+            print(
+                f"\nABORTING: {len(fetch_failures)} request(s) failed after retries "
+                f"(modes: {', '.join(modes_hit)}).\nNothing was written -- re-run once "
+                f"the API is reachable."
+            )
+            return 1
         rankings_file.parent.mkdir(parents=True, exist_ok=True)
         rankings_file.write_text(
             json.dumps(rankings, indent=2, ensure_ascii=False), encoding="utf-8"
@@ -225,7 +239,11 @@ def main() -> int:
     common = sorted(common)
     missing = len(queries) - len(common)
     if missing:
-        print(f"WARNING: {missing} queries missing from at least one mode; excluded.")
+        print(
+            f"ERROR: {missing} of {len(queries)} queries are missing from at least one "
+            f"mode.\nRefusing to publish a report whose columns cover different queries."
+        )
+        return 1
     print(f"Queries common to all modes: {len(common)}")
 
     pooled = json.loads(args.pooled.read_text(encoding="utf-8"))

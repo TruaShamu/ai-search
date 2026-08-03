@@ -48,9 +48,9 @@ web/.next/
 .ipynb_checkpoints/
 
 # Eval v2. Ship the evidence behind the README numbers -- the query set, the
-# relevance labels, and the computed metrics -- so the results are auditable
-# and `--step eval` can be re-run without paying to re-judge. The pooled
-# candidate file is 3MB and regenerable from the queries via `--step pool`.
+# relevance labels, the pooled candidates, and the computed metrics -- so the
+# results are auditable and the pipeline can be re-run from CI without paying
+# to re-judge.
 #
 # Artifacts are corpus-scoped: unsuffixed names are the current corpus, and a
 # `.v1-openlibrary` suffix marks the superseded OpenLibrary run. Eval fixtures
@@ -62,6 +62,12 @@ data/eval/v2/*
 !data/eval/v2/judgments*.json
 !data/eval/v2/results*.json
 !data/eval/v2/human*.json
+
+# The pooled candidate set (~3.7MB). Regenerable via `--step pool`, but the
+# threshold-sensitivity report needs it to compute how many pool documents
+# qualify as relevant at each grade, and a GitHub runner has no other way to
+# obtain it. Tracking it is what lets the whole eval run remotely.
+!data/eval/v2/pooled*.json
 
 # The ranked lists each mode produced are the one part of the eval that cannot
 # be recovered offline: the pool and the judgments are stored, but the ordering
