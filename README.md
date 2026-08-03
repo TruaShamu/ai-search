@@ -2,7 +2,9 @@
 
 ### **[▶ Try it live](https://black-grass-0df1c7a0f.7.azurestaticapps.net/)** · [API docs](https://booksearch-api.thankfulstone-e6f7cf40.eastus.azurecontainerapps.io/docs) · [Evaluation](docs/EVALUATION.md)
 
-A hybrid search engine over 84,801 books. TF-IDF sparse retrieval fused with dense vector search (nomic-embed-text-v1.5) via Reciprocal Rank Fusion, plus an optional cross-encoder reranker — self-hosted on Qdrant, deployed to Azure Container Apps with full CI/CD.
+Search 84,801 books by what they are *about*, not what they are called. Ask for *"a heist that goes wrong"* and the top hits are *Freezer Burn* and *Criminal: Coward* — neither shares a single word with the query.
+
+Under the hood: TF-IDF sparse retrieval fused with dense vector search (nomic-embed-text-v1.5) via Reciprocal Rank Fusion, plus an optional cross-encoder reranker — self-hosted on Qdrant, deployed to Azure Container Apps with full CI/CD.
 
 Every quality claim below is measured against the live deployment and [reproducible from this repo](docs/EVALUATION.md#reproducing) — including the ones that came out badly.
 
@@ -58,20 +60,20 @@ sequenceDiagram
     participant Q as Qdrant
     participant RR as Reranker (opt-in)
 
-    User->>API: GET /search?q=love+story+tragedy&rerank=true
+    User->>API: GET /search?q=a+heist+that+goes+wrong&rerank=true
     API->>QU: Spell correct + intent detect
     QU-->>API: corrected query, mode=hybrid
     API->>Q: Prefetch dense (top 25) + sparse (top 25)
     Q-->>API: RRF fused results (top 25)
     API->>RR: Score 25 candidates (2.5x top_k)
     RR-->>API: Reranked top 10
-    API-->>User: Romeo & Juliet #1, Carmen #2, ...
+    API-->>User: Freezer Burn, Taken, Criminal: Coward, ...
 ```
 
 </details>
 
 <details>
-<summary><b>Data Pipeline</b> — how 100K raw rows become 84,801 indexed books</summary>
+<summary><b>ETL Pipeline</b> — how 100K raw rows become 84,801 indexed books</summary>
 
 ```mermaid
 flowchart LR
@@ -82,6 +84,9 @@ flowchart LR
     D -->|TfidfVectorizer, global fit| G[Sparse Vectors]
     F & G -->|migrate.py| H[(Qdrant)]
 ```
+
+Every field comes from the same source row, so a description can never be attached to
+another author's book — the whole reason for the migration ([Corpus History](docs/CORPUS_HISTORY.md)).
 
 </details>
 
@@ -107,10 +112,6 @@ sequenceDiagram
 ```
 
 </details>
-
-Every field on a record comes from the same source row, so a description can never be
-attached to another author's book. That is the whole reason for the migration — see
-[Corpus History](docs/CORPUS_HISTORY.md).
 
 ---
 
@@ -230,8 +231,8 @@ the harness has been worth.
 
 > Reranking stays an **opt-in toggle**. The gain is real and reproduced two ways,
 > but ~2.2 s is too slow to impose on every search when plain hybrid answers in
-> ~216 ms. It is worth the wait on exploratory queries — "love story tragedy"
-> returns Romeo & Juliet first with reranking on.
+> ~216 ms. It earns the wait on exploratory queries, where it promotes the *best*
+> match rather than merely a relevant one.
 
 ### The Short Version of the Caveats
 
@@ -345,7 +346,7 @@ written before the corpus migration and the move off Azure AI Search.
 
 | Decision | Rationale |
 |----------|-----------|
-| **Qdrant over Azure AI Search** | Measured 15x faster at the time of migration (24ms vs 370ms), plus no tier limits, built-in RRF, and self-hosting. The Azure resource has since been decommissioned, so that comparison is no longer reproducible from this repo |
+| **Qdrant over Azure AI Search** | Measured 15x faster at migration time (24ms vs 370ms), plus no tier limits, built-in RRF, and self-hosting. The Azure resource is since decommissioned, so that number is no longer re-runnable |
 | **TF-IDF over BM25** | Sufficient at the current scale; hybrid compensates. BM25's length norm matters more as the index grows — at 84.8K docs this is now the closest call in the table and the most likely next change |
 | **Matryoshka dim=256** | nomic-embed-text-v1.5 trained checkpoints: 768/512/256/128/64. 256 balances quality vs. index size |
 | **Reranker opt-in** | ~1.8s of cross-encoder time, down from ~3.6s after length-bucketed batching. The quality gain is real and reproduced two independent ways ([results](#eval-results)), but it is still too slow to impose on every search, so it is off by default and toggleable per query |
@@ -353,35 +354,30 @@ written before the corpus migration and the move off Azure AI Search.
 | **English-only index** | Measured: a Spanish translation scores 0.635 against an English query where an English paraphrase scores 0.787 and an unrelated English sentence scores 0.274 — foreign text outranks genuine matches, and the English-only reranker cannot fix it |
 | **ONNX reranker** | 3.7x faster than PyTorch on CPU (23ms vs 86ms for 4 candidates) |
 | **Cloud embedding (ACA job)** | Local GPU unavailable. 30 parallel replicas embed 84.8K docs in ~50 min. Each reads one pre-cut slice blob rather than the whole corpus: measured +4.9 MB resident vs +429 MB, which is what fixed the OOMKill |
-| **API at 2 vCPU, always-on** | Measured, not guessed. At 1 vCPU with `minReplicas: 0`, removing the reranker's passage truncation pushed `rerank=true` past the ingress timeout (3/6 requests failed, one took 98s), and the first request after idle paid a ~20s model load. Separate liveness (`/health`) and readiness (`/ready`) probes stop ingress routing to replicas that are still loading |
+| **API at 2 vCPU, always-on** | 1 vCPU could not afford full-length reranking, and `minReplicas: 0` made the first request after idle pay a ~20s model load. Both were measured, not guessed |
 
 ---
 
 ## API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/search` | GET | Hybrid search with mode, rerank, filters |
-| `/search/compare` | GET | Side-by-side results across all modes |
-| `/ask` | POST | RAG question answering with citations |
-| `/health` | GET | Liveness probe — reports backend, model warmup state, and reranker availability. Always 200 while the process is up |
-| `/ready` | GET | Readiness probe — 503 until models finish loading, so ingress skips cold replicas |
-| `/stats` | GET | Index statistics |
-
-### Example
+Every endpoint, parameter and response schema is auto-generated by FastAPI and always
+matches the running build: **[interactive API docs](https://booksearch-api.thankfulstone-e6f7cf40.eastus.azurecontainerapps.io/docs)**.
 
 ```bash
 # Hybrid search
 curl "http://localhost:8000/search?q=scottish+romance&mode=hybrid&top_k=5"
 
 # With reranking
-curl "http://localhost:8000/search?q=love+story+tragedy&rerank=true"
+curl "http://localhost:8000/search?q=a+heist+that+goes+wrong&rerank=true"
 
 # RAG question
 curl -X POST http://localhost:8000/ask \
   -H "Content-Type: application/json" \
   -d '{"question": "What are some good books about Scottish history?"}'
 ```
+
+`/health` and `/ready` are split deliberately: liveness stays 200 while the process is
+up, readiness returns 503 until models finish loading so ingress skips cold replicas.
 
 ---
 
