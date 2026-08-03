@@ -4,7 +4,7 @@
 
 A hybrid search engine over 84,801 books. TF-IDF sparse retrieval fused with dense vector search (nomic-embed-text-v1.5) via Reciprocal Rank Fusion, plus an optional cross-encoder reranker — self-hosted on Qdrant, deployed to Azure Container Apps with full CI/CD.
 
-Built as a portfolio piece demonstrating **backend + ML infrastructure engineering**. Every quality claim below is measured against the live deployment and [reproducible from this repo](docs/EVALUATION.md#reproducing).
+Every quality claim below is measured against the live deployment and [reproducible from this repo](docs/EVALUATION.md#reproducing) — including the ones that came out badly.
 
 ---
 
