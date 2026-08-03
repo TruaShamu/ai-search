@@ -171,13 +171,9 @@ Paired deltas (bootstrap over per-query differences, all six intervals exclude z
 | Hybrid+Rerank − Hybrid | **+0.081** | [+0.054, +0.110] |
 | Hybrid+Rerank − Keyword | **+0.202** | [+0.159, +0.250] |
 
-**What 0.982 actually means.** That counts grade ≥ 1 as relevant, a lenient bar on
-this pool — shuffling the pool scores 0.598. Under a **strict** grade-2-only
-threshold the ranking holds and reranking's margin over hybrid *grows* from +0.029 to
-**+0.114**: it pulls the *best* document to rank 1, not merely a relevant one. A
-perfect reranker over the same 25 candidates would score 0.940, so the cross-encoder
-captures **44%** of available headroom — the rest is a retrieval problem, not a
-ranking one. ([full tables](docs/EVALUATION.md#threshold-sensitivity-what-0982-actually-means))
+*0.982 counts grade ≥ 1 as relevant. Under a strict grade-2 bar it is **0.958 against
+a 0.231 random baseline** — a 4.1× lift, and reranking's margin over hybrid grows
+rather than shrinks ([why](docs/EVALUATION.md#threshold-sensitivity-what-0982-actually-means)).*
 
 ### Known-Item Accuracy (50 titles sampled from the v2 index)
 
@@ -187,23 +183,11 @@ ranking one. ([full tables](docs/EVALUATION.md#threshold-sensitivity-what-0982-a
 | Hybrid (RRF) | 86% | **98%** | 0.917 |
 | Keyword (TF-IDF) | 66% | 80% | 0.732 |
 
-**Hybrid no longer wins at rank 1.** On v1, hybrid (94%) sat between vector (100%)
-and keyword (74%). On v2 the keyword arm degrades to 66% and RRF propagates it, so
-hybrid falls *below* pure vector while still holding the best top-5 recovery. Fusion
-is still buying recall, at a cost in top-1 precision that did not exist at 26K
-records — the concrete evidence behind "TF-IDF over BM25" being the closest call in
-the decisions table below.
-
-A paired run of both arms over identical queries against the identical index:
-
-| Fixture | Hybrid Acc@1 | + Rerank | Fixed | Broken | McNemar *p* |
-|---------|--------------|----------|-------|--------|-------------|
-| Standard (n=50) | 86.0% | **98.0%** | 6 | **0** | 0.031 |
-| Hard variants (n=30) | 73.3% | **90.0%** | 5 | **0** | 0.0625 |
-
-**Zero regressions across 80 paired queries.** This harness doubles as a CI gate:
-every deploy re-runs it against the live container and fails the build if either arm
-drops more than 5 points below baseline.
+No judge, no pooling — sample a title from the index, search it, check whether that
+book comes back first. Anyone can verify it by hand. Reranking takes hybrid to **98%
+with zero regressions across 80 paired queries**
+([paired test](docs/EVALUATION.md#reranking-on-v2-a-paired-test)), and this harness
+gates every deploy: the build fails if either arm drops 5 points below baseline.
 
 ### Key Findings
 
@@ -292,27 +276,10 @@ Copy `.env.example` to `.env` and fill it in — it lists every variable the pro
 
 ## Project Structure
 
-```
-src/
-├── api/            FastAPI application (search, ask, health, stats)
-├── qdrant/         Qdrant client (hybrid search) + migration script
-├── search/         Embedding pipeline (nomic-embed-text-v1.5)
-├── reranker/       Cross-encoder reranker (ONNX + PyTorch fallback)
-├── rag/            RAG generation with hallucination guardrails
-├── query/          Query understanding (spell, intent, expansion)
-├── eval/           Evaluation framework (MRR, NDCG, Recall, known-item, LLM judge)
-└── etl/            Data pipelines (single-source Goodreads corpus build)
-
-web/                Next.js frontend (search UI, compare view, ask tab)
-infra/              Bicep templates (ACA deployment)
-scripts/            Cloud embedding automation + eval harnesses
-docs/               Evaluation methodology + corpus history
-data/
-├── processed/      Indexed catalog (books_goodreads_v2.jsonl)
-├── index/          Legacy FAISS index + TF-IDF vectorizer (pre-Qdrant; kept for the migration script only)
-├── eval/           Evaluation datasets + results
-└── models/         ONNX reranker model
-```
+`src/` holds one package each for the API, Qdrant client, embedding pipeline,
+reranker, RAG, query understanding, eval framework and ETL. `web/` is the Next.js
+frontend, `infra/` the Bicep templates, `scripts/` the cloud-embedding and eval
+harnesses, and `data/` the corpus, eval sets and ONNX model.
 
 ### Documentation
 
