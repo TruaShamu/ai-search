@@ -11,6 +11,7 @@ Usage:
 import argparse
 import json
 import os
+import random
 import subprocess
 import sys
 import time
@@ -38,12 +39,41 @@ RESULTS_FILE = DATA_DIR / "results.json"
 MAX_RETRIES = 4
 RETRY_BACKOFF = [2, 5, 15, 30]
 
-# Cap for honoring a server-sent Retry-After (Azure returns 30-60s under load).
-MAX_RETRY_WAIT = 90
+# Rate limiting is handled separately from network errors, and deliberately does
+# NOT honour Retry-After.
+#
+# The history matters, because the obvious diagnosis was wrong. Judging ran at
+# ~0.5 successful req/s no matter what -- 1, 4 and 8 workers all landed on the
+# same number, which looks exactly like a client-side concurrency bug. It was
+# not. The deployment itself was provisioned at capacity 30, and Azure turns
+# that into a hard server-side quota, visible in ARM as:
+#     rateLimits: [{key: "request", count: 30, renewalPeriod: 60}, ...]
+# 30 requests per minute is 0.5/s. Every client-side knob was being measured
+# against a ceiling none of them could move, which is why they all agreed.
+#
+# Two independent things were wrong, and only one is fixed here:
+#   1. Capacity (fixed in Azure, not in code): raised 30 -> 500, so 500 RPM.
+#      On GlobalStandard this is a rate cap, not a reservation -- billing stays
+#      per-token, so the old value was pure self-inflicted throttling.
+#   2. Backoff (fixed here): Azure answers a throttled call with
+#      Retry-After: 60. Sleeping that parks a worker for a full minute over a
+#      quota that refills continuously, so a single 429 cost ~60x what the
+#      request itself did. Short jittered backoff re-probes as capacity returns;
+#      the jitter stops workers resynchronising into a thundering herd.
+#
+# A 429 is cheap (~0.1s, no tokens billed), so attempts are generous.
+RATE_LIMIT_MAX_ATTEMPTS = 12
+RATE_LIMIT_BASE_WAIT = 0.6
+RATE_LIMIT_MAX_WAIT = 8.0
 
-# Concurrent judge calls. Measured against this deployment: 1/2/4 workers all
-# return 200, 8 workers gets 21/24 requests 429'd. Kept at 4 deliberately.
-JUDGE_WORKERS = 4
+# Concurrent judge calls. With the deployment at 500 RPM (see the rate-limit
+# note above), throughput is bounded by whichever is smaller: the server quota,
+# or workers / per-call latency. At ~1s per call, 8 workers offer ~480 RPM,
+# which sits just under the quota and leaves the jittered backoff to absorb the
+# occasional overshoot. Raising this further only converts successes into 429s.
+# Check the deployment's actual `rateLimits` before tuning it: this number is
+# only meaningful relative to the provisioned capacity.
+JUDGE_WORKERS = 8
 
 # Rerank candidate-pool multiplier. Imported from the reranker package so the
 # oracle ceiling is measured over the exact candidate depth production uses —
@@ -175,15 +205,43 @@ Rate the relevance of this document to the query on a scale of 0-2:
 Respond with ONLY a single digit: 0, 1, or 2."""
 
 
+def _is_content_filter(resp) -> bool:
+    """True when a 4xx is Azure's content filter rejecting this specific input.
+
+    A filtered document is a property of one book blurb, not of the run. The
+    distinction matters because the two 400s need opposite handling: a bad
+    deployment name or malformed payload repeats on every pair and should abort
+    immediately, while a filtered blurb should cost exactly one unjudged pair.
+    """
+    try:
+        err = resp.json().get("error") or {}
+    except Exception:
+        return False
+    codes = " ".join(str(x) for x in (
+        err.get("code", ""),
+        (err.get("innererror") or {}).get("code", ""),
+        err.get("message", ""),
+    )).lower()
+    return "content_filter" in codes or "responsibleaipolicyviolation" in codes
+
+
 def _call_judge(client, url, headers, prompt) -> int | None:
-    """Call LLM judge with retries. Returns relevance (0-2) or None on failure."""
+    """Call LLM judge with retries. Returns relevance (0-2) or None on failure.
+
+    Rate-limit retries and transient-failure retries are tracked separately: a
+    429 says nothing about whether the request was malformed, so it must not
+    consume the budget reserved for genuine network faults.
+    """
     body = {
         "messages": [{"role": "user", "content": prompt}],
         "temperature": 0.0,
         "max_completion_tokens": 5,
     }
 
-    for attempt in range(MAX_RETRIES):
+    net_attempts = 0
+    rate_attempts = 0
+
+    while True:
         try:
             resp = client.post(url, json=body, headers=headers)
             resp.raise_for_status()
@@ -192,31 +250,30 @@ def _call_judge(client, url, headers, prompt) -> int | None:
                 return min(2, max(0, int(content[0])))
             return None  # Non-digit response is unjudged, not "irrelevant"
         except httpx.HTTPStatusError as e:
-            # Fail fast on auth/permission errors (4xx except 429 rate-limit)
-            if 400 <= e.response.status_code < 500 and e.response.status_code != 429:
+            if e.response.status_code == 429:
+                rate_attempts += 1
+                if rate_attempts >= RATE_LIMIT_MAX_ATTEMPTS:
+                    return None
+                wait = min(RATE_LIMIT_MAX_WAIT,
+                           RATE_LIMIT_BASE_WAIT * (1.7 ** (rate_attempts - 1)))
+                time.sleep(wait * random.uniform(0.7, 1.3))
+                continue
+            # Fail fast on auth/permission errors (4xx other than rate-limit),
+            # but never let one filtered document abort a 5,000-pair run.
+            if 400 <= e.response.status_code < 500:
+                if _is_content_filter(e.response):
+                    return None
+                print(f"  FATAL {e.response.status_code}: {e.response.text[:400]}")
                 raise
-            if attempt < MAX_RETRIES - 1:
-                wait = RETRY_BACKOFF[attempt]
-                # Azure sends Retry-After of 30-60s when throttled. The fixed
-                # backoff is far shorter, so every retry lands inside the same
-                # cooldown and the pair is silently left unjudged.
-                retry_after = e.response.headers.get("retry-after")
-                if retry_after:
-                    try:
-                        wait = max(wait, min(int(float(retry_after)), MAX_RETRY_WAIT))
-                    except ValueError:
-                        pass
-                time.sleep(wait)
-            else:
+            net_attempts += 1
+            if net_attempts >= MAX_RETRIES:
                 return None
+            time.sleep(RETRY_BACKOFF[net_attempts - 1])
         except (httpx.TimeoutException, httpx.ConnectError):
-            if attempt < MAX_RETRIES - 1:
-                wait = RETRY_BACKOFF[attempt]
-                time.sleep(wait)
-            else:
+            net_attempts += 1
+            if net_attempts >= MAX_RETRIES:
                 return None  # Exhausted retries — mark as unjudged
-
-    return None
+            time.sleep(RETRY_BACKOFF[net_attempts - 1])
 
 
 def judge_documents(queries: list[dict], pooled: dict):
@@ -331,6 +388,28 @@ def judge_documents(queries: list[dict], pooled: dict):
 
 # ─── Step 4: Eval with paired bootstrap CIs ─────────────────────────────────
 
+def _fetch_search(url: str, timeout: int = 30, attempts: int = 5):
+    """GET a search URL, retrying transient network failures.
+
+    A dropped connection mid-run used to be swallowed by `continue`, which
+    silently shrank the evaluated set instead of failing: one flaky stretch
+    produced a complete-looking results.json built from 43 of 98 queries, with
+    every metric and confidence interval computed on the surviving subset. The
+    numbers looked plausible, which is exactly what makes it dangerous. Retry
+    hard, then let the caller abort rather than quietly publish a partial run.
+    """
+    last = None
+    for attempt in range(attempts):
+        try:
+            resp = urllib.request.urlopen(url, timeout=timeout)
+            return json.loads(resp.read())
+        except Exception as e:  # noqa: BLE001 - network, DNS, and decode errors alike
+            last = e
+            if attempt < attempts - 1:
+                time.sleep(RETRY_BACKOFF[min(attempt, len(RETRY_BACKOFF) - 1)])
+    raise RuntimeError(f"{url}: {last}")
+
+
 def compute_metrics_with_cis(judgments: dict, n_bootstrap: int = 1000):
     """Compute MRR, NDCG, Recall with paired bootstrap 95% CIs and per-category breakdown."""
     import numpy as np
@@ -369,6 +448,7 @@ def compute_metrics_with_cis(judgments: dict, n_bootstrap: int = 1000):
 
     # Collect per-query metrics for all modes (aligned by query)
     mode_scores = {mode: {} for mode in modes}
+    fetch_failures = []
 
     for mode in modes:
         print(f"  Fetching {mode} results...")
@@ -379,10 +459,10 @@ def compute_metrics_with_cis(judgments: dict, n_bootstrap: int = 1000):
                 url = f"{API}/search?q={urllib.parse.quote(query)}&mode={mode}&top_k=10&understand=false"
 
             try:
-                resp = urllib.request.urlopen(url, timeout=30)
-                data = json.loads(resp.read())
-            except Exception as e:
+                data = _fetch_search(url)
+            except RuntimeError as e:
                 print(f"    ERROR [{mode}] \"{query[:30]}\": {e}")
+                fetch_failures.append((mode, query))
                 continue
 
             retrieved_ids = [
@@ -393,6 +473,18 @@ def compute_metrics_with_cis(judgments: dict, n_bootstrap: int = 1000):
             rmap = relevance_maps[query]
             m = compute_query_metrics(query, retrieved_ids, rmap, k=10)
             mode_scores[mode][query] = m
+
+    # Refuse to publish a partial run. Metrics are paired across modes, so a
+    # query missing from one mode silently changes what every comparison is
+    # averaging over.
+    if fetch_failures:
+        by_mode = Counter(mode for mode, _ in fetch_failures)
+        raise SystemExit(
+            f"\nABORTING: {len(fetch_failures)} search request(s) failed after retries "
+            f"({dict(by_mode)}).\nResults were NOT written -- a partial run would produce "
+            f"plausible-looking metrics over a subset of queries.\nCheck connectivity to "
+            f"{API} and re-run."
+        )
 
     # Align queries (only those present in ALL modes)
     common_queries = set(queries_with_relevant)
@@ -577,13 +669,13 @@ def compute_metrics_with_cis(judgments: dict, n_bootstrap: int = 1000):
     oracle_depth = max(10, int(10 * RERANK_DEPTH_MULTIPLIER))
     oracle_scores = []
     oracle_queries = []
+    oracle_failures = []
 
     for query in common_queries:
         rmap = relevance_maps[query]
         url = f"{API}/search?q={urllib.parse.quote(query)}&mode=hybrid&top_k={oracle_depth}&understand=false"
         try:
-            resp = urllib.request.urlopen(url, timeout=15)
-            data = json.loads(resp.read())
+            data = _fetch_search(url)
             retrieved_ids = [
                 r["work_id"].replace("/works/", "")
                 for r in data.get("results", [])
@@ -594,9 +686,18 @@ def compute_metrics_with_cis(judgments: dict, n_bootstrap: int = 1000):
             m = compute_query_metrics(query, oracle_order, rmap, k=10)
             oracle_scores.append(m.ndcg)
             oracle_queries.append(query)
-        except Exception as e:
+        except RuntimeError as e:
             # Skip — don't bias the ceiling with a fallback value
             print(f"    WARN: skipping oracle for \"{query[:30]}\": {e}")
+            oracle_failures.append(query)
+
+    # The ceiling is compared against hybrid on the same queries, so a partial
+    # oracle is a different (and unstated) sample than the table above it.
+    if oracle_failures:
+        raise SystemExit(
+            f"\nABORTING: oracle analysis failed for {len(oracle_failures)} of "
+            f"{len(common_queries)} queries.\nResults were NOT written."
+        )
 
     oracle_data = None
     if oracle_queries:

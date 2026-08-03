@@ -7,15 +7,28 @@ well. This script recomputes the same metrics under a strict threshold that
 only counts grade-2 documents, and reports a random-ranking baseline for both,
 so the headline number can be read against something.
 
-It also writes the raw per-mode ranked lists to ``rankings_v1.json``. Those
+It also writes the raw per-mode ranked lists to ``rankings.json``. Those
 lists are the only part of the eval that cannot be recovered offline -- the
 pooled candidates and the judgments are stored, but the ranked order each mode
 produced is not. Capturing them keeps every number below reproducible after the
 underlying corpus changes.
 
+Eval artifacts are corpus-coupled, so every path here is a flag rather than a
+constant. The frozen OpenLibrary run lives alongside under a
+``.v1-openlibrary`` suffix and is never a write target: it backs the v1 numbers
+still quoted in the README, and those stop being verifiable the moment this
+script overwrites them with results from a different corpus.
+
 Usage:
     python scripts/threshold_sensitivity.py            # fetch + analyse
     python scripts/threshold_sensitivity.py --offline  # re-analyse saved ranks
+
+    # re-analyse the frozen v1 OpenLibrary run without touching current files
+    python scripts/threshold_sensitivity.py --offline \
+        --judgments data/eval/v2/judgments.v1-openlibrary.json \
+        --pooled    data/eval/v2/pooled.v1-openlibrary.json \
+        --rankings  data/eval/v2/rankings_v1.json \
+        --out       data/eval/v2/threshold_sensitivity.v1-openlibrary.json
 """
 
 from __future__ import annotations
@@ -34,7 +47,10 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 V2 = REPO_ROOT / "data" / "eval" / "v2"
 JUDGMENTS_FILE = V2 / "judgments.json"
 POOLED_FILE = V2 / "pooled.json"
-RANKINGS_FILE = V2 / "rankings_v1.json"
+# Deliberately NOT rankings_v1.json: that file is the frozen OpenLibrary record
+# the README cites, and pointing a write here at it would destroy the artifact
+# whose entire purpose is to outlive a corpus change.
+RANKINGS_FILE = V2 / "rankings.json"
 OUT_FILE = V2 / "threshold_sensitivity.json"
 
 DEFAULT_API = "https://booksearch-api.thankfulstone-e6f7cf40.eastus.azurecontainerapps.io"
@@ -42,6 +58,16 @@ API = os.environ.get("EVAL_API_URL", DEFAULT_API)
 
 MODES = ["keyword", "vector", "hybrid", "hybrid+rerank"]
 K = 10
+
+# Markers identifying a frozen, superseded-corpus artifact. Two naming families
+# exist: the `.v1-openlibrary` suffix used when the corpus migrated, and the
+# older `rankings_v1.json`. Both must be recognised -- a guard that only knew
+# about the newer suffix would wave the original v1 file straight through.
+_ARCHIVED_MARKERS = (".v1-openlibrary", "_v1.", ".v1.")
+
+
+def _is_archived(path: Path) -> bool:
+    return any(marker in path.name for marker in _ARCHIVED_MARKERS)
 
 
 def _url(query: str, mode: str) -> str:
@@ -74,8 +100,8 @@ def fetch_ranked_ids(query: str, mode: str, retries: int = 4) -> list[str] | Non
     return None
 
 
-def load_relevance_maps() -> dict[str, dict[str, int]]:
-    judgments = json.loads(JUDGMENTS_FILE.read_text(encoding="utf-8"))
+def load_relevance_maps(judgments_file: Path = JUDGMENTS_FILE) -> dict[str, dict[str, int]]:
+    judgments = json.loads(judgments_file.read_text(encoding="utf-8"))
     maps: dict[str, dict[str, int]] = {}
     for query, jlist in judgments.items():
         rmap = {j["work_id"]: j["relevance"] for j in jlist if j.get("relevance") is not None}
@@ -139,9 +165,30 @@ def main() -> int:
     ap.add_argument("--trials", type=int, default=2000,
                     help="Monte Carlo trials for the random baseline")
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--judgments", type=Path, default=JUDGMENTS_FILE,
+                    help="graded relevance labels to score against")
+    ap.add_argument("--pooled", type=Path, default=POOLED_FILE,
+                    help="pooled candidates, used for the random baseline's pool size")
+    ap.add_argument("--rankings", type=Path, default=RANKINGS_FILE,
+                    help="where raw per-mode ranked lists are read/written")
+    ap.add_argument("--out", type=Path, default=OUT_FILE,
+                    help="report destination")
     args = ap.parse_args()
 
-    relevance_maps = load_relevance_maps()
+    rankings_file, out_file = args.rankings, args.out
+
+    # A live fetch writes the ranked lists, so refuse to aim that write at an
+    # archived run. Corpus-coupled artifacts are only useful while the corpus
+    # that produced them is the one being queried.
+    if not args.offline and _is_archived(rankings_file):
+        print(f"ERROR: refusing to overwrite archived rankings {rankings_file.name} "
+              f"with a live fetch. Pass --offline to re-analyse it instead.")
+        return 1
+    if not args.offline and _is_archived(out_file):
+        print(f"ERROR: refusing to write a live-fetch report to archived {out_file.name}.")
+        return 1
+
+    relevance_maps = load_relevance_maps(args.judgments)
     # Match the published eval: a query is evaluated only if its pool holds at
     # least one document that clears the LENIENT threshold. Keeping this set
     # fixed across thresholds is what makes the two tables comparable.
@@ -149,11 +196,11 @@ def main() -> int:
     print(f"Queries evaluated: {len(queries)} (of {len(relevance_maps)} judged)")
 
     if args.offline:
-        if not RANKINGS_FILE.exists():
-            print(f"ERROR: {RANKINGS_FILE} not found; run without --offline first.")
+        if not rankings_file.exists():
+            print(f"ERROR: {rankings_file} not found; run without --offline first.")
             return 1
-        rankings = json.loads(RANKINGS_FILE.read_text(encoding="utf-8"))
-        print(f"Loaded saved rankings from {RANKINGS_FILE.name}")
+        rankings = json.loads(rankings_file.read_text(encoding="utf-8"))
+        print(f"Loaded saved rankings from {rankings_file.name}")
     else:
         rankings = {}
         for mode in MODES:
@@ -165,11 +212,11 @@ def main() -> int:
                     rankings[mode][query] = ids
                 if i % 25 == 0:
                     print(f"    {i}/{len(queries)}")
-        RANKINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
-        RANKINGS_FILE.write_text(
+        rankings_file.parent.mkdir(parents=True, exist_ok=True)
+        rankings_file.write_text(
             json.dumps(rankings, indent=2, ensure_ascii=False), encoding="utf-8"
         )
-        print(f"Saved raw ranked lists -> {RANKINGS_FILE}")
+        print(f"Saved raw ranked lists -> {rankings_file}")
 
     # Only keep queries every mode answered, so all columns share a denominator.
     common = set(queries)
@@ -181,7 +228,7 @@ def main() -> int:
         print(f"WARNING: {missing} queries missing from at least one mode; excluded.")
     print(f"Queries common to all modes: {len(common)}")
 
-    pooled = json.loads(POOLED_FILE.read_text(encoding="utf-8"))
+    pooled = json.loads(args.pooled.read_text(encoding="utf-8"))
     rng = random.Random(args.seed)
 
     report: dict = {
@@ -240,8 +287,8 @@ def main() -> int:
 
         report["thresholds"][label] = entry
 
-    OUT_FILE.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"\nSaved -> {OUT_FILE}")
+    out_file.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
+    print(f"\nSaved -> {out_file}")
     return 0
 
 

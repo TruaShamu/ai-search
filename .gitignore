@@ -51,21 +51,24 @@ web/.next/
 # relevance labels, and the computed metrics -- so the results are auditable
 # and `--step eval` can be re-run without paying to re-judge. The pooled
 # candidate file is 3MB and regenerable from the queries via `--step pool`.
+#
+# Artifacts are corpus-scoped: unsuffixed names are the current corpus, and a
+# `.v1-openlibrary` suffix marks the superseded OpenLibrary run. Eval fixtures
+# are coupled to the corpus they were built against -- gold ids from one corpus
+# have 0% overlap with the other -- so these are archived side by side rather
+# than overwritten. Globs below keep both generations tracked.
 data/eval/v2/*
-!data/eval/v2/queries_grounded.json
-!data/eval/v2/judgments.json
-!data/eval/v2/results.json
-!data/eval/v2/human.json
-!data/eval/v2/human.meta.json
-!data/eval/v2/human_random.json
-!data/eval/v2/human_random.meta.json
+!data/eval/v2/queries_grounded*.json
+!data/eval/v2/judgments*.json
+!data/eval/v2/results*.json
+!data/eval/v2/human*.json
 
 # The ranked lists each mode produced are the one part of the eval that cannot
 # be recovered offline: the pool and the judgments are stored, but the ordering
 # is not, and it disappears the moment the corpus is reindexed. Committing it
 # (107KB) keeps the v1 threshold-sensitivity numbers verifiable afterwards.
-!data/eval/v2/rankings_v1.json
-!data/eval/v2/threshold_sensitivity.json
+!data/eval/v2/rankings*.json
+!data/eval/v2/threshold_sensitivity*.json
 
 # Local scratch file holding an Azure storage connection string (account key) - never commit
 .storage_cs.tmp

@@ -1,405 +1,376 @@
 [
   {
-    "query": "El Popol Wuj full text and commentary",
+    "query": "trauma splitting psychology across generations book",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:955968321"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.0641,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.2
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:955968321",
+      "title": "Splits in the Soul: Integrating Traumatic Experiences",
+      "authors": [
+        "Franz Ruppert",
+        "Vivian Broughton"
+      ],
+      "subjects": [
+        "Psychology",
+        "Literature",
+        "21st Century"
+      ],
+      "year": null,
+      "description_preview": "This is the second book by Professor Franz Ruppert in English translation and continues his exploration of the impact of trauma across generations. Here he deepens his understanding of the process and"
+    }
+  },
+  {
+    "query": "medieval Arthurian poem translation about Sir Gawain",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:803244193"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.1429,
+      "max_verbatim_ngram": 1,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:803244193",
+      "title": "The Crown: A Tale of Sir Gawein and King Arthur's Court",
+      "authors": [
+        "Heinrich von dem Türlin",
+        "J.W. Thomas"
+      ],
+      "subjects": [
+        "Mythology",
+        "Arthurian",
+        "Historical",
+        "Medieval",
+        "Poetry"
+      ],
+      "year": null,
+      "description_preview": "Modern English translation of 13th Century german text."
+    }
+  },
+  {
+    "query": "Jack Mapanje books",
+    "category": "author",
+    "gold_work_ids": [
+      "gr:1852244127",
+      "gr:435911945",
+      "gr:1852246650",
+      "gr:956240178",
+      "gr:1852247711",
+      "gr:435911988"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.0282,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.5
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:956240178",
+      "title": "And Crocodiles Are Hungry At Night",
+      "authors": [
+        "Jack Mapanje"
+      ],
+      "subjects": [
+        "Eastern Africa",
+        "Malawi",
+        "Cultural",
+        "Africa"
+      ],
+      "year": null,
+      "description_preview": "This book is a powerful contribution to the genre of the prison memoir in Africa. Jack Mapanje represents the moving account of a poet's imprisonment by the state, the struggle to probe the hidden mot"
+    }
+  },
+  {
+    "query": "low glycemic load diet cookbook recipes to lose weight fast",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:749926422"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.1096,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.1111
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:749926422",
+      "title": "The Holford Low-GL Diet Cookbook",
+      "authors": [
+        "Patrick Holford",
+        "Fiona McDonald Joyce"
+      ],
+      "subjects": [
+        "Health",
+        "Nutrition",
+        "Food and Drink",
+        "Food"
+      ],
+      "year": null,
+      "description_preview": "The Low-GL Diet Cookbook is perfect for everyone who wants to lose weight quickly yet still enjoy great-tasting food. It features a range of recipes that do not raise your blood sugar quickly and henc"
+    }
+  },
+  {
+    "query": "how to manage and maintain land for conservation without disrupting wildlife",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:930588185"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.1111,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:930588185",
+      "title": "The Earth Manual: How to Work on Wild Land Without Taming It",
+      "authors": [
+        "Malcolm Margolin",
+        "Michael   Harney"
+      ],
+      "subjects": [
+        "Wildlife",
+        "Environment",
+        "Nature"
+      ],
+      "year": null,
+      "description_preview": "A guide for landowners, conservationists, and youth group leaders on how to work with (rather than against) the wildness of the land."
+    }
+  },
+  {
+    "query": "Jeremiah prophet fate book Binyamin Lau",
     "category": "title_lookup",
     "gold_work_ids": [
-      "/works/OL13453924W"
+      "gr:1592641946"
     ],
     "gold_is_complete": true,
     "difficulty": "hard",
     "leakage": {
-      "unigram_jaccard": 0.2,
+      "unigram_jaccard": 0.1136,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.6
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1592641946",
+      "title": "Jeremiah: The Fate of a Prophet",
+      "authors": [
+        "Binyamin Lau"
+      ],
+      "subjects": [
+        "Literature",
+        "Jewish",
+        "Religion",
+        "Judaism",
+        "Judaica"
+      ],
+      "year": null,
+      "description_preview": "In Jeremiah: The Fate of a Prophet, Rabbi Dr. Binyamin Lau breaks down the Book of Jeremiah, rearranging its chapters according to historical events and the chronology of the prophet's life. This grou"
+    }
+  },
+  {
+    "query": "Angie Zalewski books about saving money and frugal living",
+    "category": "author",
+    "gold_work_ids": [
+      "gr:1892016583"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.2083,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.5
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1892016583",
+      "title": "Cheap Talk with the Frugal Friends: Over 600 Tips, Tricks, and Creative Ideas for Saving Money",
+      "authors": [
+        "Angie Zalewski"
+      ],
+      "subjects": [
+        "Economics",
+        "Finance"
+      ],
+      "year": null,
+      "description_preview": "A collection of the very best tips and tricks for stretching the family dollar from celebrity thrifters."
+    }
+  },
+  {
+    "query": "lesbian mystery romance private investigator runaway teenager Idaho",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:1602826498"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.0988,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.125
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1602826498",
+      "title": "Runaway",
+      "authors": [
+        "Anne Laughlin"
+      ],
+      "subjects": [
+        "LGBT",
+        "Lesbian",
+        "Mystery",
+        "Romance",
+        "Lesbian Romance"
+      ],
+      "year": null,
+      "description_preview": "With her life as a private investigator in Chicago firmly established, Jan Roberts can often forget where she came from—a backwoods survivalist camp run by her paranoid, dictatorial father. After risk"
+    }
+  },
+  {
+    "query": "child language learning in home communities anthropology study",
+    "category": "combined",
+    "gold_work_ids": [
+      "gr:881332135"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.08,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:881332135",
+      "title": "Them Children: A Study in Language Learning",
+      "authors": [
+        "Martha C. Ward"
+      ],
+      "subjects": [
+        "Nonfiction",
+        "Anthropology"
+      ],
+      "year": null,
+      "description_preview": "One of the major purposes of this book is to examine some of the real-life conditions under which children actually learn their language, how families instill values about the use or nonuse of languag"
+    }
+  },
+  {
+    "query": "structural geology textbook plate tectonics deformation folds faults",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:130651788"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.1111,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:130651788",
+      "title": "Basic Methods of Structural Geology",
+      "authors": [
+        "Stephen Marshak",
+        "Gautum Mitra"
+      ],
+      "subjects": [
+        "Science",
+        "Geology"
+      ],
+      "year": null,
+      "description_preview": "Complete coverage of all the basic topics of structural geology."
+    }
+  },
+  {
+    "query": "Native nationalism politics Canada traditional institutions Mohawk activism books",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:195411382"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.086,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.125
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:195411382",
+      "title": "Heeding the Voices of Our Ancestors: Kahnawake Mohawk Politics and the Rise of Native Nationalism",
+      "authors": [
+        "Gerald R. Alfred"
+      ],
+      "subjects": [
+        "Cultural",
+        "Canada",
+        "Native Americans",
+        "Politics"
+      ],
+      "year": null,
+      "description_preview": "This book is the first comprehensive study of the driving force behind Native political activism, and the only scholarly treatment of North American Indian politics which integrates an explicitly Nati"
+    }
+  },
+  {
+    "query": "quick vegetarian dishes cookbook Kurma Dasa",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:957834500"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.1316,
       "max_verbatim_ngram": 3,
       "rare_term_overlap": 0.3333
     },
     "source": "api",
     "seed_book": {
-      "work_id": "/works/OL13453924W",
-      "title": "El Popol Wuj",
+      "work_id": "gr:957834500",
+      "title": "Quick Vegetarian Dishes",
       "authors": [
-        "José Guillén Villalobos"
+        "Kurma Dasa"
       ],
       "subjects": [
-        "Popol Vuh",
-        "Quiché Indians",
-        "Quiché Mythology",
-        "Religion"
-      ],
-      "year": 2002,
-      "description_preview": "An analytical study of the Mayan holy book, including the complete text with each chapter followed by the author's interpretive commentary."
-    }
-  },
-  {
-    "query": "domestic economy treatise 1841 home economics",
-    "category": "title_lookup",
-    "gold_work_ids": [
-      "/works/OL1537445W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.2273,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL1537445W",
-      "title": "A treatise on domestic economy",
-      "authors": [
-        "Catharine Esther Beecher"
-      ],
-      "subjects": [
-        "Home Economics"
-      ],
-      "year": 1841,
-      "description_preview": "Since Beecher believed domestic duties should be taught scientifically, she offers instruction in this book to women on health, hygiene, nutrition, exercise, etc."
-    }
-  },
-  {
-    "query": "Pramūan sap religious terms dictionary",
-    "category": "title_lookup",
-    "gold_work_ids": [
-      "/works/OL1718966W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.2632,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.4
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL1718966W",
-      "title": "Pramūan sap 6 sātsanā",
-      "authors": [
-        "Pin Muthukan."
-      ],
-      "subjects": [
-        "Thai",
-        "Dictionaries",
-        "Religion",
-        "Religions"
-      ],
-      "year": 1991,
-      "description_preview": "Dictionary of religious terms for Buddhism, Islam, Christianity, Hinduism, and Sikhism."
-    }
-  },
-  {
-    "query": "political development in Thailand modernization study 2004",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL13769447W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.2222,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.1667
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL13769447W",
-      "title": "Kānmư̄ang kānpokkhrō̜ng Thai",
-      "authors": [
-        "Kōwit Wongsurawat."
-      ],
-      "subjects": [
-        "Politics And Government"
-      ],
-      "year": 2004,
-      "description_preview": "Study of political conditions of Thailand in relation to modernization."
-    }
-  },
-  {
-    "query": "Civil War poetry history book 1865 United States rebellion",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL12204121W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.043,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL12204121W",
-      "title": "The rebellion",
-      "authors": [
-        "Henry F. King"
-      ],
-      "subjects": [
-        "History",
-        "Poetry",
-        "United States Civil War, 1861-1865"
-      ],
-      "year": 1865,
-      "description_preview": "Sinfully sexy rock stars are the cornerstone of New York Times Bestselling Author, S.L. Scott's Bestselling Hard to Resist Series. The Rebellion is the newest STAND-ALONE that brings soul-searing roma"
-    }
-  },
-  {
-    "query": "Indian political history 1857 1947 refugee policy",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL11699907W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.2941,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.1429
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL11699907W",
-      "title": "Who made me a refugee",
-      "authors": [
-        "Jagdish Mitter Sarin"
-      ],
-      "subjects": [
-        "Politics And Government",
-        "History"
+        "Food and Drink",
+        "Cookbooks",
+        "Cooking"
       ],
       "year": null,
-      "description_preview": "Chiefly on the political history of India; covers the period 1857-1947."
+      "description_preview": "The message of Quick Vegetarian Dishes is refreshingly simple: life in the fast lane doesn't necessarily mean life in the fast food lane. Even if your life is moving at top speed, you can, with Kurma'"
     }
   },
   {
-    "query": "waterlogging coastal Bangladesh economic health 2004 book",
-    "category": "combined",
-    "gold_work_ids": [
-      "/works/OL13414393W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.1923,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.1667
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL13414393W",
-      "title": "Dakshiṇa-Paścima upakūlera jalābaddhatā",
-      "authors": [
-        "Kuśala Rāẏa"
-      ],
-      "subjects": [
-        "Coastal Settlements",
-        "Economic Aspects",
-        "Economic Aspects Of Waterlogging (Soils)",
-        "Health Aspects",
-        "Health Aspects Of Waterlogging (Soils)",
-        "Waterlogging (Soils)"
-      ],
-      "year": 2004,
-      "description_preview": "Articles on waterlogging in south-western coastal areas of Bangladesh and associated economic and health issues."
-    }
-  },
-  {
-    "query": "Ludwig Lewisohn novels",
+    "query": "Jack Barnes books on the Nicaraguan Revolution",
     "category": "author",
     "gold_work_ids": [
-      "/works/OL2669469W"
+      "gr:873487508"
     ],
     "gold_is_complete": true,
     "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.026,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 1.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2669469W",
-      "title": "Rebirth",
-      "authors": [
-        "Ludwig Lewisohn"
-      ],
-      "subjects": [
-        "Jews",
-        "Jewish Literature",
-        "Restoration",
-        "Jewish Question",
-        "Legal Status, Laws"
-      ],
-      "year": 1935,
-      "description_preview": "Rebirth is the only book on the [Man Asian Literary Prize] shortlist for which overseas rights are yet to be granted. For that reason, if you manage to track down this book outside India, you're a bet"
-    }
-  },
-  {
-    "query": "East Asian innovation and international competition economic policy finance",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL17805324W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0748,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL17805324W",
-      "title": "Can east Asia compete : innovation for global markets",
-      "authors": [
-        "Shahid Yusuf"
-      ],
-      "subjects": [
-        "Technological Innovations",
-        "Economic Policy",
-        "Economic Conditions",
-        "Finance",
-        "International Competition",
-        "Economics, International",
-        "Economic Aspects"
-      ],
-      "year": null,
-      "description_preview": "\"East Asian economies of the 1980s and much of the 1990s occupy a special place in the recent history of development. They were among the most competitive exporters of manufactured products and were a"
-    }
-  },
-  {
-    "query": "introduction to theory of knowledge and ethics philosophy phenomenology",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL1449448W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0862,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.1667
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL1449448W",
-      "title": "What is philosophy?",
-      "authors": [
-        "Dietrich Von Hildebrand"
-      ],
-      "subjects": [
-        "Introductions",
-        "Knowledge, Theory Of",
-        "Phenomenology",
-        "Philosophy",
-        "Theory Of Knowledge",
-        "Ethics"
-      ],
-      "year": 1960,
-      "description_preview": "This work examines what it means to be a philosopher and attacks the sterility of modern philosophy. Philosophy, the authors insist, is not contemplation, reflection or communication, but the creation"
-    }
-  },
-  {
-    "query": "Zen Buddhism books 1949 Christmas Humphreys",
-    "category": "combined",
-    "gold_work_ids": [
-      "/works/OL2687356W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0548,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.4
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2687356W",
-      "title": "Zen Buddhism",
-      "authors": [
-        "Christmas Humphreys"
-      ],
-      "subjects": [
-        "Zen Buddhism",
-        "Essence, Genius, Nature",
-        "Zen-Buddhismus",
-        "Spiritual Life",
-        "Vie Spirituelle",
-        "Bouddhisme Zen",
-        "Ch'An (Religion)",
-        "Khans (Built Works)"
-      ],
-      "year": 1949,
-      "description_preview": "What is Zen? If you asked a true Zen master he might tweak your nose, scowl fiercely, or roar with laughter, whichever he thought would stir your spirit awake--for that is the object of Zen. Humphreys"
-    }
-  },
-  {
-    "query": "toilet training stories in rhyme for toddlers 2001",
-    "category": "combined",
-    "gold_work_ids": [
-      "/works/OL2708519W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.2353,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.2
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2708519W",
-      "title": "Ruby's potty",
-      "authors": [
-        "Rogers, Paul"
-      ],
-      "subjects": [
-        "Toilet Training",
-        "Toddlers",
-        "Stories In Rhyme",
-        "Fiction",
-        "Juvenile Fiction",
-        "Children'S Fiction",
-        "Toilet Training, Fiction"
-      ],
-      "year": 2001,
-      "description_preview": "Ruby loves her brand new potty, but the trouble is, she does not know what it is for."
-    }
-  },
-  {
-    "query": "Was Jesus an Islamic prophet? historical and religious interpretation books from the 19th century",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL2493479W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.125,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2493479W",
-      "title": "Jesus",
-      "authors": [
-        "Furness, William Henry"
-      ],
-      "subjects": [
-        "Biography"
-      ],
-      "year": 1871,
-      "description_preview": "Jesus A Prophet of Islam, By Muhammad Ata ur Rahim, examines Jesus as a Prophet teaching the unity of God, and the historical collapses of Christianity as it abandoned his teaching."
-    }
-  },
-  {
-    "query": "model bakery cookbook recipes",
-    "category": "title_lookup",
-    "gold_work_ids": [
-      "/works/OL19969075W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "medium",
     "leakage": {
       "unigram_jaccard": 0.129,
       "max_verbatim_ngram": 3,
@@ -407,2637 +378,2664 @@
     },
     "source": "api",
     "seed_book": {
-      "work_id": "/works/OL19969075W",
-      "title": "The Model Bakery cookbook",
+      "work_id": "gr:873487508",
+      "title": "The Rise and Fall of the Nicaraguan Revolution",
       "authors": [
-        "Karen Mitchell"
+        "Jack Barnes"
       ],
       "subjects": [
-        "Model Bakery (Saint Helena, Calif.)",
-        "Baking",
-        "Confectionery",
-        "Cooking, American",
-        "Cooking / Methods / Baking",
-        "Cooking / Courses & Dishes / Cakes",
-        "Cooking / Courses & Dishes / Bread"
-      ],
-      "year": null,
-      "description_preview": "Presents a collection of recipes from the well-known California bakery, with detailed instructions on making such options as breads, cakes, cookies, pies, and tarts."
-    }
-  },
-  {
-    "query": "wedding bell blue romance novel 1992",
-    "category": "title_lookup",
-    "gold_work_ids": [
-      "/works/OL2974013W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.0333,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2974013W",
-      "title": "Wedding Bell Blues",
-      "authors": [
-        "Alice Sharpe"
-      ],
-      "subjects": [
-        "Série Romance"
-      ],
-      "year": 1992,
-      "description_preview": "When Lily's lover, Charlotte, is killed in a tragic car accident, Charlotte's homophobic family threatens to exert their legal rights and seize custody of their daughter's biological child, Mimi. Grie"
-    }
-  },
-  {
-    "query": "coming-of-age story about a young teacher navigating uncertainty in Portland Oregon 1900s",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL2507799W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.0494,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2507799W",
-      "title": "The teacher",
-      "authors": [
-        "George Herbert Palmer"
-      ],
-      "subjects": [
-        "Education",
-        "Higher Education",
-        "Women"
-      ],
-      "year": 1908,
-      "description_preview": "In life, there are no certainties. Emma Hewitt finds herself facing a number of uncertain challenges as she tries to find her footing in the big city of Portland, Oregon. The safety and simplicity of "
-    }
-  },
-  {
-    "query": "Earl W. Kersten books",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL25131498W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0411,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.3333
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL25131498W",
-      "title": "Nevada",
-      "authors": [
-        "Earl W. Kersten",
-        "Terrill J. Kramer"
-      ],
-      "subjects": [
-        "Nevada, Description And Travel"
-      ],
-      "year": null,
-      "description_preview": "When strange animals long thought to be extinct surface in the Mojave Desert, the world assumes a common fascination. One shocking discovery leads to another as the animals prove to be intelligent, ch"
-    }
-  },
-  {
-    "query": "Ruth and Naomi Bible story book for kids",
-    "category": "title_lookup",
-    "gold_work_ids": [
-      "/works/OL2228567W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.0333,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2228567W",
-      "title": "Ruth and Naomi",
-      "authors": [
-        "Karen Sanders"
-      ],
-      "subjects": [
-        "Juvenile Literature",
-        "English Bible Stories",
-        "Ruth",
-        "Bible Stories",
-        "O.T. Ruth"
-      ],
-      "year": 2007,
-      "description_preview": "It is a time of famine and despair in the land: crops are failing, idol-worship is widely practiced, and those who follow the God of Israel are cruelly oppressed. Israel's defeat at the hands of Moab "
-    }
-  },
-  {
-    "query": "Nintendo 64 strategy guide puzzles walkthrough",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL17870059W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0758,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.3333
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL17870059W",
-      "title": "The Legend of Zelda",
-      "authors": [
-        "Casey Loe",
-        "Gerald Guess"
-      ],
-      "subjects": [
-        "Video Games",
-        "Videogames",
-        "Games",
-        "Strategy",
-        "Puzzles",
-        "Passtimes",
-        "Hobbies",
-        "Nintendo 64"
-      ],
-      "year": null,
-      "description_preview": "This is a hints, tips, and strategy guide to the Nintendo 64 {N64} video game \"The Legend of Zelda: Ocarina of Time\". It tells the story of Link as he helps tries to rescue Princess Zelda and his adve"
-    }
-  },
-  {
-    "query": "historical adventure novel about a young woman in Kentucky searching for her missing mother",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL2320071W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.04,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2320071W",
-      "title": "Deep Down",
-      "authors": [
-        "Robert Michael Ballantyne"
-      ],
-      "subjects": [
-        "Children'S Stories, English",
-        "Fiction, Historical, General",
-        "Fiction, Action & Adventure",
-        "England, Fiction"
-      ],
-      "year": 1868,
-      "description_preview": "As a child, Jessie Lockwood spent many hours helping her mother, Mariah, count the endangered ginseng plants hidden in the local woods of Deep Down, Kentucky. There she learned to appreciate the tiny "
-    }
-  },
-  {
-    "query": "Laura Uba psychology books",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL2707649W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0204,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.3333
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2707649W",
-      "title": "Psychology",
-      "authors": [
-        "Laura Uba"
-      ],
-      "subjects": [
-        "Ethnopsychology",
-        "Psychology"
-      ],
-      "year": 1999,
-      "description_preview": "ALERT: Before you purchase, check with your instructor or review your course syllabus to ensure that youselect the correct ISBN. Several versions of Pearson's MyLab & Mastering products exist for each"
-    }
-  },
-  {
-    "query": "children's poetry African American songs",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL9470085W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.045,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL9470085W",
-      "title": "How Sweet the Sound",
-      "authors": [
-        "Wade Hudson and Cheryl Willis Hudson"
-      ],
-      "subjects": [
-        "Children'S Poetry, American",
-        "American Poetry",
-        "African American Authors",
-        "Children'S Songs",
-        "Texts",
-        "African Americans",
-        "Juvenile Poetry",
-        "Songs"
-      ],
-      "year": null,
-      "description_preview": "A Southern Novel of Second Chances From a distance, the Harlans appear to be the perfect Southern family. Wealth and local fame mask the drama and dysfunction swirling through their family line. But a"
-    }
-  },
-  {
-    "query": "intermediate to advanced origami animal paper folding instructions",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL3359290W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.2188,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.2857
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL3359290W",
-      "title": "Origami Zoo",
-      "authors": [
-        "Robert J. Lang",
-        "Stephen Weiss"
-      ],
-      "subjects": [
-        "Origami",
-        "Animals In Art",
-        "Paper Animals",
-        "Paper Folding",
-        "Intermediate Origami",
-        "Advanced Origami",
-        "Collection:Origami"
-      ],
-      "year": 1990,
-      "description_preview": "\"Presents step-by-step instructions for thirty-seven animal projects folded from square or rectangular pieces of paper, including designs for a dolphin, gorilla, frog, roadrunner, and panda.\""
-    }
-  },
-  {
-    "query": "Joel Elad LinkedIn book",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL7914147W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0789,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.6667
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL7914147W",
-      "title": "LinkedIn for dummies",
-      "authors": [
-        "Joel Elad"
-      ],
-      "subjects": [
-        "Computer Network Resources",
-        "Business Enterprises",
-        "Job Hunting",
-        "Linkedin (Electronic Resource)",
-        "Business Networks"
-      ],
-      "year": null,
-      "description_preview": "Once you're LinkedIn, you're part of the largest online network of professionals in the world! When you know how to make the most of your profile, manage your contacts, and handle invitations effectiv"
-    }
-  },
-  {
-    "query": "children's picture books about forest animals and tree parties",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL16461722W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.3158,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL16461722W",
-      "title": "Let's have a tree party",
-      "authors": [
-        "Martin, David"
-      ],
-      "subjects": [
-        "Forest Animals",
-        "Trees",
-        "Fiction",
-        "Stories In Rhyme",
-        "Parties",
-        "Children'S Fiction",
-        "Picture Books",
-        "Short Stories"
-      ],
-      "year": null,
-      "description_preview": "Grandpa Crow gathers the forest critters together for a party in a tree."
-    }
-  },
-  {
-    "query": "Catherine Clément Julia Kristeva correspondence sacred women religion book",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL16988018W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0857,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.3333
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL16988018W",
-      "title": "The feminine and the sacred",
-      "authors": [
-        "Catherine Clement",
-        "Julia Kristeva"
-      ],
-      "subjects": [
-        "Correspondence",
-        "The Holy",
-        "Women And Religion",
-        "Women Philosophers",
-        "French Women Novelists",
-        "Cultural Studies",
-        "Western Philosophy, From C 1900 -",
-        "Women'S Studies"
-      ],
-      "year": null,
-      "description_preview": "In November 1996, Catherine Cl?ment and Julia Kristeva began a correspondence exploring the subject of the sacred. In this collection of those letters Catherine Cl?ment approaches the topic from an an"
-    }
-  },
-  {
-    "query": "Dhirendranath Baske books",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL944612W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.0,
-      "max_verbatim_ngram": 0,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL944612W",
-      "title": "Bāhā paraba āra haṛa samāja",
-      "authors": [
-        "Dhīrendranātha Bāske"
-      ],
-      "subjects": [
-        "Religion",
-        "Santal (South Asian People)"
-      ],
-      "year": null,
-      "description_preview": "On a religious festival observed by the Santal people; includes samplings of songs sung for the ocassion."
-    }
-  },
-  {
-    "query": "ophthalmology colour atlas eye diseases",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL1783269W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.2,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.2
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL1783269W",
-      "title": "Colour atlas of ophthalmology",
-      "authors": [
-        "Arthur Siew Ming Lim"
-      ],
-      "subjects": [
-        "Atlases",
-        "Ophthalmology",
-        "Eye",
-        "Diseases",
-        "Eye Diseases",
-        "Business",
-        "Management",
-        "Бизнес"
-      ],
-      "year": 1979,
-      "description_preview": "Colour Atlas of Ophthalmology, fourth edition is an up-to-date compendium of high quality colour illustrations of common eye conditions, with well-organised and concise text."
-    }
-  },
-  {
-    "query": "regency romance comics graphic novels",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL21257366W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.0168,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL21257366W",
-      "title": "Heartless",
-      "authors": [
-        "Nina Bunjevac",
-        "Jay Lynch"
-      ],
-      "subjects": [
-        "Comics & Graphic Novels, General"
-      ],
-      "year": null,
-      "description_preview": "From \"New York Times\" bestselling legend Mary Balogh--and the beloved author of\" Longing, Silent Melody, \" and\" Beyond the Sunrise\"--comes a ravishing novel of passion and duty, love and menace.... Li"
-    }
-  },
-  {
-    "query": "al-mar'ah fi al-fikr al-falsafi al-ijtima'i islami",
-    "category": "title_lookup",
-    "gold_work_ids": [
-      "/works/OL13206525W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.1212,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.125
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL13206525W",
-      "title": "al- Marʾah fī al-fikr al-falsafī al-ijtimāʻī al-Islāmī",
-      "authors": [
-        "Sihām Ḥamīyah"
-      ],
-      "subjects": [
-        "Islam",
-        "Religious Aspects",
-        "Religious Aspects Of Women",
-        "Sociological Aspects",
-        "Sociological Aspects Of Women",
-        "Women",
-        "Women In Islam",
-        "Islamic Sociology"
-      ],
-      "year": 2004,
-      "description_preview": "Faḍl Allāh, Muḥammad Ḥusayn; view on Muslim women; conduct of life; Islamic philosophy."
-    }
-  },
-  {
-    "query": "Stephen Harris books",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL4913259W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.02,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL4913259W",
-      "title": "Foxes",
-      "authors": [
-        "Harris, Stephen"
-      ],
-      "subjects": [
-        "Foxes",
-        "Juvenile Literature",
-        "Mammals"
-      ],
-      "year": null,
-      "description_preview": "When Dashiel's body is found dumped on an East London wasteland, his best friend Danny sets out to find the killer. But Danny finds interaction difficult and must keep his world small in order to surv"
-    }
-  },
-  {
-    "query": "Trinidadian British fiction Jamaica colonial era coming-of-age Hindu community",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL2493244W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.1591,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.1
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2493244W",
-      "title": "Butterfly in the Wind",
-      "authors": [
-        "Lakshmi Persaud"
-      ],
-      "subjects": [
-        "Fiction",
-        "British Authors",
-        "Trinidadian British Authors",
-        "Fiction, General",
-        "Jamaica, Fiction"
-      ],
-      "year": 1990,
-      "description_preview": "From early in her life, Kamla is surprised by a contrary inner voice which frequently gainsays the wisdom of her elders and betters. But Kamla is growing up in a traditional Hindu community and attend"
-    }
-  },
-  {
-    "query": "Caroline Baxter books",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL13343464W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.1053,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL13343464W",
-      "title": "The stolen telesm",
-      "authors": [
-        "Caroline Baxter"
-      ],
-      "subjects": [
-        "Fantasy"
-      ],
-      "year": 1975,
-      "description_preview": "Two children are drawn into a battle with the evil forces of Darkness after they find a winged horse and an ancient stone"
-    }
-  },
-  {
-    "query": "anatomy and physiology textbook 1998 saladin porth",
-    "category": "title_lookup",
-    "gold_work_ids": [
-      "/works/OL2712389W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.0435,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.3333
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2712389W",
-      "title": "Anatomy and Physiology",
-      "authors": [
-        "Kenneth S. Saladin",
-        "Carol Porth"
-      ],
-      "subjects": [
-        "Human Anatomy",
-        "Human Physiology",
-        "Paramedical Education",
-        "Anatomy",
-        "Physiology",
-        "Fisiologia",
-        "Life Sciences - Human Anatomy & Physiology",
-        "General"
-      ],
-      "year": 1998,
-      "description_preview": "This book is available for free at http://openstaxcollege.org/textbooks/... Anatomy and Physiology is a dynamic textbook for the yearlong Human Anatomy and Physiology course taught at most two- and fo"
-    }
-  },
-  {
-    "query": "romantic internet comics about couples and humor by Catana Chetwynd",
-    "category": "combined",
-    "gold_work_ids": [
-      "/works/OL19751127W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.098,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.2857
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL19751127W",
-      "title": "Little moments of love",
-      "authors": [
-        "Catana Chetwynd"
-      ],
-      "subjects": [
-        "Pictorial American Wit And Humor",
-        "Man-Woman Relationships",
-        "Caricatures And Cartoons",
-        "Comic Books, Strips",
-        "Comics & Graphic Novels, Romance"
-      ],
-      "year": null,
-      "description_preview": "It began with a chat about the mere-exposure effect in psychology, and became Chetwynd's internet comic series about following John around, trying to encounter him more. They're fueled by love, sillin"
-    }
-  },
-  {
-    "query": "MySQL SQL database guide 1999 for administrators and end users",
-    "category": "combined",
-    "gold_work_ids": [
-      "/works/OL2417283W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.0722,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.25
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2417283W",
-      "title": "MySQL",
-      "authors": [
-        "Paul DuBois"
-      ],
-      "subjects": [
-        "Sql (Computer Program Language)"
-      ],
-      "year": 1999,
-      "description_preview": "A guide for end users and administrators alike. MySQL helps users make the most of MySQL, a client-server SQL database management system. -- Devoted exclusively to helping users make the most of the M"
-    }
-  },
-  {
-    "query": "politik hukum Indonesia",
-    "category": "title_lookup",
-    "gold_work_ids": [
-      "/works/OL22654592W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.3333,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.3333
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL22654592W",
-      "title": "Politik hukum",
-      "authors": [
-        "Ahmad Muliadi"
-      ],
-      "subjects": [
-        "Political Aspects",
-        "Constitutional Law",
-        "Law"
-      ],
-      "year": null,
-      "description_preview": "On political law in Indonesia."
-    }
-  },
-  {
-    "query": "crime romance novels with political corruption and courtroom drama",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL21500071W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.0123,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL21500071W",
-      "title": "Dark Lady",
-      "authors": [
-        "Maire Claremont"
-      ],
-      "subjects": [
-        "Romance"
-      ],
-      "year": null,
-      "description_preview": "Dashiell Hammett, a master of big city crime fiction, would have enjoyed Richard North Patterson's latest thriller, set in a fictional Midwestern city called Steelton. This burnt-out burg is located o"
-    }
-  },
-  {
-    "query": "John R. Southworth books",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL2337177W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.0732,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.3333
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2337177W",
-      "title": "Viva Santa Barbara",
-      "authors": [
-        "Southworth, John R."
-      ],
-      "subjects": [
-        "Fiesta",
-        "Discovery",
-        "Lobero",
-        "Cabrillo",
-        "Missions",
-        "Adobes",
-        "Description And Travel"
-      ],
-      "year": 1946,
-      "description_preview": "This book was written by John R. Southworth for People who were interested in How Santa Barbara came to be. He talks about how the Renaissance of Santa Barbara Must continue. Mind you, this was writte"
-    }
-  },
-  {
-    "query": "Sikkim politics and government study elite social conditions 2008",
-    "category": "combined",
-    "gold_work_ids": [
-      "/works/OL3429684W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.4375,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.125
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL3429684W",
-      "title": "Sikkim",
-      "authors": [
-        "Awadhesh Coomar Sinha"
-      ],
-      "subjects": [
-        "Politics And Government",
-        "Elite (Social Sciences)",
-        "Social Conditions"
-      ],
-      "year": 2008,
-      "description_preview": "Chiefly on the politics and government of Sikkim, India; includes study of the elite and social conditions of the place also."
-    }
-  },
-  {
-    "query": "psychology identity theory book 2009 paperback",
-    "category": "combined",
-    "gold_work_ids": [
-      "/works/OL1818375W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.039,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL1818375W",
-      "title": "Identity theory",
-      "authors": [
-        "Peter Burke"
-      ],
-      "subjects": [
-        "Identity (Psychology)"
-      ],
-      "year": 2009,
-      "description_preview": "John Anselm is a former Beirut hostage, a war correspondent who went to one war too many. A burnt-out case, he lives in Hamburg, working for a semi-legal, near-broke surveillance firm and trying to co"
-    }
-  },
-  {
-    "query": "recurve bow archery techniques stance shot sequence",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL2931852W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.0864,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.4286
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2931852W",
-      "title": "Archery",
-      "authors": [
-        "Steve Boga"
-      ],
-      "subjects": [
-        "Archery",
-        "Sports & Recreation",
-        "Field Sports"
-      ],
-      "year": 1997,
-      "description_preview": "If you're serious about improving accuracy, increasing consistency, and achieving competitive success, \" Archery \"is your guide. Featuring the in-depth instruction, insight, and advice from the world'"
-    }
-  },
-  {
-    "query": "second grade curriculum planning fundamentals",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL18311180W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.3846,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL18311180W",
-      "title": "What your second grader needs to know",
-      "authors": [
-        "E. D. Hirsch"
-      ],
-      "subjects": [
-        "Curricula",
-        "Second Grade (Education)",
-        "Curriculum Planning"
-      ],
-      "year": null,
-      "description_preview": "Fundamentals of a Good Second Grade Education."
-    }
-  },
-  {
-    "query": "how to analyze and understand visual art composition and style",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL3144766W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.1091,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL3144766W",
-      "title": "Understanding art",
-      "authors": [
-        "Martin Wenham"
-      ],
-      "subjects": [
-        "Art Teachers",
-        "Training Of",
-        "Study And Teaching",
-        "Visual Perception",
-        "Art",
-        "Art Appreciation",
-        "Composition (Art)",
-        "Art, Study And Teaching"
-      ],
-      "year": 2003,
-      "description_preview": "This widely-adopted introductory appreciation book communicates the excitement, mystery, relevance, and beauty of art by teaching readers to understand and analyze art. This is all done through stimul"
-    }
-  },
-  {
-    "query": "urban bears and other dangerous backyard animals",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL19988779W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.1087,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL19988779W",
-      "title": "Bears in the backyard",
-      "authors": [
-        "Edward R. Ricciuti"
-      ],
-      "subjects": [
-        "Dangerous Animals",
-        "Human-Animal Relationships",
-        "Urban Pests",
-        "Urban Animals",
-        "Suburban Animals",
-        "Animals",
-        "Pests"
-      ],
-      "year": null,
-      "description_preview": "As human population centers sprawl out into once open lands, and as conservation efforts help devastated wildlife populations recover, humans are having more frequent interactions with large and often"
-    }
-  },
-  {
-    "query": "Sara Williams books on venture capital and management buyouts",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL3191113W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0612,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.1667
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL3191113W",
-      "title": "Breakout",
-      "authors": [
-        "Sara Williams"
-      ],
-      "subjects": [
-        "Management Buyouts",
-        "New Business Enterprises",
-        "Venture Capital"
-      ],
-      "year": 1993,
-      "description_preview": "When Anthony's angst-ridden rock 'n' roll lyrics go viral, he's unwittingly cast as the school rebel. The truth is, he's not trying to be anyone's hero. Anthony Castillo needs a new life. His teachers"
-    }
-  },
-  {
-    "query": "post-Freudian psychoanalysis theories",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL1593122W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.0667,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL1593122W",
-      "title": "Freud and the post-Freudians",
-      "authors": [
-        "J. A. C. Brown"
-      ],
-      "subjects": [
-        "Psychoanalysis",
-        "Psychology",
-        "Freud, Sigmund, 1856-1939"
-      ],
-      "year": 1961,
-      "description_preview": "Provides a compelling account of both Freud's original ideas and of the subsequent developments that arose out of them, explaining the basic concepts of psychoanalytic theory, including a survey of th"
-    }
-  },
-  {
-    "query": "witchcraft black magic horror short stories 1960s",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL3151510W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.0494,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL3151510W",
-      "title": "The evil people: being thirteen strange and terrible accounts of witchcraft, black magic and voodoo",
-      "authors": [
-        "Peter Høeg"
-      ],
-      "subjects": [
-        "Horror Tales"
-      ],
-      "year": 1968,
-      "description_preview": "Containing: Nocturnal Meeting; Peabody Heritage; Witch's Vengeance; The Snake; Prince Borgia's Mass; Secret Worship; Devil Worshiper; Archives of the Dead; Mother of Serpents; and others. CONTENTS Int"
-    }
-  },
-  {
-    "query": "romantic suspense legal drama about personal injury cases in Great Britain",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL2167554W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.0588,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2167554W",
-      "title": "Personal injury",
-      "authors": [
-        "Martha Warren Neocleous"
-      ],
-      "subjects": [
-        "Personal Injuries",
-        "Accident Law",
-        "Law, Great Britain"
-      ],
-      "year": 1997,
-      "description_preview": "When personal injury attorney, Angela Caruso, learns her ex-booty-caller, Nick Sourvanos, will be defending the most important case of her legal career, Angela will stop at nothing to teach him a less"
-    }
-  },
-  {
-    "query": "cumbia peruana entrevistas con cantantes libro",
-    "category": "combined",
-    "gold_work_ids": [
-      "/works/OL16081801W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.05,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.1667
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL16081801W",
-      "title": "La rica cumbia",
-      "authors": [
-        "Miguel Laura"
-      ],
-      "subjects": [
-        "Chicha (Music)",
-        "Singers",
-        "Interviews",
-        "Cumbia (Music)",
-        "Popular Music"
-      ],
-      "year": null,
-      "description_preview": "Conversations between the author and eighteen Peruvian Cumbia singers."
-    }
-  },
-  {
-    "query": "plant-based meal guide for one meal a day vegan cooking health benefits",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL20052516W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0552,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.1
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL20052516W",
-      "title": "One part plant : a simple guide to eating real, one meal at a time",
-      "authors": [
-        "Jessica Murnane"
-      ],
-      "subjects": [
-        "Cooking (Natural Foods)",
-        "Veganism",
-        "Vegetarian Cooking",
-        "Vegan Cooking",
-        "Health Aspects",
-        "Cooking"
-      ],
-      "year": null,
-      "description_preview": "\"This book is joyful, playful, delicious, and guess what? It will also change your life. I invite you to follow Jessica into the vast green wilderness.\" --Lena Dunham Wellness advocate and podcaster J"
-    }
-  },
-  {
-    "query": "practical life advice using psychology and philosophy games about midlife decisions",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL24413981W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.0676,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL24413981W",
-      "title": "Game of Life",
-      "authors": [
-        "Kin Lau"
-      ],
-      "subjects": [
-        "Philosophy",
-        "Psychology"
-      ],
-      "year": null,
-      "description_preview": "Geared toward the graduate and others about to embark on new adventures, this upbeat, practical guide is based on the classic Hasbro game, invented in 1959. Thoughts, questions, advice, axioms, and an"
-    }
-  },
-  {
-    "query": "rural social studies sociology book",
-    "category": "title_lookup",
-    "gold_work_ids": [
-      "/works/OL1055439W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.25,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL1055439W",
-      "title": "Rural sociology",
-      "authors": [
-        "S. L. Doshi"
-      ],
-      "subjects": [
-        "Sociology, Rural",
-        "Rural Sociology"
-      ],
-      "year": null,
-      "description_preview": "With reference to India."
-    }
-  },
-  {
-    "query": "Orlando B. Willcox papers Civil War Union general biography campaigns 1861 1865",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL14867221W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.169,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.1667
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL14867221W",
-      "title": "Forgotten valor",
-      "authors": [
-        "Orlando B. Willcox"
-      ],
-      "subjects": [
-        "Biography",
-        "Campaigns",
-        "Generals",
         "History",
-        "Personal Narratives",
-        "United States",
-        "United States Civil War, 1861-1865",
-        "United States. Army"
+        "Latin American History"
       ],
-      "year": 1999,
-      "description_preview": "The papers of Major General Orlando Bolivar Willcox, one of the most prominent division commanders in the Union army, were recently discovered locked in a trunk in a Washington, D.C., attic, virtually"
+      "year": null,
+      "description_preview": "The achievements and worldwide impact of the workers and farmers government that came to power in Nicaragua in 1979, and the political retreat of the Sandinista National Liberation Front leadership th"
     }
   },
   {
-    "query": "Anselm of Canterbury biography David S. Hogg",
-    "category": "title_lookup",
+    "query": "best field guide to North American turtles freshwater brackish marine species",
+    "category": "exploratory",
     "gold_work_ids": [
-      "/works/OL25205144W"
+      "gr:1560988231"
     ],
-    "gold_is_complete": true,
-    "difficulty": "medium",
+    "gold_is_complete": false,
+    "difficulty": "hard",
     "leakage": {
-      "unigram_jaccard": 0.0538,
+      "unigram_jaccard": 0.0678,
       "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.6
+      "rare_term_overlap": 0.3
     },
     "source": "api",
     "seed_book": {
-      "work_id": "/works/OL25205144W",
-      "title": "Anselm of Canterbury",
+      "work_id": "gr:1560988231",
+      "title": "Turtles of the United States and Canada",
       "authors": [
-        "David S. Hogg"
+        "Carl H. Ernst",
+        "Roger W. Barbour"
       ],
       "subjects": [
-        "Theologians",
-        "Saints, Biography",
-        "Christian Theology",
-        "Medieval",
-        "Religion And Philosophy",
-        "Medieval History 400-1500",
-        "Late Antiquity & Byzantium"
+        "Reference",
+        "Field Guides",
+        "Science"
       ],
       "year": null,
-      "description_preview": "\"Anselm, one of the most original thinkers of the medieval West, lived in a world that is in many ways very different from ours. Yet many of Anselm's solutions to those timeless problems of how to dea"
+      "description_preview": "Ernst and Lovich's thoroughly revised edition of this classic reference provides the most updated information ever assembled on the natural histories of North American turtles.,From diminutive mud tur"
     }
   },
   {
-    "query": "promote yourself personal branding career development book",
-    "category": "title_lookup",
+    "query": "best photo book about Greek islands, culture, and ancient monuments",
+    "category": "exploratory",
     "gold_work_ids": [
-      "/works/OL19982946W"
+      "gr:821225243"
     ],
-    "gold_is_complete": true,
+    "gold_is_complete": false,
     "difficulty": "hard",
     "leakage": {
-      "unigram_jaccard": 0.1786,
+      "unigram_jaccard": 0.0635,
       "max_verbatim_ngram": 2,
       "rare_term_overlap": 0.0
     },
     "source": "api",
     "seed_book": {
-      "work_id": "/works/OL19982946W",
-      "title": "Promote yourself",
+      "work_id": "gr:821225243",
+      "title": "Greece: Land of Light",
       "authors": [
-        "Dan Schawbel"
+        "Nicholas Gage",
+        "Barry Brukoff"
       ],
       "subjects": [
-        "Success In Business",
-        "Management",
-        "New Business Enterprises",
-        "Career Development",
-        "Career Changes",
-        "Self-Realization"
+        "Cultural",
+        "Greece",
+        "Travel"
       ],
       "year": null,
-      "description_preview": "Provides counsel on how to promote oneself and find a desirable job by creating personal brands that exhibit the qualities employers seek."
+      "description_preview": "An eloquent text by bestselling author Nicholas Gage and vivid color photographs of Greece by Barry Brukoff create an unforgettable portrait of this luminous country. Greece is a legendary destination"
     }
   },
   {
-    "query": "sports dictionary English terms Merriam Webster for reference",
-    "category": "combined",
-    "gold_work_ids": [
-      "/works/OL15164760W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.2941,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.1429
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL15164760W",
-      "title": "Webster's sports dictionary.",
-      "authors": [
-        "Merriam-Webster"
-      ],
-      "subjects": [
-        "Dictionaries",
-        "Sports",
-        "Engels",
-        "Sport",
-        "Dictionnaires Anglais",
-        "Sports, Dictionaries"
-      ],
-      "year": null,
-      "description_preview": "Defines commonly used sports terms used in a wide variety of sports."
-    }
-  },
-  {
-    "query": "books about Jesus overcoming impossible obstacles in Bible stories",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL21248803W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.0375,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL21248803W",
-      "title": "He Still Moves Stones",
-      "authors": [
-        "Max Lucado"
-      ],
-      "subjects": [
-        "Bible Stories, N.T"
-      ],
-      "year": null,
-      "description_preview": "It's what happens when obstacles prevent you from seeing what God has done for you ... He still moves stones. People with questions. The Bible is absolutely full of them. A crook on a cross. A wild ma"
-    }
-  },
-  {
-    "query": "retailing textbook 1988 Dorothy Rogers",
-    "category": "title_lookup",
-    "gold_work_ids": [
-      "/works/OL13262633W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.0217,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.2
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL13262633W",
-      "title": "Retailing",
-      "authors": [
-        "Dorothy S. Rogers"
-      ],
-      "subjects": [
-        "Retail Trade"
-      ],
-      "year": 1988,
-      "description_preview": "Full-color, completely current, and packed with practical applications, the Eighth Edition of RETAILING puts students on the inside track to success in the fast-moving retail industry. RETAILING is wr"
-    }
-  },
-  {
-    "query": "Hindi bhakti poet about Jambhoji 15th century poetry books",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL2316624W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.1818,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.1429
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2316624W",
-      "title": "Jāga jam̐bhaiyā jām̐bho āvai",
-      "authors": [
-        "Bhīmapāṇḍiyā."
-      ],
-      "subjects": [
-        "Poetry"
-      ],
-      "year": 1999,
-      "description_preview": "On Jāmbhojī, 1451-1536, Hindi saint poet of the Bhakti period."
-    }
-  },
-  {
-    "query": "why rural farmers experience stress and suicide after economic changes and globalization in India",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL22110569W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.2857,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL22110569W",
-      "title": "Seeds of suicide",
-      "authors": [
-        "Vandana Shiva"
-      ],
-      "subjects": [
-        "Suicidal Behavior",
-        "Globalization",
-        "Suicide",
-        "Farmers",
-        "Stress (Psychology)",
-        "Agriculture",
-        "Agricultural Credit",
-        "Economic Aspects"
-      ],
-      "year": null,
-      "description_preview": "With reference to India."
-    }
-  },
-  {
-    "query": "Randolph Caldecott children's books and nursery rhymes",
+    "query": "Feliciano R. Fajardo books",
     "category": "author",
     "gold_work_ids": [
-      "/works/OL241125W",
-      "/works/OL18868581W"
+      "gr:9710857126"
     ],
     "gold_is_complete": true,
     "difficulty": "easy",
     "leakage": {
-      "unigram_jaccard": 0.1389,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.4
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL241125W",
-      "title": "The farmer's boy",
-      "authors": [
-        "Randolph Caldecott"
-      ],
-      "subjects": [
-        "Nursery Rhymes",
-        "Children'S Songs"
-      ],
-      "year": 1880,
-      "description_preview": "One of a series of classic Victorian children's books by the British artist and author. Caldecott was the eponym of the Caldecott Medal and transformed the world of children's books in the Victorian e"
-    }
-  },
-  {
-    "query": "Kelly Blackburn golf training workouts book",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL8408775W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0376,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.4
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL8408775W",
-      "title": "Exercises for Elite Golf Performance",
-      "authors": [
-        "Kelly Blackburn"
-      ],
-      "subjects": [
-        "Training",
-        "Golf",
-        "Exercise",
-        "Sports & Recreation"
-      ],
-      "year": null,
-      "description_preview": "It's not a secret that the most vital piece of golf equipment is the human body, yet most golfers believe the best ways to lower scores are big-head drivers, premium golf spikes, and other top-of-the-"
-    }
-  },
-  {
-    "query": "19th century California social life customs law politics and religion travel sketches",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL1618108W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.1023,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL1618108W",
-      "title": "California sketches",
-      "authors": [
-        "O. P. Fitzgerald"
-      ],
-      "subjects": [
-        "Social Life And Customs",
-        "Description And Travel",
-        "Law And Politics",
-        "Religion And Ethics",
-        "Mines And Mineral Resources",
-        "Ethnic Groups",
-        "Law",
-        "Manners And Customs"
-      ],
-      "year": 1880,
-      "description_preview": "A Southern Methodist minister, Oscar Penn Fitzgerald (1829-1911) of North Carolina was sent to California as a missionary by his denomination in 1855. He remained for more than twenty years, winning a"
-    }
-  },
-  {
-    "query": "English philosophy of individuality and civilization 1960s",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL15026W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0328,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL15026W",
-      "title": "The aristos",
-      "authors": [
-        "John Fowles"
-      ],
-      "subjects": [
-        "Civilization",
-        "Life",
-        "Philosophy",
-        "Philosophy And Religion",
-        "English Philosophy",
-        "Individuality",
-        "Philosophical Anthropology"
-      ],
-      "year": 1964,
-      "description_preview": "This book was first published against the advice of almost everyone who read it. I was told that it would do my ‘image’ no good; and I am sure that my belief that a favourable ‘image’ is conceivably n"
-    }
-  },
-  {
-    "query": "Sombat Wat Po reclining Buddha Bangkok book",
-    "category": "title_lookup",
-    "gold_work_ids": [
-      "/works/OL1782711W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.25,
+      "unigram_jaccard": 0.375,
       "max_verbatim_ngram": 3,
       "rare_term_overlap": 0.6667
     },
     "source": "api",
     "seed_book": {
-      "work_id": "/works/OL1782711W",
-      "title": "Sombat Wat Phō",
+      "work_id": "gr:9710857126",
+      "title": "Entrepreneurship",
       "authors": [
-        "Thidā Sārayā."
+        "Feliciano R. Fajardo"
       ],
       "subjects": [
-        "Art",
-        "Art, Buddhist",
-        "Art, Thai",
-        "Buddhist Art",
-        "Thai Art",
-        "Wat Phrachetuphon (Bangkok, Thailand)"
+        "Business",
+        "Entrepreneurship"
       ],
-      "year": 1990,
-      "description_preview": "Introduction to monuments and valuable art objects of Wat Phrachētuphon, commonly known as Wat Po, or, Temple of the Reclining Buddha, Bangkok, Thailand."
+      "year": null,
+      "description_preview": "Basic entrepreneurship for the Philippine setting."
     }
   },
   {
-    "query": "novels about sibling rivalry and dark imagination in an alternate world",
+    "query": "Arkham City walkthrough guide Brady Games Batman game strategy book",
     "category": "exploratory",
     "gold_work_ids": [
-      "/works/OL18546113W"
+      "gr:074401316X"
     ],
     "gold_is_complete": false,
     "difficulty": "hard",
     "leakage": {
-      "unigram_jaccard": 0.1064,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL18546113W",
-      "title": "The game",
-      "authors": [
-        "Les Logan"
-      ],
-      "subjects": [
-        "American Horror Tales"
-      ],
-      "year": null,
-      "description_preview": "The Gameis a lush and disturbing novel portraying a sibling rivalry which compels the reader to reconsider the uses and misuses of imagination. when they were little girls, Cassandra and Julia played "
-    }
-  },
-  {
-    "query": "Could life exist elsewhere in the universe and what does cosmology say?",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL1703469W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.0789,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL1703469W",
-      "title": "Are we alone?",
-      "authors": [
-        "Paul Davies"
-      ],
-      "subjects": [
-        "Origin",
-        "Life",
-        "Life On Other Planets",
-        "Cosmology",
-        "Unidentified Flying Objects",
-        "Buitenaards Leven",
-        "Science",
-        "Philosophy"
-      ],
-      "year": 1995,
-      "description_preview": "'... based on lectures given at the University of Milan, 8-9 November 1993, in the series Lezione Italiane, sponsored by the Fondazione Sigma-Tau, and published in the Italian language by Laterza'."
-    }
-  },
-  {
-    "query": "David Jones baboon books",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL12616588W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.039,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.3333
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL12616588W",
-      "title": "Baboon",
-      "authors": [
-        "David Jones"
-      ],
-      "subjects": [
-        "Juvenile Fiction",
-        "Baboons",
-        "Teenage Boys",
-        "Zoologists",
-        "Fiction",
-        "Children'S Stories, Canadian",
-        "Canadian Fantasy Fiction",
-        "Babouins"
-      ],
-      "year": 2007,
-      "description_preview": "On his first trip into the world, a baby baboon meets a very slow turtle and concludes that the world is slow. But then, as his mother takes him farther afield, he sees much more: he watches a hungry "
-    }
-  },
-  {
-    "query": "Ratanacandra Jaina books on Jain logic and philosophy",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL2310698W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.2353,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.4
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2310698W",
-      "title": "Jainadarśana meṃ niścaya aura vyavahāra naya, eka anuśīlana",
-      "authors": [
-        "Ratanacandra Jaina"
-      ],
-      "subjects": [
-        "Jaina Philosophy",
-        "Jaina Logic"
-      ],
-      "year": 1997,
-      "description_preview": "On Jaina logic and philosophy."
-    }
-  },
-  {
-    "query": "kids picture book about a rainforest animal running race for a prize",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL17739785W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.2,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL17739785W",
-      "title": "The rainforest race",
-      "authors": [
-        "Lara Bergen"
-      ],
-      "subjects": [
-        "Rain Forests",
-        "Running Races",
-        "Rain Forest Animals",
-        "Picture Books"
-      ],
-      "year": null,
-      "description_preview": "Diego teams up with Armadillo in the Rainforest Race to compete for the blue ribbon."
-    }
-  },
-  {
-    "query": "prison drama about runners and criminals",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL19752242W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.08,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.25
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL19752242W",
-      "title": "The Jericho mile",
-      "authors": [
-        "Michael Mann"
-      ],
-      "subjects": [
-        "Drama",
-        "Runners (Sports)",
-        "Criminals",
-        "Prisons"
-      ],
-      "year": null,
-      "description_preview": "Rain Murphy is a man serving a life sentence for killing his father. A man whose home is Folsom Prison, a place where only the toughest breed of criminals, murderers, rapists and armed robbers, are se"
-    }
-  },
-  {
-    "query": "Robert Blatchford novels",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL5609709W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0198,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.5
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL5609709W",
-      "title": "Not guilty",
-      "authors": [
-        "Robert Blatchford"
-      ],
-      "subjects": [
-        "Crime",
-        "Crime And Criminals",
-        "Criminals",
-        "Defective And Delinquent Classes",
-        "Free Will And Determinism",
-        "Heredity",
-        "Nature And Nurture",
-        "Social Conditions"
-      ],
-      "year": null,
-      "description_preview": "Hailed as \"one of the best practitioners of romantic suspense\" \"(The Plain Dealer),\" Patricia MacDonald unfolds a masterful thriller that explores how far a mother will go to save her troubled son.WAS"
-    }
-  },
-  {
-    "query": "Beatles memorabilia collectibles price guide 1990s collectors",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL2036000W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0366,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.2857
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL2036000W",
-      "title": "The Beatles",
-      "authors": [
-        "Courtney McWilliams"
-      ],
-      "subjects": [
-        "Beatles",
-        "Collectibles",
-        "Prices",
-        "Music, Collectors And Collecting"
-      ],
-      "year": 1997,
-      "description_preview": "The book that defines a band that defined a generation. During 1967 and 1968 Hunter Davies spent eighteen months with the Beatles at the peak of their powers as they defined a generation and rewrote p"
-    }
-  },
-  {
-    "query": "finance for small business managers understanding financial statements",
-    "category": "combined",
-    "gold_work_ids": [
-      "/works/OL846602W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.1935,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL846602W",
-      "title": "Finance for Non-Financial Managers",
-      "authors": [
-        "Lawrence W. Tuller"
-      ],
-      "subjects": [
-        "Finance",
-        "Small Business"
-      ],
-      "year": null,
-      "description_preview": "Financial reports speak their own language, one that many managers have trouble translating. This book clears the confusion, helping you to understand the information contained in useful financial rep"
-    }
-  },
-  {
-    "query": "southern states coastal travel art pictorial guide Atlantic Coast",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL1972525W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.0814,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL1972525W",
-      "title": "Bansemer's Book of the Southern Shores",
-      "authors": [
-        "Roger Bansemer"
-      ],
-      "subjects": [
-        "Description And Travel",
-        "Pictorial Works",
-        "Southern States, Description And Travel",
-        "Atlantic Coast"
-      ],
-      "year": 2003,
-      "description_preview": "Roger Bansemer shows us the Southern shores of the United States as only an artist can. His brush finds beauty in the simplicity of a sandbur, in the intricacy of ship skeletons, in the tangled webs o"
-    }
-  },
-  {
-    "query": "Bangladesh travel journal mountaineering memoirs",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL23346333W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.08,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL23346333W",
-      "title": "Miśana Baṅgopasāgara o Kilimānajāro",
-      "authors": [
-        "Musā Ibrāhīma"
-      ],
-      "subjects": [
-        "Travel",
-        "Journalists",
-        "Mountaineers"
-      ],
-      "year": null,
-      "description_preview": "Travelogue of Musā Ibrāhīma, mountaineer and a journalist from Bangladesh to different places."
-    }
-  },
-  {
-    "query": "Navy wives home economics romance novel 1950s",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL178393W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0727,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL178393W",
-      "title": "Welcome aboard",
-      "authors": [
-        "Florence Ridgely Johnson"
-      ],
-      "subjects": [
-        "Home Economics",
-        "Navy Wives",
-        "Navy Spouses",
-        "United States",
-        "United States. Navy"
-      ],
-      "year": 1951,
-      "description_preview": "Julie is on vacation! After months of breaking her back at the office she's ready for a weekend of absolute relaxation: a little reading, good food and some lazing at the beach are her idea of a perfe"
-    }
-  },
-  {
-    "query": "Mary Gunn books",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL26496937W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0035,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.5
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL26496937W",
-      "title": "Well",
-      "authors": [
-        "Mary Gunn"
-      ],
-      "subjects": [
-        "Mindfulness (Psychology)",
-        "Gunn, Mary",
-        "Cancer -- Patients"
-      ],
-      "year": null,
-      "description_preview": "Critically acclaimed Well marks the astonishing debut of an author with a singular and unflinching voice and vision. Set primarily among the working-class of a Seattle suburb called Federal Way, this "
-    }
-  },
-  {
-    "query": "Samskritima vikalpavada cultural sociology Nepal",
-    "category": "title_lookup",
-    "gold_work_ids": [
-      "/works/OL1764258W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.1875,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL1764258W",
-      "title": "Saṃskr̥timā vikalpavāda",
-      "authors": [
-        "Vishṇu Prabhāta"
-      ],
-      "subjects": [
-        "Culture",
-        "Sociology"
-      ],
-      "year": 1995,
-      "description_preview": "On cultural sociology; with reference to Nepal."
-    }
-  },
-  {
-    "query": "Ayrshire poetry Girvan 1895",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL13339310W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0889,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.75
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL13339310W",
-      "title": "Stray Threads From The Loom",
-      "authors": [
-        "Robert Cadden"
-      ],
-      "subjects": [
-        "Poetry",
-        "Girvan"
-      ],
-      "year": 1895,
-      "description_preview": "Stray Threads From The Loom is a collection of twenty six poems by Robert Cadden. The book was published in 1895 by The Ayrshire Post Limited, Nile Court, High Street, Ayr.  There is an introduction b"
-    }
-  },
-  {
-    "query": "curriculum change education policy school management decentralized education indonesia",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL13762649W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.4444,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.125
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL13762649W",
-      "title": "Reformasi pendidikan",
-      "authors": [
-        "M. Zainuddin"
-      ],
-      "subjects": [
-        "Educational Change",
-        "Education",
-        "Curricula",
-        "Curriculum Change",
-        "School Management And Organization"
-      ],
-      "year": 2008,
-      "description_preview": "Educational reform regarding to the policy of decentralized education and regional autonomy in Indonesia."
-    }
-  },
-  {
-    "query": "terrified pickle mini comic",
-    "category": "title_lookup",
-    "gold_work_ids": [
-      "/works/OL32943656W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.125,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.25
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL32943656W",
-      "title": "Adventures of a Terrified Pickle!",
-      "authors": [
-        "Sara Gordon Rapoport"
-      ],
-      "subjects": [
-        "Pickles",
-        "Comic Books, Strips"
-      ],
-      "year": null,
-      "description_preview": "This mini comic follows a cucumber as it is plucked, washed, and pickled. Along with the other pickles in the jar, it wonders if it will become relish or be served alongside a sandwich or with a Blood"
-    }
-  },
-  {
-    "query": "Diana L. Eck books on religious pluralism education",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL3298867W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0811,
+      "unigram_jaccard": 0.0645,
       "max_verbatim_ngram": 3,
       "rare_term_overlap": 0.3333
     },
     "source": "api",
     "seed_book": {
-      "work_id": "/works/OL3298867W",
-      "title": "On Common Ground",
+      "work_id": "gr:074401316X",
+      "title": "Batman: Arkham City Signature Series Guide",
       "authors": [
-        "Diana L. Eck"
+        "Brady Games"
       ],
       "subjects": [
-        "Religious Pluralism",
-        "Interactive Multimedia",
-        "Religion",
-        "Education, Religious Education",
-        "Religion, General"
+        "Games",
+        "Video Games",
+        "Dc Comics",
+        "Batman"
       ],
-      "year": 1997,
-      "description_preview": "When Lilah Evans graduated from Grantham U, she was ready to leave college behind and change the world. Now, at a crossroads, she's doing something she never wanted to do: attending her ten-year reuni"
+      "year": null,
+      "description_preview": "GOTHAM NEEDS YOUR HELP!, ,A year has passed since the riots at Arkham Asylum, and things are no better. The city's criminals are being housed in the old slums of Gotham City, dubbed \"Arkham City.\" Alt"
     }
   },
   {
-    "query": "children's map reading books with symbols and cartography activities",
-    "category": "genre_topic",
+    "query": "best splatterpunk horror novel with a guilty conscience theme",
+    "category": "exploratory",
     "gold_work_ids": [
-      "/works/OL281426W"
+      "gr:097530190X"
     ],
     "gold_is_complete": false,
-    "difficulty": "easy",
+    "difficulty": "hard",
     "leakage": {
-      "unigram_jaccard": 0.1389,
-      "max_verbatim_ngram": 2,
+      "unigram_jaccard": 0.0938,
+      "max_verbatim_ngram": 1,
       "rare_term_overlap": 0.1667
     },
     "source": "api",
     "seed_book": {
-      "work_id": "/works/OL281426W",
-      "title": "Maps and Mapping (Young Discoverers)",
+      "work_id": "gr:097530190X",
+      "title": "Conscience",
       "authors": [
-        "Barbara Taylor"
+        "John Skipp"
       ],
       "subjects": [
-        "Cartography",
-        "Juvenile Literature",
-        "Map Reading",
-        "Maps, Juvenile Literature",
-        "Maps",
-        "Kartografie",
-        "Science",
-        "Experimentos"
+        "Horror"
       ],
-      "year": 1999,
-      "description_preview": "Explains what maps are and why they are used, introduces symbols found on maps, and describes how cartographers map the world. Includes related activities."
+      "year": null,
+      "description_preview": "The solo debut of legendary bestselling horror novelist John Skipp (late of Skipp & Spector, the trailblazing \"splatterpunk\" team). CONSCIENCE is his much-heralded, eagerly-awaited return to the field"
     }
   },
   {
-    "query": "fantasy novel about a girl discovering magical charms and being transported to another world where her choices affect good and evil",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL31078W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.1842,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL31078W",
-      "title": "The secret in the stones",
-      "authors": [
-        "Erica Farber"
-      ],
-      "subjects": [
-        "Fantasy"
-      ],
-      "year": 2001,
-      "description_preview": "Its an amazing book in which a girl finds a blue trinket in a fountain which is actually one of the legendary nine charms.She is transported in a completely different world.Each of her decisions will "
-    }
-  },
-  {
-    "query": "Charles Wilson books on Churchill",
-    "category": "author",
-    "gold_work_ids": [
-      "/works/OL13320267W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0303,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.3333
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL13320267W",
-      "title": "Churchill",
-      "authors": [
-        "Charles Wilson"
-      ],
-      "subjects": [
-        "Politics And Government",
-        "Diaries",
-        "Moran, Charles Mcmoran Wilson, Baron, 1882-1977"
-      ],
-      "year": 1966,
-      "description_preview": "Winston Churchill was querulous, childish, self-indulgent, and difficult, writes English historian Roy Jenkins. But he was also brilliant, tenacious, and capable--in short, \"the greatest human being e"
-    }
-  },
-  {
-    "query": "How did Uganda try former Amin officials after the 1972 disappearances and what did the court cases reveal about reconciliation and amnesty?",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL13620482W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.0896,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.2308
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL13620482W",
-      "title": "The Teeth May Smile but the Heart Does Not Forget",
-      "authors": [
-        "Andrew Rice"
-      ],
-      "subjects": [
-        "Politics And Government",
-        "Extrajudicial Executions",
-        "Trials, Litigation",
-        "Atrocities",
-        "Laki, Eliphaz, -- D. 1972",
-        "Uganda, Politics And Government",
-        "Executions And Executioners"
-      ],
-      "year": 2009,
-      "description_preview": "After Idi Amin's reign was overthrown, the new government opted for amnesty for his henchmen rather than prolonged conflict. Ugandans tried to bury their history, but reminders of the truth were never"
-    }
-  },
-  {
-    "query": "Theodore Roosevelt presidential speeches and philosophy collections",
+    "query": "Tibetan Buddhist dark retreat meditation book",
     "category": "genre_topic",
     "gold_work_ids": [
-      "/works/OL20476W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.06,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.0
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL20476W",
-      "title": "The man in the arena",
-      "authors": [
-        "Theodore Roosevelt"
-      ],
-      "subjects": [
-        "Politics And Government",
-        "Presidents",
-        "Philosophy",
-        "Archives",
-        "Roosevelt, Theodore, 1858-1919",
-        "Presidents, United States, Messages",
-        "Collected Works (Single Author, Multi-Form)"
-      ],
-      "year": 1987,
-      "description_preview": "\"The Man in the Arena collects self-contained excerpts from some of his greatest works, including such revealing memoirs as The Rough Riders, the Auto-biography, and Through the Brazilian Wilderness, "
-    }
-  },
-  {
-    "query": "Welche didaktischen Ansätze zur Vermittlung slawischer Sprachen an Schulen und Universitäten werden in Sammelbänden diskutiert?",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL23499505W"
+      "gr:1571743758"
     ],
     "gold_is_complete": false,
     "difficulty": "hard",
     "leakage": {
       "unigram_jaccard": 0.0278,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.375
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.0
     },
     "source": "api",
     "seed_book": {
-      "work_id": "/works/OL23499505W",
-      "title": "Didaktik der slawischen Sprachen",
+      "work_id": "gr:1571743758",
+      "title": "Dawning of Clear Light: A Western Approach to Tibetan Dark Retreat Meditation",
       "authors": [
-        "Anastasia Drackert"
+        "Martin Lowenthal",
+        "Tenzin Wangyal"
       ],
       "subjects": [
-        "Language Teaching & Learning (Other Than Elt)",
-        "Educational: Languages Other Than English"
+        "Religion",
+        "Buddhism"
       ],
       "year": null,
-      "description_preview": "This edited volume documents the second meeting of the working group \"Didactics of the Slavic Languages\" that took place in Innsbruck (February 19-20, 2018). It consists of twelve chapters written by "
+      "description_preview": "Retreats in darkness have been used by all the great spiritual traditions for thousands of years as a method for tapping deep clarity, accessing sacred wisdom, connecting with the Divine, and training"
     }
   },
   {
-    "query": "tribal culture travelogue Arunachal Pradesh Lohit District",
-    "category": "genre_topic",
+    "query": "Duncan McDuie-Ra books",
+    "category": "author",
     "gold_work_ids": [
-      "/works/OL1766151W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.25,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.4286
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL1766151W",
-      "title": "A tryst with Mishmi Hills",
-      "authors": [
-        "Dev Singh Negi"
-      ],
-      "subjects": [
-        "Social Life And Customs",
-        "Travel",
-        "Description And Travel"
-      ],
-      "year": 1996,
-      "description_preview": "Travelogue of the personal narrative with special reference to cultural life of the tribal people of Lohit District, Arunachal Pradesh."
-    }
-  },
-  {
-    "query": "startup acquisition planning and corporate consolidation entrepreneurship",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL12006251W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.1481,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.3333
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL12006251W",
-      "title": "Strategic entrepreneurism",
-      "authors": [
-        "Jon B. Fisher"
-      ],
-      "subjects": [
-        "Planning",
-        "Consolidation And Merger Of Corporations",
-        "New Business Enterprises",
-        "Entrepreneurship",
-        "New Business Enterprises, Planning"
-      ],
-      "year": 2008,
-      "description_preview": "\"Discusses the way to design a startup company specifically with the goal of being acquired by a larger one\"--Provided by the publisher."
-    }
-  },
-  {
-    "query": "American humorists correspondence reminiscences biography",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL14857133W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.1471,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.2
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL14857133W",
-      "title": "Credos and curios",
-      "authors": [
-        "James Thurber"
-      ],
-      "subjects": [
-        "Authors",
-        "Correspondence, Reminiscences",
-        "American Miscellany",
-        "Biography",
-        "Correspondence",
-        "Friends And Associates",
-        "Humorists",
-        "American Wit And Humor"
-      ],
-      "year": 1962,
-      "description_preview": "21 previously uncollected pieces, including 3 short stories and 7 profiles of fellow-craftsmen. Foreword by Helen Thurber."
-    }
-  },
-  {
-    "query": "hotel daily menu recipes from 1910s with international dishes",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL208862W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.1852,
-      "max_verbatim_ngram": 1,
-      "rare_term_overlap": 0.1429
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL208862W",
-      "title": "The Hotel St. Francis cook book",
-      "authors": [
-        "Hirtzler, Victor."
-      ],
-      "subjects": [
-        "Menus",
-        "Cookery",
-        "International Cookery",
-        "Cooking",
-        "Recipes",
-        "Menu",
-        "Home Economics",
-        "Cookbook"
-      ],
-      "year": 1919,
-      "description_preview": "A big collection of the daily menus served at the hotel. Includes breakfast, lunch, and dinner as well as recipes and instructions."
-    }
-  },
-  {
-    "query": "special edition cookbook with new recipes and box tops coupons 2005",
-    "category": "exploratory",
-    "gold_work_ids": [
-      "/works/OL268750W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "hard",
-    "leakage": {
-      "unigram_jaccard": 0.4211,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.2222
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL268750W",
-      "title": "Betty Crocker Cookbook",
-      "authors": [
-        "Betty Crocker"
-      ],
-      "subjects": [
-        "Cooking"
-      ],
-      "year": 2005,
-      "description_preview": "A special bonus edition of the Betty Crocker Cookbook binder featuring Box Tops for Education, including new recipes and photos, and 10 Box Tops coupons"
-    }
-  },
-  {
-    "query": "school for every student education model 1977",
-    "category": "title_lookup",
-    "gold_work_ids": [
-      "/works/OL1200885W"
+      "gr:9089644229"
     ],
     "gold_is_complete": true,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.033,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.6667
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:9089644229",
+      "title": "Northeast Migrants in Delhi: Race, Refuge and Retail",
+      "authors": [
+        "Duncan McDuie-Ra"
+      ],
+      "subjects": [
+        "Anthropology",
+        "Ethnography"
+      ],
+      "year": null,
+      "description_preview": "The Northeast border region of India is a crossroads of Southeast Asia, where India meets China and the Himalayas, and home to many ethnic minorities from across the continent. The area is also the bi"
+    }
+  },
+  {
+    "query": "zombie western thriller horror books",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:idx19779"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.0488,
+      "max_verbatim_ngram": 1,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:idx19779",
+      "title": "Dead West",
+      "authors": [
+        "Adam Millard",
+        "Chris Taggart"
+      ],
+      "subjects": [
+        "Horror",
+        "Zombies",
+        "Thriller"
+      ],
+      "year": null,
+      "description_preview": "As the stranger rides into Jonestown, hoping to forget his past and forge a future worth living, he discovers that not all things are that simple.A terrible virus has taken over the town, turning most"
+    }
+  },
+  {
+    "query": "Muriel Anne Lennox books about horses",
+    "category": "author",
+    "gold_work_ids": [
+      "gr:969902522"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.0252,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.5
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:969902522",
+      "title": "Dark Horse: Unraveling the Mystery of Nearctic",
+      "authors": [
+        "Muriel Anne Lennox"
+      ],
+      "subjects": [
+        "Animals",
+        "Horses"
+      ],
+      "year": null,
+      "description_preview": "Nearctic Was an equine aristocrat. Tall, proud and true to his regal heritage, he could run a hole in the wind. But Nearctic became a pawn in a bizarre power struggle -- his only real ally -- Gordon ("
+    }
+  },
+  {
+    "query": "manga bodyguard hired to protect a girl after a near drowning incident",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:1595322558"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.0926,
+      "max_verbatim_ngram": 1,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1595322558",
+      "title": "Neck and Neck: Volume 3",
+      "authors": [
+        "Sun-Hee Lee"
+      ],
+      "subjects": [
+        "Sequential Art",
+        "Manga",
+        "Manhwa"
+      ],
+      "year": null,
+      "description_preview": "Someone to Watch Over Me...,All-night study sessions get the better of a sleep-deprived Dabin, who tries to catch some zzz's near a pond. But when someone pushes her in the water, Dabin nearly drowns!"
+    }
+  },
+  {
+    "query": "how to explain divorce to a child book",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:307124800"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.0435,
+      "max_verbatim_ngram": 1,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:307124800",
+      "title": "Daddy Doesn't Live Here Anymore : A Book About Divorce",
+      "authors": [
+        "Betty D. Boegehold"
+      ],
+      "subjects": [
+        "Family Law",
+        "Divorce"
+      ],
+      "year": null,
+      "description_preview": "When her parents decide to get a divorce, Casey is very unhappy, wonders if it is her fault, and tries a plan to get them back together."
+    }
+  },
+  {
+    "query": "books by André Hodeir on jazz history",
+    "category": "author",
+    "gold_work_ids": [
+      "gr:394175255"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.2143,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.5
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:394175255",
+      "title": "Jazz, Its Evolution and Essence",
+      "authors": [
+        "André Hodeir"
+      ],
+      "subjects": [
+        "Music",
+        "Jazz"
+      ],
+      "year": null,
+      "description_preview": "Discusses the musicians, musical elements, and other factors which have been influential in the development of jazz music."
+    }
+  },
+  {
+    "query": "American Revolutionary War international law diplomatic recognition military history book",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:674046080"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.0826,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:674046080",
+      "title": "Among the Powers of the Earth: The American Revolution and the Making of a New World Empire",
+      "authors": [
+        "Eliga H. Gould"
+      ],
+      "subjects": [
+        "History",
+        "Military History",
+        "American Revolution",
+        "American History",
+        "American Revolutionary War"
+      ],
+      "year": null,
+      "description_preview": "For most Americans, the Revolution's main achievement is summed up by the phrase \"life, liberty, and the pursuit of happiness.\" Yet far from a straightforward attempt to be free of Old World laws and "
+    }
+  },
+  {
+    "query": "Michael Kortes Pathfinder Adventure Path horror gaming books",
+    "category": "author",
+    "gold_work_ids": [
+      "gr:1601253087",
+      "gr:1601253796",
+      "gr:1601253109",
+      "gr:1601253788",
+      "gr:1601253133",
+      "gr:1601253907",
+      "gr:1601254520",
+      "gr:1601254679",
+      "gr:1601254911",
+      "gr:1601253095",
+      "gr:1601253125",
+      "gr:1601253745",
+      "gr:1601254008",
+      "gr:1601254091",
+      "gr:160125380X",
+      "gr:1601254687",
+      "gr:160125301X",
+      "gr:1601253117",
+      "gr:1601250363",
+      "gr:1601254040",
+      "gr:1601254598",
+      "gr:1601254741",
+      "gr:1601253664",
+      "gr:1601253613",
+      "gr:1601253850"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.0648,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.2857
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1601253087",
+      "title": "Pathfinder Adventure Path #43: The Haunting of Harrowstone",
+      "authors": [
+        "Michael Kortes",
+        "Adam Daigle",
+        "Brandon Hodge",
+        "Patrick Renie",
+        "F. Wesley Schneider",
+        "Dave Rapoza",
+        "Jared Blando",
+        "Emile Dennis"
+      ],
+      "subjects": [
+        "Games",
+        "Role Playing Games",
+        "Fantasy",
+        "Horror",
+        "Gaming"
+      ],
+      "year": null,
+      "description_preview": "Dead Man Walking,When Harrowstone Prison burned to the ground, prisoners, guards, and a host of vicious madmen met a terrifying end. In the years since, the nearby town of Ravengro has shunned the fir"
+    }
+  },
+  {
+    "query": "Aswath Damodaran corporate finance books",
+    "category": "author",
+    "gold_work_ids": [
+      "gr:471414883",
+      "gr:1118064143",
+      "gr:471751219",
+      "gr:471283320",
+      "gr:471345032"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.0952,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.5
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:471283320",
+      "title": "Corporate Finance: Theory and Practice",
+      "authors": [
+        "Aswath Damodaran"
+      ],
+      "subjects": [
+        "Economics",
+        "Finance",
+        "Business"
+      ],
+      "year": null,
+      "description_preview": "This text is intended for the Corporate Finance course at the MBA level, but it can also be appropriate for undergraduates at higher level schools. Aswath Damodaran is nationally recognized for his te"
+    }
+  },
+  {
+    "query": "Marvel teen superhero graphic novel Avengers Academy",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:078514496X"
+    ],
+    "gold_is_complete": false,
     "difficulty": "medium",
     "leakage": {
-      "unigram_jaccard": 0.1667,
+      "unigram_jaccard": 0.0426,
       "max_verbatim_ngram": 2,
       "rare_term_overlap": 0.0
     },
     "source": "api",
     "seed_book": {
-      "work_id": "/works/OL1200885W",
-      "title": "A school for everyone",
+      "work_id": "gr:078514496X",
+      "title": "Avengers Academy, Volume 2: Will We Use This in the Real World?",
       "authors": [
-        "J. Lloyd Trump"
+        "Christos Gage",
+        "Mike McKone",
+        "Sean Chen",
+        "Tom Raney"
       ],
       "subjects": [
-        "Education, Secondary",
-        "Educational Innovations",
-        "Secondary Education",
-        "Schultheorie"
+        "Sequential Art",
+        "Comics",
+        "Graphic Novels",
+        "Superheroes",
+        "Marvel",
+        "Comic Book",
+        "Graphic Novels Comics",
+        "Young Adult"
       ],
-      "year": 1977,
-      "description_preview": "A model design for a middle, junior or senior high school."
+      "year": null,
+      "description_preview": "Hank Pym returns to his greatest role! That's right, Giant-Man is back! ,Then, the Avengers Academy students take on a mission of vengeance against the Hood, and Finesse goes off in search of the man "
     }
   },
   {
-    "query": "vampires in a decaying mansion children's poetry novel",
+    "query": "how housing activism in Philadelphia’s Black neighborhoods reshaped urban planning",
     "category": "exploratory",
     "gold_work_ids": [
-      "/works/OL33285012W"
+      "gr:199948135"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.0531,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:199948135",
+      "title": "Black Citymakers: How the Philadelphia Negro Changed Urban America",
+      "authors": [
+        "Marcus Anthony Hunter"
+      ],
+      "subjects": [
+        "Sociology",
+        "Cities",
+        "Urban Planning",
+        "Race"
+      ],
+      "year": null,
+      "description_preview": "W.E.B. DuBois immortalized Philadelphia's Black Seventh Ward neighborhood, one of America's oldest urban black communities, in his 1899 sociological study The Philadelphia Negro. In the century after "
+    }
+  },
+  {
+    "query": "employee performance appraisal goals communication system",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:70718660"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.1429,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:70718660",
+      "title": "Performance Management",
+      "authors": [
+        "Robert Bacal"
+      ],
+      "subjects": [
+        "Business",
+        "Management"
+      ],
+      "year": null,
+      "description_preview": "A comprehensive guidebook on how to establish a communication system to get top performance and value from employees. It shows you how to conduct goals-focused performance planning meetings and perfor"
+    }
+  },
+  {
+    "query": "D. G. Hart books",
+    "category": "author",
+    "gold_work_ids": [
+      "gr:080286628X",
+      "gr:1566635764",
+      "gr:801031184",
+      "gr:801043972",
+      "gr:300148798",
+      "gr:159638574X"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.08,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:801031184",
+      "title": "Deconstructing Evangelicalism: Conservative Protestantism in the Age of Billy Graham",
+      "authors": [
+        "D.G. Hart"
+      ],
+      "subjects": [
+        "Church",
+        "Church History",
+        "History",
+        "Religion",
+        "Theology"
+      ],
+      "year": null,
+      "description_preview": "Deconstructs the post-WWII evangelical movement, calling American Christians to rediscover their rich theological heritage."
+    }
+  },
+  {
+    "query": "crocheted flower patterns easy designs",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:1844487067"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.25,
+      "max_verbatim_ngram": 1,
+      "rare_term_overlap": 0.2
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1844487067",
+      "title": "Crocheted Flowers",
+      "authors": [
+        "Jan Ollis"
+      ],
+      "subjects": [
+        "Crafts",
+        "Crochet",
+        "Reference",
+        "Art"
+      ],
+      "year": null,
+      "description_preview": "Twenty great flower designs that are easy and fun to make."
+    }
+  },
+  {
+    "query": "international commercial arbitration principles and practice",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:110740133X"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.0649,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.2
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:110740133X",
+      "title": "The Principles and Practice of International Commercial Arbitration",
+      "authors": [
+        "Margaret L. Moses"
+      ],
+      "subjects": [
+        "Law"
+      ],
+      "year": null,
+      "description_preview": "The Principles and Practice of International Commercial Arbitration provides the reader with immediate access to understanding the world of international arbitration. Arbitration has become the disput"
+    }
+  },
+  {
+    "query": "hip hop origins counterculture journalism",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:1893010147"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.1176,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.2
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1893010147",
+      "title": "Adventures in the Counterculture: From Hip Hop to High Times",
+      "authors": [
+        "Steven Hager"
+      ],
+      "subjects": [
+        "Music",
+        "Hip Hop"
+      ],
+      "year": null,
+      "description_preview": "This collection of eight articles by journalist Steven Hager covers the JFK assassination, the East Village art scene, the Rainbow Family, the Waco massacre, the Cannabis Cup awards in Amsterdam, out-"
+    }
+  },
+  {
+    "query": "Christian education teaching methods reference book",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:801021790"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.3077,
+      "max_verbatim_ngram": 1,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:801021790",
+      "title": "The Christian Educator's Handbook on Teaching",
+      "authors": [
+        "Kenneth O. Gangel"
+      ],
+      "subjects": [
+        "Education",
+        "Reference"
+      ],
+      "year": null,
+      "description_preview": "A resource on the distinctiveness of true Christian teaching."
+    }
+  },
+  {
+    "query": "mystery short story collection by John Dickson Carr classic courtroom novels",
+    "category": "combined",
+    "gold_work_ids": [
+      "gr:idx87950"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.2857,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.125
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:idx87950",
+      "title": "The John Dickson Carr Treasury",
+      "authors": [
+        "John Dickson Carr"
+      ],
+      "subjects": [
+        "Mystery"
+      ],
+      "year": null,
+      "description_preview": "Contains \"The Three Coffins\" & \"The Burning Court\"."
+    }
+  },
+  {
+    "query": "dungeon adventure module wilderness dungeon maps new monsters treasures for Dungeons & Dragons",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:880380020"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.1786,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.1
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:880380020",
+      "title": "The Forgotten Temple Of Tharizdun",
+      "authors": [
+        "Gary Gygax"
+      ],
+      "subjects": [
+        "Games",
+        "Gaming",
+        "Fantasy",
+        "Role Playing Games",
+        "Dungeons and Dragons",
+        "Sports and Games"
+      ],
+      "year": null,
+      "description_preview": "This special module is a combined wilderness and dungeon adventure scenario. It contains background information, referee's notes, encounter keys, outdoor and dungeon level maps, and new monsters and t"
+    }
+  },
+  {
+    "query": "logical implications of Jacques Lacan’s psychoanalysis philosophical genealogy",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:804717281"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.2333,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.2857
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:804717281",
+      "title": "Lacan: The Absolute Master",
+      "authors": [
+        "Mikkel Borch-Jacobsen",
+        "Douglas Brick"
+      ],
+      "subjects": [
+        "Psychology",
+        "Psychoanalysis",
+        "Philosophy",
+        "Cultural",
+        "France",
+        "Literature",
+        "20th Century",
+        "Theory"
+      ],
+      "year": null,
+      "description_preview": "\"An astutely argued and elegantly written (and translated) book on the philosophical genealogy and logical implications of the work of Jacques Lacan.\"—Choice"
+    }
+  },
+  {
+    "query": "Apple leadership lessons from Steve Jobs era management book",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:1118379527"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.048,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1118379527",
+      "title": "Leading Apple with Steve Jobs: Management Lessons from a Controversial Genius",
+      "authors": [
+        "Jay Elliot"
+      ],
+      "subjects": [
+        "Business",
+        "Apple",
+        "Leadership"
+      ],
+      "year": null,
+      "description_preview": "A former Senior VP of Apple shares how Steve Jobs motivated people to do the best work of their livesJay Elliot was hired personally by Steve Jobs, just in time to accompany him on the last of his his"
+    }
+  },
+  {
+    "query": "dump truck on the move book",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:761339175"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.1765,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.3333
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:761339175",
+      "title": "Dump Trucks on the Move",
+      "authors": [
+        "Judith Jango-Cohen"
+      ],
+      "subjects": [
+        "Transport",
+        "Trucks"
+      ],
+      "year": null,
+      "description_preview": "Its bed is loaded up. The driver's at the wheel. This dump truck is on the move! What do dump trucks haul? And how do drivers control the trucks? Read this book to find out!"
+    }
+  },
+  {
+    "query": "how to tell psychological symptoms from medical causes in psychiatric assessment",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:826102476"
     ],
     "gold_is_complete": false,
     "difficulty": "hard",
     "leakage": {
       "unigram_jaccard": 0.0909,
-      "max_verbatim_ngram": 3,
-      "rare_term_overlap": 0.2
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL33285012W",
-      "title": "Sunshine",
-      "authors": [
-        "Lida McMurry"
-      ],
-      "subjects": [
-        "Children'S Poetry, British",
-        "Children'S Poetry, American"
-      ],
-      "year": null,
-      "description_preview": "There had not been any trouble out at the lake in years. Sunshine just needed a spot where she could be alone with her thoughts for a minute. But then the vampires found her . . . Now, chained and imp"
-    }
-  },
-  {
-    "query": "The animal famly by Clive Catchpole",
-    "category": "title_lookup",
-    "gold_work_ids": [
-      "/works/OL3495747W"
-    ],
-    "gold_is_complete": true,
-    "difficulty": "medium",
-    "leakage": {
-      "unigram_jaccard": 0.0197,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.25
-    },
-    "source": "api",
-    "seed_book": {
-      "work_id": "/works/OL3495747W",
-      "title": "The animal family",
-      "authors": [
-        "Clive Catchpole"
-      ],
-      "subjects": [
-        "Animal Behavior",
-        "Familial Behavior In Animals",
-        "Reproduction"
-      ],
-      "year": 1979,
-      "description_preview": "\"Once upon a time, long, long ago, where the forest runs down to the ocean, a hunter lived all alone in a house made of logs he had chopped for himself and shingles he had split for himself.\" These wo"
-    }
-  },
-  {
-    "query": "forensic homicide investigation psychological thriller criminal law novels",
-    "category": "genre_topic",
-    "gold_work_ids": [
-      "/works/OL1914471W"
-    ],
-    "gold_is_complete": false,
-    "difficulty": "easy",
-    "leakage": {
-      "unigram_jaccard": 0.0496,
       "max_verbatim_ngram": 2,
       "rare_term_overlap": 0.0
     },
     "source": "api",
     "seed_book": {
-      "work_id": "/works/OL1914471W",
-      "title": "Urge to Kill",
+      "work_id": "gr:826102476",
+      "title": "Psychological Masquerade: Distinguishing Psychological from Organic Disorders, Third Edition",
       "authors": [
-        "Martin Edwards"
+        "Robert L. Taylor"
       ],
       "subjects": [
-        "Homicide",
-        "Homicide Investigation",
-        "Murder",
-        "Investigation",
-        "Forensic Sciences",
-        "Criminal Law",
-        "Criminal Investigation"
+        "Medicine",
+        "Psychiatry",
+        "Psychology"
       ],
-      "year": 2002,
-      "description_preview": "Urge to Kill is the first in a series of novels featuring DI Matt Turrell of the Warwickshire Police. It is a rich psychological thriller with great character development of both detective and the mur"
+      "year": null,
+      "description_preview": "When faced with a patient whose psychological symptoms may stem from an organic, or medical, condition rather than psychology how does the practitioner determine exactly which is the true case? To fac"
     }
   },
   {
-    "query": "fur elise piano piece canadian brass brendan ridenour",
+    "query": "best chess opening encyclopedia in multiple languages",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:8672970322"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.0714,
+      "max_verbatim_ngram": 1,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:8672970322",
+      "title": "Encyclopedia Of Chess Openings B",
+      "authors": [
+        "Aleksandar Matanović",
+        "Mikhail Botvinnik",
+        "Mikhail Tal",
+        "Max Euwe",
+        "Viktor Korchnoi"
+      ],
+      "subjects": [
+        "Games",
+        "Chess",
+        "Sports and Games"
+      ],
+      "year": null,
+      "description_preview": "In English, Russian, German, Spanish, French, Italian, Serbo-Croatian and Dtuch"
+    }
+  },
+  {
+    "query": "children's picture books about animals and climate change",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:1554981441"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.0581,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1554981441",
+      "title": "Snow Children",
+      "authors": [
+        "Masako Yamashita"
+      ],
+      "subjects": [
+        "Environment",
+        "Childrens",
+        "Picture Books",
+        "Animals"
+      ],
+      "year": null,
+      "description_preview": "Yuta and Yuna are snow children. They are attending an ice festival in their hometown when they hear about a meeting on global warming. Yuna doesn't want to go, but Yuta persuades her. On their way th"
+    }
+  },
+  {
+    "query": "Willy Brandt North-South report international development commission survival program",
+    "category": "combined",
+    "gold_work_ids": [
+      "gr:262520591"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.5263,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.2
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:262520591",
+      "title": "North-South: A Program for Survival",
+      "authors": [
+        "Willy Brandt"
+      ],
+      "subjects": [
+        "Politics"
+      ],
+      "year": null,
+      "description_preview": "The Report of the Independent Commission on International Development Issues under the Chairmanship of Willy Brandt Anthony Sampson, Editorial Advisor"
+    }
+  },
+  {
+    "query": "second language acquisition learner language individual differences classroom research",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:194371891"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.3333,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.125
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:194371891",
+      "title": "The Study of Second Language Acquisition",
+      "authors": [
+        "Rod Ellis"
+      ],
+      "subjects": [
+        "Humanities",
+        "Linguistics",
+        "Language",
+        "Education"
+      ],
+      "year": null,
+      "description_preview": "This thorough introduction to second language research provides a comprehensive review of the research into learner language, internal and external factors in language acquisition, individual differen"
+    }
+  },
+  {
+    "query": "paranormal shapeshifter romance christmas short story collection",
+    "category": "combined",
+    "gold_work_ids": [
+      "gr:idx9005"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.16,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:idx9005",
+      "title": "Christmas Dinner at Reynolds Hall",
+      "authors": [
+        "J.L. Langley"
+      ],
+      "subjects": [
+        "Romance",
+        "M M Romance",
+        "Fantasy",
+        "Paranormal",
+        "Shapeshifters",
+        "Short Stories",
+        "Holiday",
+        "Christmas"
+      ],
+      "year": null,
+      "description_preview": "Short Story with the Characters from the ,With or Without, series,__________,Word count: 1,135,Status: Complete"
+    }
+  },
+  {
+    "query": "Nordic noir police mystery Oslo missing boy",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:idx44188"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.0372,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.1429
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:idx44188",
+      "title": "Sohlberg and the Missing Schoolboy: an Inspector Sohlberg mystery",
+      "authors": [
+        "Jens Amundsen"
+      ],
+      "subjects": [
+        "Mystery",
+        "Nordic Noir",
+        "Emergency Services",
+        "Police",
+        "European Literature",
+        "Scandinavian Literature"
+      ],
+      "year": null,
+      "description_preview": "A Vik Crime/Blue Salamander Edition 2012. ,New translation with added material by the author. , ,Chief Inspector Harald Sohlberg returns to the Oslo police district where his career started and almost"
+    }
+  },
+  {
+    "query": "teen horse racing stories with animals and desert adventure",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:61066710"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.0758,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:61066710",
+      "title": "Cindy's Desert Adventure",
+      "authors": [
+        "Joanna   Campbell",
+        "Mary Newhall Anderson"
+      ],
+      "subjects": [
+        "Animals",
+        "Horses",
+        "Young Adult",
+        "Childrens"
+      ],
+      "year": null,
+      "description_preview": "Has Cindy given up hope?,While recovering from surgery, Cindy McLean goes back and reads what she wrote in her diary so many years ago. Cindy is sure her racing career is over now, but years ago, it w"
+    }
+  },
+  {
+    "query": "peasants come last memoir peace corps fifty",
     "category": "title_lookup",
     "gold_work_ids": [
-      "/works/OL26558042W"
+      "gr:977403564"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.0814,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:977403564",
+      "title": "Peasants Come Last: A Memoir of the Peace Corps at Fifty",
+      "authors": [
+        "J. Larry Brown"
+      ],
+      "subjects": [
+        "Cultural",
+        "Africa",
+        "Politics"
+      ],
+      "year": null,
+      "description_preview": "In the tradition of popular activist scholars like Carl Sagan and Stephen Jay Gould, J. Larry Brown has spent decades linking the findings of science to the realities of human existence. He gives us a"
+    }
+  },
+  {
+    "query": "bird migration weather effects book 3rd edition",
+    "category": "combined",
+    "gold_work_ids": [
+      "gr:713668253"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.0526,
+      "max_verbatim_ngram": 1,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:713668253",
+      "title": "Weather And Bird Behaviour",
+      "authors": [
+        "Norman Elkins"
+      ],
+      "subjects": [
+        "Animals",
+        "Birds"
+      ],
+      "year": null,
+      "description_preview": "This third edition of Weather and Bird Behaviour discusses in depth the various ways in which weather conditions influence bird behaviour. Weather conditions affect food and water availability, decisi"
+    }
+  },
+  {
+    "query": "martial arts shonen manga combat dojo series",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:idx80717"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.0405,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.1429
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:idx80717",
+      "title": "History's Strongest Disciple Kenichi Volume 45",
+      "authors": [
+        "Syun Matsuena"
+      ],
+      "subjects": [
+        "Sequential Art",
+        "Manga",
+        "Combat",
+        "Martial Arts",
+        "Comics Manga",
+        "Shonen"
+      ],
+      "year": null,
+      "description_preview": "The story focuses on Kenichi, an average 16-year-old high school student who has been picked on his whole life. However, on his first day of class, he meets and befriends the mysterious transfer stude"
+    }
+  },
+  {
+    "query": "What are the key differences between Durkheim, Weber, and Pareto in sociological theory?",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:765804360"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.1471,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.25
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:765804360",
+      "title": "Main Currents in Sociological Thought: Durkheim, Pareto, Weber",
+      "authors": [
+        "Raymond Aron",
+        "Daniel J. Mahoney",
+        "Brian C. Anderson"
+      ],
+      "subjects": [
+        "Sociology",
+        "Philosophy",
+        "Theory"
+      ],
+      "year": null,
+      "description_preview": "This volume explores the work of three figures who profoundly shaped sociology as it entered the twentieth century: Emile Durkheim, Vilfredo Pareto, and Max Weber."
+    }
+  },
+  {
+    "query": "how to improve your chess middlegame with practical examples",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:1857442415"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.1923,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.2
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1857442415",
+      "title": "Improve Your Middlegame Play",
+      "authors": [
+        "Andrew Kinsman"
+      ],
+      "subjects": [
+        "Games",
+        "Chess"
+      ],
+      "year": null,
+      "description_preview": "A thorough understanding of the middlegame i s essential for any aspiring player wishing to improve their game. This book uses examples from practical play to develop tactical and positional skills an"
+    }
+  },
+  {
+    "query": "how to set up and optimize Google AdWords keyword campaigns and ad copy",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:1449308384"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.0625,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.25
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1449308384",
+      "title": "Google AdWords",
+      "authors": [
+        "Anastasia Holdren"
+      ],
+      "subjects": [
+        "Computers",
+        "Internet"
+      ],
+      "year": null,
+      "description_preview": "Do people really click the handful of text ads that accompany Google search results? Absolutely. Growth of Google AdWords continues to increase, as does online advertising in the United States. This b"
+    }
+  },
+  {
+    "query": "Lovecraftian horror Cthulhu mythos novel",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:1587152606"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.2105,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1587152606",
+      "title": "Worse Things Waiting",
+      "authors": [
+        "Brian McNaughton"
+      ],
+      "subjects": [
+        "Horror",
+        "Lovecraftian",
+        "Cthulhu Mythos"
+      ],
+      "year": null,
+      "description_preview": "A rivetting and terrifying sequel to Downward to Darkness by the World Fantasy Awardwinning Secret Master of Horror"
+    }
+  },
+  {
+    "query": "children's picture books about cherishing life's moments in verse",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:786808187"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.0769,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:786808187",
+      "title": "Cherish Today: A Celebration of Life's Moments",
+      "authors": [
+        "Kristina Evans",
+        "Bryan Collier"
+      ],
+      "subjects": [
+        "Poetry",
+        "Childrens",
+        "Picture Books"
+      ],
+      "year": null,
+      "description_preview": "Exciting adventures lie ahead in your path,For every tear shed, you are promised two laughs.,So just take it slow, one day at a time,And you'll find that your path is truly divine. ,In jubilant verse "
+    }
+  },
+  {
+    "query": "web design techniques JavaScript rollovers flash animation",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:764534556"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.1,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.1429
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:764534556",
+      "title": "Web Design Studio Secrets [With CD ROM]",
+      "authors": [
+        "Deke McClelland",
+        "Katrin Eismann",
+        "Terri Stone"
+      ],
+      "subjects": [
+        "Computers",
+        "Internet"
+      ],
+      "year": null,
+      "description_preview": "Do you keep an archive of killer Web sites? You're not alone. Fifteen leading Web designers reveal the secrets behind their favorite sites in the updated edition of Web Design Studio Secrets. Featurin"
+    }
+  },
+  {
+    "query": "how design studies connect to everyday life philosophy and social issues",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:226078159"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.056,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:226078159",
+      "title": "Discovering Design: Explorations in Design Studies",
+      "authors": [
+        "Richard Buchanan"
+      ],
+      "subjects": [
+        "Design",
+        "Philosophy"
+      ],
+      "year": null,
+      "description_preview": "Discovering Design, reflects the growing recognition that the design of the everyday world deserves attention not only as a professional practice but as a subject of social, cultural, and philosophic "
+    }
+  },
+  {
+    "query": "Satampra Zeiros story collection Clark Ashton Smith",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:1884214347"
     ],
     "gold_is_complete": true,
     "difficulty": "hard",
     "leakage": {
-      "unigram_jaccard": 0.0345,
-      "max_verbatim_ngram": 2,
-      "rare_term_overlap": 0.375
+      "unigram_jaccard": 0.2941,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.5
     },
     "source": "api",
     "seed_book": {
-      "work_id": "/works/OL26558042W",
-      "title": "Fur Elise",
+      "work_id": "gr:1884214347",
+      "title": "The Tale Of Satampra Zeiros",
       "authors": [
-        "Ludwig van Beethoven",
-        "Canadian Canadian Brass",
-        "Brandon Ridenour"
+        "Clark Ashton Smith"
       ],
       "subjects": [
-        "Piano Music"
+        "Horror",
+        "Fantasy",
+        "Short Stories",
+        "Lovecraftian"
       ],
       "year": null,
-      "description_preview": "\"I quit.\" Michael Northington tossed his PJ insignia, a metal angel enfolding the world in its wings, across his boss' desk. At the end of the tumultuous 1980's, Michael's idealism snapped when he dis"
+      "description_preview": "first published in Weird Tales, November, 1931"
+    }
+  },
+  {
+    "query": "mathematical modeling for life sciences universitext",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:354025305X"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.1923,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.2
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:354025305X",
+      "title": "Mathematical Modeling For The Life Sciences (Universitext)",
+      "authors": [
+        "Jacques Istas"
+      ],
+      "subjects": [
+        "Science",
+        "Mathematics"
+      ],
+      "year": null,
+      "description_preview": "Provides a wide range of mathematical models currently used in the life sciences,Each model is thoroughly explained and illustrated by example,Includes three appendices to allow for independent readin"
+    }
+  },
+  {
+    "query": "how to improve communication skills and better understand other people",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:917340159"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.125,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:917340159",
+      "title": "Connecting With Self and Others",
+      "authors": [
+        "Daniel Wackman",
+        "Phyllis Miller"
+      ],
+      "subjects": [
+        "Psychology"
+      ],
+      "year": null,
+      "description_preview": "A book dedicated to improving anyone's communication skills. Allows the reader to become more engaged with the vibes they put out and how to read other people."
+    }
+  },
+  {
+    "query": "15 minute resistance training workouts for men fat loss fitness reference book",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:1609617355"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.0783,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.1
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1609617355",
+      "title": "The Men's Health Big Book of 15-Minute Workouts: A Leaner, Stronger Body--in 15 Minutes a Day!",
+      "authors": [
+        "Selene Yeager"
+      ],
+      "subjects": [
+        "Reference",
+        "Sports",
+        "Fitness",
+        "Health"
+      ],
+      "year": null,
+      "description_preview": "Men love shortcuts. If there's a way to accomplish a job quicker and more efficiently, they're all,for it. That goes for work and working out. Now, new research shows that as little as 15 minutes of,r"
+    }
+  },
+  {
+    "query": "sword and planet adventure novel with immortal civilizations on Venus and a condemned princess",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:441092055"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.0864,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:441092055",
+      "title": "Carson of Venus",
+      "authors": [
+        "Edgar Rice Burroughs"
+      ],
+      "subjects": [
+        "Science Fiction",
+        "Fantasy",
+        "Fiction",
+        "Pulp",
+        "Adventure",
+        "Classics",
+        "Sword and Planet",
+        "Speculative Fiction"
+      ],
+      "year": null,
+      "description_preview": "On the mist-shrouded planet of Venus, advanced civilizations blessed with eternal youth co-existed with cities haunted by the living dead, while bloodthirsty man-beasts stalked the luminous nights. Ea"
+    }
+  },
+  {
+    "query": "Bill Pearl inner universe keys bodybuilding manual",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:962991007"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.0824,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.1429
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:962991007",
+      "title": "Bill Pearl's Keys to the Inner Universe",
+      "authors": [
+        "Bill Pearl"
+      ],
+      "subjects": [
+        "Sports",
+        "Fitness"
+      ],
+      "year": null,
+      "description_preview": "Bill Pearl's ,\"Keys to the INNER Universe\", is the most complete and comprehensive manual ever published on bodybuilding and weight training. 638 pages (8 1/2 x 11) of photographs, anatomical drawings"
+    }
+  },
+  {
+    "query": "Lebanese American memoir family history World War I migration",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:299157342"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.125,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.125
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:299157342",
+      "title": "Children of the Roojme: A Family's Journey from Lebanon",
+      "authors": [
+        "Elmaz Abinader"
+      ],
+      "subjects": [
+        "Autobiography",
+        "Memoir",
+        "Cultural",
+        "Lebanon"
+      ],
+      "year": null,
+      "description_preview": "In this lyrical memoir of her Lebanese-American family, Elmaz Abinader offers a vivid account of uprooted and resettled lives.  Spanning four generations and two continents, ,Children of the Roojme, i"
+    }
+  },
+  {
+    "query": "Taoism philosophy books on Lao Tzu and Chuang Tzu",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:984444432"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.0943,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.6
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:984444432",
+      "title": "Tao: The State and the Art",
+      "authors": [
+        "Osho"
+      ],
+      "subjects": [
+        "Philosophy"
+      ],
+      "year": null,
+      "description_preview": "In ,Tao,, Osho takes readers on an exciting journey into the world of Lao Tzu, Chuang Tzu, Lieh Tzu, Ko Hsuan, and the world of Taoism, one of the four major traditions of China. According to Osho, \"T"
+    }
+  },
+  {
+    "query": "how to critically read ethnographic writing conventions and analyze key ideas",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:415328675"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.0845,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:415328675",
+      "title": "How to Read Ethnography",
+      "authors": [
+        "Paloma Gay y Blasco",
+        "Huon Wardle"
+      ],
+      "subjects": [
+        "Anthropology",
+        "Sociology",
+        "Ethnography"
+      ],
+      "year": null,
+      "description_preview": "How to Read Ethnography, is an invaluable guide to approaching anthropological texts. Laying bare the central conventions of ethnographic writing, it helps students to develop a critical understanding"
+    }
+  },
+  {
+    "query": "Somethingosaur picture book",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:7441266"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.0833,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.5
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:7441266",
+      "title": "The Somethingosaur",
+      "authors": [
+        "Tony Mitton",
+        "Russell Ayto"
+      ],
+      "subjects": [
+        "Childrens",
+        "Picture Books",
+        "Animals",
+        "Dinosaurs",
+        "Fantasy",
+        "Dragons",
+        "Storytime"
+      ],
+      "year": null,
+      "description_preview": "An adorable little creature hatches from an egg and goes searching for his mother among the dinosaurs in this energetic, fun-filled picture book."
+    }
+  },
+  {
+    "query": "Frieze Frame romance short stories magic historical M/M",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:idx76800"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.0923,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.1667
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:idx76800",
+      "title": "Frieze Frame",
+      "authors": [
+        "Cari Z."
+      ],
+      "subjects": [
+        "Romance",
+        "M M Romance",
+        "Fantasy",
+        "Magic",
+        "Historical",
+        "Short Stories",
+        "Paranormal",
+        "Contemporary"
+      ],
+      "year": null,
+      "description_preview": "Dear Author,,Another day, another kick in the ass by that stupid horse. You would think that after all these thousands of years I'd be okay with imprint of a horseshoe on my backside but I have to tel"
+    }
+  },
+  {
+    "query": "GURPS sourcebook for building superhero characters with realistic powers and personalities",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:1556344937"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.0182,
+      "max_verbatim_ngram": 1,
+      "rare_term_overlap": 0.125
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1556344937",
+      "title": "GURPS Supers: Super-Powered Roleplaying Meets the Real World",
+      "authors": [
+        "Loyd Blankenship"
+      ],
+      "subjects": [
+        "Games",
+        "Role Playing Games",
+        "Comics",
+        "Superheroes",
+        "Reference"
+      ],
+      "year": null,
+      "description_preview": "The supers are here! Costumed crusaders fighting against the forces of evil . . . monstrous villains terrorizing the world . . . your creations are only limited by your imagination! ,GURPS Supers, let"
+    }
+  },
+  {
+    "query": "political economics development clusters institutional change peace prosperity",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:691152683"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.0476,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.125
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:691152683",
+      "title": "Pillars of Prosperity: The Political Economics of Development Clusters",
+      "authors": [
+        "Timothy Besley",
+        "Torsten Persson"
+      ],
+      "subjects": [
+        "Economics"
+      ],
+      "year": null,
+      "description_preview": "How nations can promote peace, prosperity, and stability through cohesive political institutions,Little else is required to carry a state to the highest degree of opulence from the lowest barbarism, b"
+    }
+  },
+  {
+    "query": "step-by-step origami paper boxes craft book",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:488996052X"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.1739,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:488996052X",
+      "title": "Quick And Easy Origami Boxes",
+      "authors": [
+        "Tomoko Fuse"
+      ],
+      "subjects": [
+        "Crafts",
+        "Origami",
+        "Nonfiction",
+        "Art"
+      ],
+      "year": null,
+      "description_preview": "With clear step-by-step instructions, origami lovers can create decorative boxes in a variety of shapes and sizes. Includes instruction booklet and origami paper."
+    }
+  },
+  {
+    "query": "Terovolas Edward Erdelac",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:1936564548"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.0286,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.6667
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1936564548",
+      "title": "Terovolas",
+      "authors": [
+        "Edward M. Erdelac"
+      ],
+      "subjects": [
+        "Westerns",
+        "Weird West",
+        "Horror"
+      ],
+      "year": null,
+      "description_preview": "The personal papers of the enigmatic Professor Abraham Van Helsing are collected and presented for the first time by his longtime colleague and defender, Dr. John Seward. ,Texas, 1891 Following the de"
+    }
+  },
+  {
+    "query": "30 day raw vegan diet program for weight loss beginner recipes",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:1578264219"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.0656,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1578264219",
+      "title": "Raw Challenge: The 30-Day Program to Help You Lose Weight and Improve Your Diet and Health with Raw Foods",
+      "authors": [
+        "Lisa Montgomery"
+      ],
+      "subjects": [
+        "Food and Drink",
+        "Vegan",
+        "Cooking"
+      ],
+      "year": null,
+      "description_preview": "Take the 30-Day Raw Challenge and Discover a Happier, Healthier You!,\n ,Raw Challenge,\n, makes it fun and easy to adopt a healthy, raw vegetarian diet... in just 30 days. The Raw Challenge program gui"
+    }
+  },
+  {
+    "query": "somali doctrine thriller novel",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:idx28207"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.025,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.3333
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:idx28207",
+      "title": "The Somali Doctrine",
+      "authors": [
+        "James Grenton"
+      ],
+      "subjects": [
+        "Thriller",
+        "Eastern Africa",
+        "Somalia",
+        "Cultural",
+        "Africa"
+      ],
+      "year": null,
+      "description_preview": "A lone man lies disfigured and dying by the roadside in the arid plains of northern Somalia... , ,Thousands of refugees are found massacred in a camp next to the Ethiopian border... , ,A convoy vanish"
+    }
+  },
+  {
+    "query": "Patrick Colm Hogan books on emotion and literature",
+    "category": "author",
+    "gold_work_ids": [
+      "gr:1107002885",
+      "gr:803230028"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.0538,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.4
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1107002885",
+      "title": "What Literature Teaches Us about Emotion",
+      "authors": [
+        "Patrick Colm Hogan"
+      ],
+      "subjects": [
+        "Psychology",
+        "Emotion",
+        "Academic"
+      ],
+      "year": null,
+      "description_preview": "Literature provides us with otherwise unavailable insights into the ways emotions are produced, experienced, and enacted in human social life. It is particularly valuable because it deepens our compre"
+    }
+  },
+  {
+    "query": "Russian poetry collections by Nikolay Nekrasov",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:883555042"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.2667,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.4
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:883555042",
+      "title": "Poems (The Hyperion Library of World Literature)",
+      "authors": [
+        "Nikolay A. Nekrasov"
+      ],
+      "subjects": [
+        "Poetry",
+        "Cultural",
+        "Russia",
+        "Literature",
+        "Russian Literature",
+        "Classics"
+      ],
+      "year": null,
+      "description_preview": "A collection of poems by russian poet Nikolay Nekrasov"
+    }
+  },
+  {
+    "query": "divorce recovery memoir humor late 30s self help",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:977681106"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.0676,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:977681106",
+      "title": "Happy Beginnings: How I Became My Own Fairy Godmother",
+      "authors": [
+        "Lorena Bathey"
+      ],
+      "subjects": [
+        "Self Help",
+        "Family Law",
+        "Divorce"
+      ],
+      "year": null,
+      "description_preview": "This is the story how Lorena Bathey started over after her fairy tale of marriage failed after eleven years. With the stunning declaration made by her husband that he was leaving, she began a journey "
+    }
+  },
+  {
+    "query": "best strength training advice for typical people that actually works",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:9963616089"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.0893,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:9963616089",
+      "title": "Brawn",
+      "authors": [
+        "Stuart McRobert"
+      ],
+      "subjects": [
+        "Sports",
+        "Fitness",
+        "Health"
+      ],
+      "year": null,
+      "description_preview": "Most bodybuilding books look alike, and are usually a bunch of photos of superstars and a collection of training advice and routines that simply don't work well for typical folk. Brawn is something to"
+    }
+  },
+  {
+    "query": "All That Glitters climber journey addiction depression",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:1550391828"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.2,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.4
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1550391828",
+      "title": "All That Glitters: A Climber's Journey Through Addiction and Depression",
+      "authors": [
+        "Margo Talbot"
+      ],
+      "subjects": [
+        "Nature",
+        "Outdoors"
+      ],
+      "year": null,
+      "description_preview": "230728ESY0000 Features: Specifications: Pages: 196 ISBN-13: 978-1550391824 Publisher: Sono Nis Press Cover: Paperback"
+    }
+  },
+  {
+    "query": "new age movement cults theology book",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:1556610777"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.1667,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1556610777",
+      "title": "The New Age Cult",
+      "authors": [
+        "Walter Ralston Martin"
+      ],
+      "subjects": [
+        "Religion",
+        "Cults",
+        "Spirituality",
+        "New Age",
+        "Theology"
+      ],
+      "year": null,
+      "description_preview": "Based on thirty-five years of study on the New Age Movement, the foremost expert on cults addresses the No. 1 controversy within the church today. An invaluable reference work for scholar and layperso"
+    }
+  },
+  {
+    "query": "van tharp position sizing guide",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:935219099"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.2941,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.4
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:935219099",
+      "title": "Van Tharp's Definitive Guide To Position Sizing",
+      "authors": [
+        "Van K. Tharp"
+      ],
+      "subjects": [
+        "Economics",
+        "Finance"
+      ],
+      "year": null,
+      "description_preview": "How to Evaluate Your System and Use Position Sizing to Meet Your Objectives - Size *does* matter in the markets"
+    }
+  },
+  {
+    "query": "Lynn Hagen M/M paranormal demons shapeshifter romance books",
+    "category": "author",
+    "gold_work_ids": [
+      "gr:idx33790"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.0562,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:idx33790",
+      "title": "Einarr",
+      "authors": [
+        "Lynn Hagen"
+      ],
+      "subjects": [
+        "Romance",
+        "M M Romance",
+        "Fantasy",
+        "Paranormal",
+        "Demons",
+        "M M Paranormal",
+        "Shapeshifters",
+        "LGBT"
+      ],
+      "year": null,
+      "description_preview": "[Siren Publishing: The Lynn Hagen ManLove Collection: Erotic Alternative Fantasy Romance, M/M, demons, HEA],Kendrick Walsh is smitten with Einarr the moment he lays eyes on the demon. They spend weeks"
+    }
+  },
+  {
+    "query": "great empires illustrated atlas",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:1426208294"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.0252,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1426208294",
+      "title": "Great Empires: An Illustrated Atlas",
+      "authors": [
+        "National Geographic Society"
+      ],
+      "subjects": [
+        "History",
+        "Nonfiction",
+        "Reference",
+        "Cartography",
+        "Atlases",
+        "World History",
+        "Historical"
+      ],
+      "year": null,
+      "description_preview": "Experience what life was like when pharaohs erected the majestic pyramids; when Hannibal commanded Carthage's 40,000 troops; when Charlemagne was crowned Holy Roman Emperor; and when the drive to conq"
+    }
+  },
+  {
+    "query": "Mars planet book with photos for beginners science",
+    "category": "combined",
+    "gold_work_ids": [
+      "gr:736821139"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.25,
+      "max_verbatim_ngram": 1,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:736821139",
+      "title": "Mars",
+      "authors": [
+        "Thomas K.  Adamson"
+      ],
+      "subjects": [
+        "Science"
+      ],
+      "year": null,
+      "description_preview": "Simple text and photographs describe the planet Mars."
+    }
+  },
+  {
+    "query": "right-wing populism in Europe politics immigration borders Christian democracy",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:idx49936"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.069,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.1111
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:idx49936",
+      "title": "Populism in Europe",
+      "authors": [
+        "Erica Meijers"
+      ],
+      "subjects": [
+        "Politics"
+      ],
+      "year": null,
+      "description_preview": "All over Europe, Green and left-wing political parties are confronted with rising political movements that claim to speak in the name of ´the people´. These right-wing populist movements pit themselve"
+    }
+  },
+  {
+    "query": "Dante Gabriel Rossetti poems volume 1 1909 edition",
+    "category": "combined",
+    "gold_work_ids": [
+      "gr:1150316101"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.0421,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.25
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1150316101",
+      "title": "The Poems of Dante Gabriel Rossetti Volume 1",
+      "authors": [
+        "Dante Gabriel Rossetti"
+      ],
+      "subjects": [
+        "Poetry"
+      ],
+      "year": null,
+      "description_preview": "This historic book may have numerous typos and missing text. Purchasers can download a free scanned copy of the original book (without typos) from the publisher. Not indexed. Not illustrated. 1909 edi"
+    }
+  },
+  {
+    "query": "vegan baking recipes whole grains natural sweeteners dessert cookbook",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:1452103011"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.1207,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.1111
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1452103011",
+      "title": "Sweet  Easy Vegan: Treats Made with Whole Grains and Natural Sweeteners",
+      "authors": [
+        "Robin Asbell"
+      ],
+      "subjects": [
+        "Food and Drink",
+        "Cookbooks",
+        "Vegan",
+        "Cooking",
+        "Food"
+      ],
+      "year": null,
+      "description_preview": "Here is the delicious answer to every vegan's most important question: What's for dessert? From cookies and brownies to cakes and pies (and even vegan \"ice cream\"), author Robin Asbell proves that not"
+    }
+  },
+  {
+    "query": "books by William Walker Atkinson Rosicrucians occult science",
+    "category": "author",
+    "gold_work_ids": [
+      "gr:idx19858",
+      "gr:idx57256",
+      "gr:911662251",
+      "gr:1578635349"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.069,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.3333
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1578635349",
+      "title": "The Secret Doctrine of the Rosicrucians: A Lost Classic by Magus Incognito",
+      "authors": [
+        "William Walker Atkinson",
+        "Clint Marsh"
+      ],
+      "subjects": [
+        "Occult",
+        "Spirituality",
+        "Science"
+      ],
+      "year": null,
+      "description_preview": "The Rosicrucians are a truly \"secret society\" whose philosophy has come to light at different points in history. In the 1600s they issued a set of manifestos calling for an enlightened revolution that"
+    }
+  },
+  {
+    "query": "best Baja California travel guide for wine country and surfing plus Cabo San Lucas itinerary",
+    "category": "exploratory",
+    "gold_work_ids": [
+      "gr:1598808893"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.1406,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.2308
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1598808893",
+      "title": "Moon Baja: Including Cabo San Lucas",
+      "authors": [
+        "Nikki Goth Itoi"
+      ],
+      "subjects": [
+        "Travel"
+      ],
+      "year": null,
+      "description_preview": "Seasoned writer and Mexico enthusiast Nikki Goth Itoi knows the best way to experience Baja—from exploring Valle de Guadalupe, Baja's wine country, to riding the waves at the region's premiere surfing"
+    }
+  },
+  {
+    "query": "business entrepreneurship startup management spin-offs",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:801964547"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.3846,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.1667
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:801964547",
+      "title": "The Entrepreneur's Manual: Business Start-ups, Spin Offs and Innovative Management",
+      "authors": [
+        "Richard M. White"
+      ],
+      "subjects": [
+        "Business",
+        "Entrepreneurship"
+      ],
+      "year": null,
+      "description_preview": "The entrepreneur's manual: business start-ups, spin-offs, and innovative management"
+    }
+  },
+  {
+    "query": "Joseph Smith Translation New Testament study guide LDS paperback",
+    "category": "combined",
+    "gold_work_ids": [
+      "gr:964232510"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.4,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:964232510",
+      "title": "The New Testament with the Joseph Smith Translation",
+      "authors": [
+        "Steven J. Hite"
+      ],
+      "subjects": [
+        "Christianity",
+        "Lds",
+        "Religion",
+        "Church"
+      ],
+      "year": null,
+      "description_preview": "The New Testament with the Joseph Smith Translation"
+    }
+  },
+  {
+    "query": "lovecraftian horror shadow creatures secret government agency books",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:1618680560"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.1,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1618680560",
+      "title": "If God Doesn't Show",
+      "authors": [
+        "R. Thomas Riley",
+        "John Grover"
+      ],
+      "subjects": [
+        "Horror",
+        "Lovecraftian"
+      ],
+      "year": null,
+      "description_preview": "SHADOW CREATURES ARE ATTACKING,Thaddeus Archer is an ex-police officer whose missing daughter holds the key to the mysterious force that threatens to lay waste to what's left of our world. It's a race"
+    }
+  },
+  {
+    "query": "Bible reference studies Christian scripture translation comparison",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:idx76326"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.0226,
+      "max_verbatim_ngram": 1,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:idx76326",
+      "title": "The Mirror Bible",
+      "authors": [
+        "François Du Toit"
+      ],
+      "subjects": [
+        "Religion",
+        "Scripture",
+        "Christian",
+        "Reference"
+      ],
+      "year": null,
+      "description_preview": "The incarnation is the most accurate and articulate translation. , ,Any sincere student of classical music would sensitively seek to capture and interpret the piece so as not to distract from the orig"
+    }
+  },
+  {
+    "query": "democracy in translation schaffer",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:801486912"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.0319,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.3333
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:801486912",
+      "title": "Democracy in Translation",
+      "authors": [
+        "Frederic Charles Schaffer"
+      ],
+      "subjects": [],
+      "year": null,
+      "description_preview": "Frederic C. Schaffer challenges the assumption often made by American scholars that democracy has been achieved in foreign countries when criteria such as free elections are met. Elections, he argues,"
+    }
+  },
+  {
+    "query": "Year of the Tigar David Miller novel",
+    "category": "title_lookup",
+    "gold_work_ids": [
+      "gr:9814358894"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.0341,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:9814358894",
+      "title": "Year of the Tiger",
+      "authors": [
+        "David         Miller"
+      ],
+      "subjects": [
+        "Thriller",
+        "War",
+        "Terrorism",
+        "Cultural",
+        "Asia"
+      ],
+      "year": null,
+      "description_preview": "During World War II, the Imperial Japanese Army under General Tomoyuki Yamashita looted untold amounts of gold and other valuables from across its occupied colonies in Southeast Asia to finance the em"
+    }
+  },
+  {
+    "query": "Doug Moench Batman comics horror vampire",
+    "category": "author",
+    "gold_work_ids": [
+      "gr:idx1438",
+      "gr:930289684",
+      "gr:1563891484",
+      "gr:1563892936",
+      "gr:1596871156",
+      "gr:1401202411",
+      "gr:1563894955",
+      "gr:1563891859",
+      "gr:idx29999",
+      "gr:1401233791",
+      "gr:1401235360",
+      "gr:idx49670",
+      "gr:idx50223",
+      "gr:1401215653",
+      "gr:1401237215",
+      "gr:1563891115",
+      "gr:1840237783",
+      "gr:140121083X",
+      "gr:785184341",
+      "gr:785159711",
+      "gr:1563894696"
+    ],
+    "gold_is_complete": true,
+    "difficulty": "easy",
+    "leakage": {
+      "unigram_jaccard": 0.0641,
+      "max_verbatim_ngram": 2,
+      "rare_term_overlap": 0.1667
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:1563894955",
+      "title": "Batman: Crimson Mist",
+      "authors": [
+        "Doug Moench",
+        "Kelley Jones",
+        "John Beatty",
+        "Gregory Wright"
+      ],
+      "subjects": [
+        "Sequential Art",
+        "Comics",
+        "Graphic Novels",
+        "Dc Comics",
+        "Batman",
+        "Superheroes",
+        "Horror",
+        "Paranormal"
+      ],
+      "year": null,
+      "description_preview": "Following the events of BATMAN: BLOODSTORM, Batman falls deeper into the gothic abyss of his new vampiric nature. No longer able to sate his bloodlust, the Dark Knight transforms into a horrific monst"
+    }
+  },
+  {
+    "query": "contract law analysis legal textbook",
+    "category": "genre_topic",
+    "gold_work_ids": [
+      "gr:042194840X"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "medium",
+    "leakage": {
+      "unigram_jaccard": 0.0952,
+      "max_verbatim_ngram": 1,
+      "rare_term_overlap": 0.0
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:042194840X",
+      "title": "Treitel On The Law Of Contract",
+      "authors": [
+        "Edwin Peel"
+      ],
+      "subjects": [
+        "Law"
+      ],
+      "year": null,
+      "description_preview": "Now in its 12th edition, this book explains and analyses the law of contract, and provides a detailed and clear examination of many areas of controversy and difficulty."
+    }
+  },
+  {
+    "query": "gangsta rap culture and business book about the late 1980s and mainstream popularity",
+    "category": "combined",
+    "gold_work_ids": [
+      "gr:231124090"
+    ],
+    "gold_is_complete": false,
+    "difficulty": "hard",
+    "leakage": {
+      "unigram_jaccard": 0.053,
+      "max_verbatim_ngram": 3,
+      "rare_term_overlap": 0.25
+    },
+    "source": "api",
+    "seed_book": {
+      "work_id": "gr:231124090",
+      "title": "Nuthin' But a \"G\" Thang: The Culture and Commerce of Gangsta Rap",
+      "authors": [
+        "Eithne Quinn"
+      ],
+      "subjects": [
+        "Music",
+        "Hip Hop"
+      ],
+      "year": null,
+      "description_preview": "In the late 1980s, gangsta rap music emerged in urban America, giving voice to--and making money for--a social group widely considered to be in crisis: young, poor, black men. From its local origins, "
     }
   }
 ]

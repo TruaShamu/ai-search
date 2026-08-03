@@ -1,0 +1,123 @@
+name: Search Evaluation
+
+# Runs the relevance-eval pipeline on a GitHub runner instead of a laptop.
+#
+# Two reasons this lives in CI:
+#   1. Reproducibility -- the published numbers come from a declared environment
+#      anyone can inspect, not from one machine's Python and one home network.
+#   2. Reliability -- a dropped connection mid-run is not a hypothetical. A flaky
+#      stretch once produced a complete-looking results.json built from 43 of 98
+#      queries. The harness now aborts on fetch failure, and a wired datacentre
+#      runner sitting next to the API makes that far less likely to trigger.
+#
+# The heavy dependencies (torch, transformers, onnxruntime) are NOT needed: the
+# scripts talk to the deployed API over HTTP and import only pure-Python helpers.
+
+on:
+  workflow_dispatch:
+    inputs:
+      step:
+        description: 'Pipeline step to run'
+        type: choice
+        options:
+          - eval
+          - judge
+          - pool
+          - generate
+          - all
+        default: eval
+      threshold_sensitivity:
+        description: 'Also run the threshold-sensitivity analysis'
+        type: boolean
+        default: true
+      commit_results:
+        description: 'Commit updated artifacts back to master'
+        type: boolean
+        default: false
+      api_url:
+        description: 'Override API base URL (blank = script default)'
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        # Deliberately not requirements.txt: that pulls ~2GB of torch/CUDA for a
+        # job that only makes HTTP calls and arithmetic.
+        run: pip install httpx python-dotenv numpy
+
+      - name: Resolve API URL
+        id: api
+        run: |
+          URL="${{ inputs.api_url }}"
+          if [ -z "$URL" ]; then
+            URL="https://booksearch-api.thankfulstone-e6f7cf40.eastus.azurecontainerapps.io"
+          fi
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Using API: $URL"
+
+      - name: Wait for API readiness
+        # The container app can be cold; the eval aborts on fetch failure, so
+        # make sure it is actually up before spending the run on it.
+        run: |
+          URL="${{ steps.api.outputs.url }}"
+          for i in $(seq 1 40); do
+            body=$(curl -fsS --max-time 30 "$URL/ready" || true)
+            echo "attempt $i: $body"
+            if echo "$body" | grep -q '"ready":true'; then
+              echo "API ready."
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "API did not become ready in time." >&2
+          exit 1
+
+      - name: Run eval pipeline
+        env:
+          PYTHONPATH: .
+          EVAL_API_URL: ${{ steps.api.outputs.url }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_KEY: ${{ secrets.AZURE_OPENAI_KEY }}
+        run: python -u scripts/eval_redesign.py --step ${{ inputs.step }}
+
+      - name: Threshold sensitivity
+        if: ${{ inputs.threshold_sensitivity }}
+        env:
+          PYTHONPATH: .
+          EVAL_API_URL: ${{ steps.api.outputs.url }}
+        run: python -u scripts/threshold_sensitivity.py
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-results
+          path: data/eval/v2/*.json
+          if-no-files-found: warn
+
+      - name: Commit results
+        if: ${{ inputs.commit_results }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/eval/v2
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "eval: refresh ${{ inputs.step }} artifacts from CI run ${{ github.run_id }}"
+          git push
