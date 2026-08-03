@@ -1,0 +1,127 @@
+{
+  "n_queries": 98,
+  "k": 10,
+  "note": "Lenient counts grade>=1 as relevant (this is what the headline README table uses). Strict counts only grade==2. Both are computed over the same query set so the columns are comparable.",
+  "thresholds": {
+    "lenient_grade_ge_1": {
+      "threshold": "grade >= 1",
+      "queries_with_at_least_one_relevant": 98,
+      "mean_relevant_docs_per_pool": 23.27,
+      "random_baseline_mrr_at_10": 0.5979,
+      "modes": {
+        "keyword": {
+          "mrr_at_10": 0.8886,
+          "mrr_ci_95": [
+            0.8325,
+            0.9413
+          ],
+          "recall_at_10": 0.3308,
+          "recall_ci_95": [
+            0.2805,
+            0.3821
+          ],
+          "lift_over_random": 0.2907
+        },
+        "vector": {
+          "mrr_at_10": 0.951,
+          "mrr_ci_95": [
+            0.9048,
+            0.9847
+          ],
+          "recall_at_10": 0.3922,
+          "recall_ci_95": [
+            0.3447,
+            0.4433
+          ],
+          "lift_over_random": 0.3531
+        },
+        "hybrid": {
+          "mrr_at_10": 0.9527,
+          "mrr_ci_95": [
+            0.9122,
+            0.9847
+          ],
+          "recall_at_10": 0.4143,
+          "recall_ci_95": [
+            0.3641,
+            0.4728
+          ],
+          "lift_over_random": 0.3548
+        },
+        "hybrid+rerank": {
+          "mrr_at_10": 0.9821,
+          "mrr_ci_95": [
+            0.9541,
+            1.0
+          ],
+          "recall_at_10": 0.4503,
+          "recall_ci_95": [
+            0.397,
+            0.5081
+          ],
+          "lift_over_random": 0.3843
+        }
+      }
+    },
+    "strict_grade_eq_2": {
+      "threshold": "grade == 2",
+      "queries_with_at_least_one_relevant": 98,
+      "mean_relevant_docs_per_pool": 6.08,
+      "random_baseline_mrr_at_10": 0.231,
+      "modes": {
+        "keyword": {
+          "mrr_at_10": 0.7473,
+          "mrr_ci_95": [
+            0.6675,
+            0.822
+          ],
+          "recall_at_10": 0.5182,
+          "recall_ci_95": [
+            0.4433,
+            0.5932
+          ],
+          "lift_over_random": 0.5163
+        },
+        "vector": {
+          "mrr_at_10": 0.838,
+          "mrr_ci_95": [
+            0.7691,
+            0.9005
+          ],
+          "recall_at_10": 0.6588,
+          "recall_ci_95": [
+            0.5924,
+            0.7261
+          ],
+          "lift_over_random": 0.607
+        },
+        "hybrid": {
+          "mrr_at_10": 0.844,
+          "mrr_ci_95": [
+            0.7827,
+            0.8992
+          ],
+          "recall_at_10": 0.6718,
+          "recall_ci_95": [
+            0.6116,
+            0.7368
+          ],
+          "lift_over_random": 0.613
+        },
+        "hybrid+rerank": {
+          "mrr_at_10": 0.9575,
+          "mrr_ci_95": [
+            0.9133,
+            0.9898
+          ],
+          "recall_at_10": 0.7356,
+          "recall_ci_95": [
+            0.6729,
+            0.7951
+          ],
+          "lift_over_random": 0.7265
+        }
+      }
+    }
+  }
+}
