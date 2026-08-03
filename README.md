@@ -207,32 +207,20 @@ drops more than 5 points below baseline.
 
 ### Key Findings
 
-All three are bugs the evaluation caught **in my own code** — which is mostly what
-the harness has been worth.
+- **Hybrid is not strictly better than dense here.** Pure vector wins known-item
+  Acc@1 **94% vs 86%** — RRF buys recall and pays for it in top-1 precision.
+- **Reranking's margin grows nearly 4x under a stricter relevance bar**
+  (+0.029 to +0.114). Lenient thresholds systematically understate it.
+- **8 of 40 queries returned a different #1 book** on byte-identical requests until
+  an RRF score-tie bug was fixed. Fusion is structurally exposed to this; dense
+  retrieval is not.
+- **56% of the remaining headroom is retrieval, not ranking.** A perfect reranker
+  over the same candidates would reach 0.940 against hybrid's 0.754.
+- **An earlier eval measured its own query set**, not the system — LLM-written
+  queries that no document in the index could answer.
 
-- **Hybrid search was silently non-deterministic.** Qdrant's RRF gives tied documents
-  bit-identical scores and broke those ties by segment-merge order, so **8 of 40
-  queries returned a different #1 book** on back-to-back identical requests. Caught
-  only because two runs agreed *exactly* on every other mode and disagreed on hybrid.
-  [Cause and fix →](docs/EVALUATION.md#determinism)
-- **Reranking looked harmful because I was truncating passages at `[:300]` chars**,
-  discarding **60.2% of description text across 62% of documents** — the cross-encoder
-  scored fragments while RRF fused the full index. Fixing it exposed a second bug
-  underneath: full-length passages tripled the token count and pushed `rerank=true`
-  past the ingress timeout on 1 vCPU (3/6 requests failed, one took 98 s). Truncation
-  had been masking the fact that the container could not afford the work.
-  [Details →](docs/EVALUATION.md#reranker-performance-engineering)
-- **An earlier eval put hybrid within noise of keyword — the query set was the
-  artifact.** LLM-generated with no view of the corpus, it asked for *1984* and *The
-  Great Gatsby* against an index of mostly obscure works, carrying no gold documents.
-  Rebuilt from the corpus itself, the margin is a clear +0.121 NDCG. **The eval was
-  measuring its own query set, not the system.**
-  [Methodology →](docs/EVALUATION.md#methodology)
+**[Full reasoning, evidence and caveats -> docs/EVALUATION.md](docs/EVALUATION.md#key-findings)**
 
-> Reranking stays an **opt-in toggle**. The gain is real and reproduced two ways,
-> but ~2.2 s is too slow to impose on every search when plain hybrid answers in
-> ~216 ms. It earns the wait on exploratory queries, where it promotes the *best*
-> match rather than merely a relevant one.
 
 ### The Short Version of the Caveats
 

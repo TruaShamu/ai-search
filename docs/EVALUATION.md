@@ -10,6 +10,51 @@ Corpus background and the superseded v1 results live in
 
 ---
 
+## Key Findings
+
+- **Hybrid search is not strictly better than dense retrieval — fusion averages in
+  your weakest arm.** Everyone reports hybrid > vector. Here it isn't: pure vector
+  wins known-item Acc@1 **94% vs 86%**, and on graded relevance the two are a
+  rounding error apart (0.750 vs 0.754 NDCG). RRF ranks by *position*, so keyword's
+  confidently-wrong #1 is worth 1/(k+1) no matter how wrong it is — fusion has no way
+  to know which arm to trust. What hybrid actually buys is **recall** (0.414 vs 0.392,
+  and 98% vs 96% Acc@5). It trades top-1 precision for coverage, and that trade got
+  worse as the index grew 3.2×.
+- **A relevance score is meaningless without the threshold it was computed at.** The
+  same rankings score **0.982** counting grade ≥ 1 as relevant and **0.958** counting
+  only grade 2 — but the random baseline moves **0.598 → 0.231**. So the honest claim
+  goes from a 1.6× lift to a **4.1×** lift by tightening a definition, not by changing
+  a line of code. Reranking's margin over hybrid grows nearly **4×** the same way
+  (**+0.029 → +0.114**): a lenient bar makes a coarse filter look almost as good as a
+  fine one, which systematically understates reranking.
+  [Details](#threshold-sensitivity-what-0982-actually-means)
+- **Rank fusion is structurally exposed to tie instability in a way dense retrieval is
+  not.** RRF scores are sums of `1/(k+rank)`, so two documents at the same rank in
+  exactly one input list collide on **bit-identical** scores. Ties are near-impossible
+  among float cosine scores and routine under fusion — which is why **8 of 40 queries
+  returned a different #1 book** on back-to-back identical requests while vector and
+  keyword were perfectly stable. Anyone fusing rankings has this bug and probably has
+  not looked. [Details](#determinism)
+- **Most of the remaining headroom is retrieval, not ranking.** A *perfect* reranker
+  over the same 25 candidates would score 0.940 against hybrid's 0.754. The
+  cross-encoder captures **44%** of that; the other 56% is unreachable by any
+  reordering, because the right documents were never retrieved. Past this point a
+  better reranker is the wrong investment. [Details](#ceiling-analysis)
+- **An eval will happily measure its own query set instead of your system.** An
+  earlier version put hybrid within noise of keyword. The queries had been
+  LLM-generated with no view of the corpus, asking for *1984* and *The Great Gatsby*
+  against an index of mostly obscure books — so many queries carried no gold document
+  at all, and the modes became statistically indistinguishable (+0.003 MRR against a
+  standard error near 0.07). Rebuilt from the corpus, the margin is a clear +0.121
+  NDCG. [Details](#methodology)
+
+Three of these surfaced as **bugs in my own code**: a `[:300]` passage truncation
+that was discarding 60.2% of description text and making reranking look actively
+harmful, an ingress timeout it was masking, and the tie instability above. The
+harness has mostly paid for itself by contradicting me.
+
+---
+
 ## Two Independent Harnesses
 
 Quality is measured two ways on purpose, because each covers the other's blind
