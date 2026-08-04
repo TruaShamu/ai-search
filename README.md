@@ -115,23 +115,6 @@ sequenceDiagram
 
 ---
 
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | Next.js 16, TypeScript, Tailwind CSS, shadcn/ui |
-| **API** | FastAPI, Python 3.11, Pydantic |
-| **Vector DB** | Qdrant (self-hosted, Docker) |
-| **Embeddings** | nomic-embed-text-v1.5 (Matryoshka, dim=256) |
-| **Sparse Retrieval** | TF-IDF (scikit-learn) |
-| **Reranker** | cross-encoder/ms-marco-MiniLM-L-6-v2 (ONNX Runtime) |
-| **RAG** | Azure OpenAI (GPT) with citation validation |
-| **Query Understanding** | SymSpell (spell correction) + intent routing |
-| **Cloud Infra** | Azure Container Instances, ACR, Blob Storage |
-| **IaC** | Bicep (ACA templates ready) |
-
----
-
 ## Features
 
 - **Hybrid Search (RRF)** — Reciprocal Rank Fusion of TF-IDF + dense vectors: keyword precision plus semantic understanding.
