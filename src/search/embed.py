@@ -41,10 +41,5 @@ def build_embedding_texts(books: list[dict]) -> list[str]:
         if b.get("subjects"):
             parts.append(", ".join(b["subjects"][:10]))
 
-        if b.get("subject_people"):
-            parts.append("People: " + ", ".join(b["subject_people"][:5]))
-        if b.get("subject_places"):
-            parts.append("Places: " + ", ".join(b["subject_places"][:5]))
-
         texts.append("search_document: " + ". ".join(parts))
     return texts

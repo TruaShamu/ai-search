@@ -9,7 +9,12 @@ it.
 
 ## Model: nomic-embed-text-v1.5
 
-Six models were evaluated. The short list came down to two:
+Six models were evaluated against the requirements of a book search engine: good
+retrieval quality on short-to-medium text (median input ~86 chars), CPU-only
+inference (no GPU budget), open-source and self-hostable, and fast enough for
+real-time search latency.
+
+The short list came down to two:
 
 | | nomic-embed-text-v1.5 | jina-embeddings-v5-text-nano |
 |---|---|---|
@@ -20,12 +25,19 @@ Six models were evaluated. The short list came down to two:
 | Matryoshka | 64 / 128 / 256 / 512 / 768 | 32–768 |
 | License | Apache 2.0 | Apache 2.0 |
 
-jina scores ~3 MTEB points higher but is **3.3× larger** and **2× slower on
-CPU**. On a deployment with no GPU budget, where 30 ACA replicas each load the
-model into memory, 274 MB vs 900 MB is the difference between fitting in a
-Consumption-tier container and not. The 3-point gap is real but small enough that
-hybrid fusion with TF-IDF compensates — measured retrieval quality on the live
-index is in [EVALUATION.md](EVALUATION.md).
+**Why nomic won.** The 3-point MTEB gap is real but narrow. What decided it:
+
+- **Latency.** Search is interactive — every query embeds in real time on CPU.
+  nomic is ~2× faster per inference, which directly affects p95 response time.
+- **Cost.** GPU compute is expensive and not in scope. On CPU, 274 MB vs 900 MB
+  means lower memory cost per replica and faster cold starts on the 30-replica
+  embedding job.
+- **Matryoshka support.** Both models offer it, but nomic's trained checkpoints
+  at 256d hit a sweet spot — half the storage of 512d with minimal retrieval
+  loss. This is what makes a CPU-only dense arm viable at 84.8K documents.
+- **Hybrid compensates.** The 3-point gap assumes dense retrieval alone. Fused
+  with TF-IDF via RRF, the margin shrinks further — measured retrieval quality
+  on the live index is in [EVALUATION.md](EVALUATION.md).
 
 The four models rejected earlier: **all-MiniLM-L6-v2** (80 MB, fast, but MTEB ~47
 — too low for production), **BGE-M3** (2.2 GB, built-in hybrid overlaps with our
@@ -69,13 +81,6 @@ Key decisions:
 
 - **Subjects included.** Genre tags add retrieval signal for topical queries
   ("science fiction about AI") at negligible cost.
-
-- **`subject_people` / `subject_places` branches exist but are dead.** The
-  template checks for these fields because the original OpenLibrary corpus
-  had them (39% places, 10% people). The current Goodreads corpus does not
-  carry them, so the branches never fire. They are kept rather than deleted
-  because removing them would change the embedding function's signature and
-  require re-indexing for zero benefit.
 
 - **Year excluded.** Numbers do not embed well. `first_publish_year` was
   originally planned as an Azure AI Search filterable field; on Qdrant it
