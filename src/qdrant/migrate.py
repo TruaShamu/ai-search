@@ -5,21 +5,20 @@ import json
 import pickle
 from pathlib import Path
 
-import faiss
 import numpy as np
 from qdrant_client import QdrantClient, models
 from sklearn.feature_extraction.text import TfidfVectorizer
 from tqdm import tqdm
 
 INDEX_DIR = Path(__file__).resolve().parents[2] / "data" / "index"
-FAISS_PATH = INDEX_DIR / "faiss.index"
+DENSE_PATH = INDEX_DIR / "embeddings.npy"
 METADATA_PATH = INDEX_DIR / "metadata.jsonl"
 VECTORIZER_PATH = INDEX_DIR / "tfidf_vectorizer.pkl"
 BATCH_SIZE = 100
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Migrate local FAISS index into Qdrant.")
+    parser = argparse.ArgumentParser(description="Migrate the local dense index into Qdrant.")
     parser.add_argument("--qdrant-url", default="http://localhost:6333", help="Qdrant base URL")
     parser.add_argument("--collection", default="books", help="Qdrant collection name")
     parser.add_argument("--recreate", action="store_true", help="Drop and recreate the collection")
@@ -69,12 +68,14 @@ def build_payload(book: dict, point_id: int) -> dict:
 
 
 def load_dense_vectors(path: Path) -> np.ndarray:
-    index = faiss.read_index(str(path))
-    if hasattr(index, "reconstruct_n"):
-        vectors = index.reconstruct_n(0, index.ntotal)
-    else:
-        vectors = np.vstack([index.reconstruct(i) for i in range(index.ntotal)])
-    return np.asarray(vectors, dtype=np.float32)
+    if not path.exists() and (path.parent / "faiss.index").exists():
+        raise SystemExit(
+            f"{path.name} not found, but a legacy faiss.index is present in {path.parent}.\n"
+            "The dense vectors are now stored as a plain .npy array. Re-run "
+            "`python -m src.indexing.assemble` to regenerate them from the shards."
+        )
+    # mmap so the whole matrix is never resident; Qdrant is fed in batches.
+    return np.load(path, mmap_mode="r")
 
 
 def save_vectorizer(vectorizer: TfidfVectorizer, path: Path) -> None:
@@ -147,8 +148,8 @@ def main() -> None:
     print(f"Loading metadata from {METADATA_PATH}...")
     metadata = load_metadata(METADATA_PATH)
 
-    print(f"Loading dense vectors from {FAISS_PATH}...")
-    dense_vectors = load_dense_vectors(FAISS_PATH)
+    print(f"Loading dense vectors from {DENSE_PATH}...")
+    dense_vectors = load_dense_vectors(DENSE_PATH)
 
     if len(metadata) != dense_vectors.shape[0]:
         raise ValueError(

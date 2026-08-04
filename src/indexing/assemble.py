@@ -1,4 +1,4 @@
-"""Assemble dense embedding shards into the FAISS index + metadata that migrate.py consumes.
+"""Assemble dense embedding shards into the vector array + metadata that migrate.py consumes.
 
 The embed workers each handle one slice of the corpus and write a compressed
 ``.npz`` shard containing the dense vectors plus the ``work_id`` of every row.
@@ -29,7 +29,6 @@ import os
 import sys
 from pathlib import Path
 
-import faiss
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -40,7 +39,7 @@ DEFAULT_OUT_DIR = ROOT / "data" / "index"
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--corpus", type=Path, default=DEFAULT_CORPUS, help="JSONL corpus the shards were built from")
-    parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR, help="Where to write faiss.index + metadata.jsonl")
+    parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR, help="Where to write embeddings.npy + metadata.jsonl")
     parser.add_argument("--container", default="embeddings", help="Blob container holding the shards")
     parser.add_argument("--shard-prefix", default="shards", help="Blob prefix for shards")
     parser.add_argument("--local-shards", type=Path, default=None, help="Read .npz shards from this directory instead of blob")
@@ -164,15 +163,14 @@ def main() -> None:
             f.write(json.dumps(corpus[work_id], ensure_ascii=False) + "\n")
     print(f"Wrote {metadata_path} ({len(work_ids)} rows)")
 
-    index = faiss.IndexFlatIP(matrix.shape[1])
-    index.add(matrix)
-    faiss_path = args.out_dir / "faiss.index"
-    faiss.write_index(index, str(faiss_path))
-    print(f"Wrote {faiss_path} ({index.ntotal} vectors)")
+    vectors_path = args.out_dir / "embeddings.npy"
+    np.save(vectors_path, matrix)
+    print(f"Wrote {vectors_path} ({matrix.shape[0]} vectors, dim {matrix.shape[1]})")
 
     # Round-trip so a corrupt write is caught here rather than in migrate.py.
-    check = faiss.read_index(str(faiss_path))
-    assert check.ntotal == len(work_ids), f"FAISS round-trip mismatch: {check.ntotal} vs {len(work_ids)}"
+    check = np.load(vectors_path, mmap_mode="r")
+    assert check.shape == matrix.shape, f"Round-trip shape mismatch: {check.shape} vs {matrix.shape}"
+    assert check.shape[0] == len(work_ids), f"Round-trip mismatch: {check.shape[0]} vs {len(work_ids)}"
     print("\nRound-trip verified. Next: python -m src.qdrant.migrate --recreate --qdrant-url <url>")
 
 
