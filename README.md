@@ -290,12 +290,7 @@ the TF-IDF vectorizer over and uploads.
 |---|---|
 | [docs/EVALUATION.md](docs/EVALUATION.md) | Full eval methodology, all result tables, threshold sensitivity, judge validation, limitations, and how to reproduce |
 | [docs/CORPUS_HISTORY.md](docs/CORPUS_HISTORY.md) | Where the data came from, the v1 description-provenance bug, what the v2 migration changed, and the archived v1 results |
-| [docs/embedding-model-selection.md](docs/embedding-model-selection.md) | Six embedding models compared on MTEB retrieval, CPU throughput, size and Matryoshka support, and why the 274 MB model beat the 900 MB one |
-
-One further document — [embedding-strategy.md](docs/embedding-strategy.md) — predates
-the corpus migration and is kept for a specific reason: its status banner maps what the
-embedding template was designed to do against what the v2 index actually embeds,
-including the field branches that are now permanently empty.
+| [docs/EMBEDDING.md](docs/EMBEDDING.md) | Why nomic-embed-text-v1.5 over five alternatives, the embedding template, dimensionality choice, and the TF-IDF sparse arm |
 
 ---
 
