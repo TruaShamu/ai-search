@@ -37,7 +37,7 @@ The short list came down to two:
   loss. This is what makes a CPU-only dense arm viable at 84.8K documents.
 - **Hybrid compensates.** The 3-point gap assumes dense retrieval alone. Fused
   with TF-IDF via RRF, the margin shrinks further — measured retrieval quality
-  on the live index is in [EVALUATION.md](EVALUATION.md).
+  on the live index is in [EVAL_RESULTS.md](EVAL_RESULTS.md).
 
 The four models rejected earlier: **all-MiniLM-L6-v2** (80 MB, fast, but MTEB ~47
 — too low for production), **BGE-M3** (2.2 GB, built-in hybrid overlaps with our

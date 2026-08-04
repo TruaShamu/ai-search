@@ -4,7 +4,7 @@ Background on the dataset behind BookSearch: where v1 came from, the data defect
 that made it unusable for absolute claims, and what the v2 migration changed.
 
 This is kept separate from the [main README](../README.md) and the
-[evaluation methodology](EVALUATION.md) because it is *history* — it explains
+[evaluation methodology](EVAL_METHODOLOGY.md) because it is *history* — it explains
 why the current numbers look the way they do, and preserves the superseded v1
 record so old claims stay auditable rather than quietly disappearing.
 
@@ -119,7 +119,7 @@ The two generations are archived side by side so both remain verifiable.
 ## The Superseded v1 Results
 
 Preserved so that claims made while v1 was live remain checkable. **Do not quote
-these as current numbers** — see [EVALUATION.md](EVALUATION.md) for the v2
+these as current numbers** — see [EVAL_RESULTS.md](EVAL_RESULTS.md) for the v2
 results.
 
 Measured on the 26,519-book OpenLibrary index, n=94 queries (six `author`
@@ -155,7 +155,7 @@ numbers in this section are a frozen record, not something re-derivable here.
 What was kept is the human-labelled judge validation
 (`data/eval/v2/*.v1-openlibrary.json`, 582 KB), because hand labels are the one
 artifact that cannot be regenerated and they still back the κ figure in
-[EVALUATION.md](EVALUATION.md#judge-validation-and-known-limitations).
+[EVAL_METHODOLOGY.md](EVAL_METHODOLOGY.md#judge-validation-and-known-limitations).
 
 > These are honest measurements of the system as deployed when taken, and the
 > *relative* comparisons between modes are unaffected by the description defect —

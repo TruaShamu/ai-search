@@ -1,6 +1,6 @@
 # 📚 BookSearch — Hybrid Semantic Search Engine
 
-### **[▶ Try it live](https://black-grass-0df1c7a0f.7.azurestaticapps.net/)** · [API docs](https://booksearch-api.thankfulstone-e6f7cf40.eastus.azurecontainerapps.io/docs) · [Evaluation](docs/EVALUATION.md)
+### **[▶ Try it live](https://black-grass-0df1c7a0f.7.azurestaticapps.net/)** · [API docs](https://booksearch-api.thankfulstone-e6f7cf40.eastus.azurecontainerapps.io/docs) · [Evaluation](docs/EVAL_RESULTS.md)
 
 Search 84,801 books by what they are *about*, not what they are called. Ask for *"a heist that goes wrong"* and the top hits are *Freezer Burn* and *Criminal: Coward* — neither shares a single word with the query.
 
@@ -68,7 +68,7 @@ single-stage mode.
 (ms-marco-MiniLM-L-6-v2) re-scores the top 25 candidates. Length-bucketed batching
 cuts inference time from 3.6 s to 1.8 s. The payoff: **+0.081 NDCG over hybrid**,
 and the margin **nearly quadruples under a stricter relevance bar**
-([threshold sensitivity](docs/EVALUATION.md#threshold-sensitivity-what-0982-actually-means)).
+([threshold sensitivity](docs/EVAL_RESULTS.md#threshold-sensitivity-what-0982-actually-means)).
 
 ```mermaid
 sequenceDiagram
@@ -150,7 +150,7 @@ incompatible sparse vectors between the index and the query encoder.
 
 Two independent harnesses, both run against the live deployment. Full methodology,
 per-category breakdowns, judge validation and limitations:
-**[docs/EVALUATION.md](docs/EVALUATION.md)**.
+**[docs/EVAL_METHODOLOGY.md](docs/EVAL_METHODOLOGY.md)** · **[docs/EVAL_RESULTS.md](docs/EVAL_RESULTS.md)**.
 
 ### Graded Relevance (k=10, 84,801-book corpus, n=98)
 
@@ -201,7 +201,7 @@ The eval's main value has been catching bugs in the system itself:
   against an index of mostly obscure works. Rebuilt from the corpus itself, the
   margin is a clear +0.121 NDCG.
 
-**[Full findings, evidence and caveats → docs/EVALUATION.md](docs/EVALUATION.md#key-findings)**
+**[Full findings, evidence and caveats → docs/EVAL_RESULTS.md](docs/EVAL_RESULTS.md#key-findings)**
 
 ---
 
@@ -288,7 +288,8 @@ the TF-IDF vectorizer over and uploads.
 
 | Document | Contents |
 |---|---|
-| [docs/EVALUATION.md](docs/EVALUATION.md) | Full eval methodology, all result tables, threshold sensitivity, judge validation, limitations, and how to reproduce |
+| [docs/EVAL_METHODOLOGY.md](docs/EVAL_METHODOLOGY.md) | How the eval works: harness design, query generation, judging, determinism, judge validation, reproducing |
+| [docs/EVAL_RESULTS.md](docs/EVAL_RESULTS.md) | Full result tables, threshold sensitivity, paired comparisons, ceiling analysis, known-item accuracy, reranker performance |
 | [docs/CORPUS_HISTORY.md](docs/CORPUS_HISTORY.md) | Where the data came from, the v1 description-provenance bug, what the v2 migration changed, and the archived v1 results |
 | [docs/EMBEDDING.md](docs/EMBEDDING.md) | Why nomic-embed-text-v1.5 over five alternatives, the embedding template, dimensionality choice, and the TF-IDF sparse arm |
 

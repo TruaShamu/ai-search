@@ -35,7 +35,7 @@ there. That fallback is the usual cause of an empty page.
 | `src/components/ui/` | Unmodified shadcn/ui primitives |
 
 Compare view is the part worth looking at: the measured gaps between the three modes are
-in [the evaluation](../docs/EVALUATION.md), and this puts the same comparison in front of
+in [the evaluation](../docs/EVAL_RESULTS.md), and this puts the same comparison in front of
 you on your own query rather than asking you to trust a table.
 
 ## Notes
