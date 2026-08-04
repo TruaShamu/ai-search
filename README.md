@@ -299,21 +299,6 @@ including the field branches that are now permanently empty.
 
 ---
 
-## Design Decisions
-
-| Decision | Rationale |
-|----------|-----------|
-| **Qdrant over Azure AI Search** | Measured 15x faster at migration time (24ms vs 370ms), plus no tier limits, built-in RRF, and self-hosting. The Azure resource is since decommissioned, so that number is no longer re-runnable |
-| **TF-IDF over BM25** | Sufficient at the current scale; hybrid compensates. BM25's length norm matters more as the index grows — at 84.8K docs this is now the closest call in the table and the most likely next change |
-| **Matryoshka dim=256** | nomic-embed-text-v1.5 trained checkpoints: 768/512/256/128/64. 256 balances quality vs. index size |
-| **Reranker opt-in** | ~1.8s of cross-encoder time, down from ~3.6s after length-bucketed batching. The quality gain is real and reproduced two independent ways ([results](#evaluation)), but it is still too slow to impose on every search, so it is off by default and toggleable per query |
-| **English-only index** | Measured: a Spanish translation scores 0.635 against an English query where an English paraphrase scores 0.787 and an unrelated English sentence scores 0.274 — foreign text outranks genuine matches, and the English-only reranker cannot fix it |
-| **ONNX reranker** | 3.7x faster than PyTorch on CPU (23ms vs 86ms for 4 candidates) |
-| **Cloud embedding (ACA job)** | Local GPU unavailable. 30 parallel replicas embed 84.8K docs in ~50 min. Each reads one pre-cut slice blob rather than the whole corpus: measured +4.9 MB resident vs +429 MB, which is what fixed the OOMKill |
-| **Liveness split from readiness** | `/health` stays 200 while the process is up, but `/ready` returns 503 until the models finish loading — so ingress routes around a replica that is running yet still ~20s from being able to answer |
-
----
-
 ## License
 
 MIT
