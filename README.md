@@ -275,12 +275,12 @@ Copy `.env.example` to `.env` and fill it in — it lists every variable the pro
 |----------|-------------|---------|
 | `QDRANT_URL` | Qdrant server URL | `http://localhost:6333` |
 | `QDRANT_COLLECTION` | Collection name | `books` |
-| `AZURE_OPENAI_ENDPOINT` | For query expansion and the RAG `/ask` endpoint | — |
-| `AZURE_OPENAI_KEY` | For query expansion and the RAG `/ask` endpoint | — |
+| `AZURE_OPENAI_ENDPOINT` | For the RAG `/ask` endpoint, the LLM judge, and query generation | — |
+| `AZURE_OPENAI_KEY` | For the RAG `/ask` endpoint, the LLM judge, and query generation | — |
 | `AZURE_OPENAI_DEPLOYMENT` | Chat deployment name | `gpt-54-nano` |
 | `EVAL_API_URL` | Target for the eval harnesses | deployed URL |
 
-> The deployed container also sets `AZURE_OPENAI_API_KEY` to the same secret. Only `AZURE_OPENAI_KEY` is read by the code; the alias exists because the two names are easy to confuse and a mismatch fails silently — query expansion and `/ask` degrade rather than error.
+> The deployed container also sets `AZURE_OPENAI_API_KEY` to the same secret. Only `AZURE_OPENAI_KEY` is read by the code; the alias exists because the two names are easy to confuse and a mismatch is easy to miss — `/ask` returns a 502 with the failure detail rather than taking the service down, and search keeps working.
 
 ---
 
