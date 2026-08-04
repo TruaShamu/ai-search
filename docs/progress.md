@@ -8,6 +8,10 @@
 > faster; the Azure resource has since been decommissioned). For the current
 > architecture read the [README](../README.md); for current results,
 > [EVALUATION.md](EVALUATION.md).
+>
+> Artifacts named below that no longer exist: `DESIGN.md` described the OpenLibrary
+> and Azure AI Search design and was removed rather than rewritten, and `notebooks/`
+> held exploratory analysis of the OpenLibrary corpus that is no longer indexed.
 
 ## Project: AI-Powered Book Search
 **Stack:** Python, PyTorch, FastAPI, Qdrant, Azure Container Apps

@@ -235,8 +235,9 @@ either right or wrong, and anyone can verify it by hand in seconds.
 Every mode scores lower than on v1, the expected cost of an index **3.2×
 larger**: the same query now competes against three times as many plausible
 titles. The v1 column is shown for scale, not as a regression — the two numbers
-describe different systems, which is why the v1 baseline was archived rather than
-reused as a CI gate.
+describe different systems, which is why the v1 baseline was never reused as a CI
+gate. Its raw artifacts have since been deleted, so that column is a frozen
+historical figure; see [Corpus History](CORPUS_HISTORY.md#the-superseded-v1-results).
 
 **The interesting result is that hybrid no longer wins at rank 1.** On v1, hybrid
 (94%) sat between vector (100%) and keyword (74%). On v2 the keyword arm degrades
@@ -471,4 +472,4 @@ committed, so a runner can reproduce the metrics without re-judging.
 | `data/eval/v2/results.json` | Computed metrics with confidence intervals |
 | `data/eval/v2/rankings.json` | Raw per-mode ranked lists |
 | `data/eval/v2/threshold_sensitivity.json` | Lenient vs strict threshold report |
-| `data/eval/v2/*.v1-openlibrary.json` | The archived, superseded v1 run |
+| `data/eval/v2/*.v1-openlibrary.json` | Human labels and judge output from the v1 run, kept so the agreement analysis stays reproducible |

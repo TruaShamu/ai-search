@@ -147,8 +147,15 @@ cross-encoder captured ~45%.
 
 Known-item Acc@1 on v1: vector 100%, hybrid 94%, keyword 74%.
 
-Raw v1 artifacts: `data/eval/v2/*.v1-openlibrary.json` and
-`data/eval/v2/rankings_v1.json`.
+Raw v1 rankings, pooled candidates and per-mode results were removed when the
+corpus migrated — ~3.3 MB describing a corpus this repo no longer indexes, and v1
+gold ids cannot be run against the v2 index anyway for the reason given above. The
+numbers in this section are a frozen record, not something re-derivable here.
+
+What was kept is the human-labelled judge validation
+(`data/eval/v2/*.v1-openlibrary.json`, 582 KB), because hand labels are the one
+artifact that cannot be regenerated and they still back the κ figure in
+[EVALUATION.md](EVALUATION.md#judge-validation-and-known-limitations).
 
 > These are honest measurements of the system as deployed when taken, and the
 > *relative* comparisons between modes are unaffected by the description defect —

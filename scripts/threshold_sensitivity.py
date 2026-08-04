@@ -14,21 +14,15 @@ produced is not. Capturing them keeps every number below reproducible after the
 underlying corpus changes.
 
 Eval artifacts are corpus-coupled, so every path here is a flag rather than a
-constant. The frozen OpenLibrary run lives alongside under a
-``.v1-openlibrary`` suffix and is never a write target: it backs the v1 numbers
-still quoted in the README, and those stop being verifiable the moment this
-script overwrites them with results from a different corpus.
+constant, and any path carrying an archived marker is refused as a write target.
+The v1 OpenLibrary rankings and pooled candidates were deleted once the corpus
+migrated, so the v1 threshold run is no longer re-derivable. What still carries a
+``.v1-openlibrary`` suffix is the hand-labelled judge validation, which this
+script must never overwrite -- those labels cannot be regenerated.
 
 Usage:
     python scripts/threshold_sensitivity.py            # fetch + analyse
     python scripts/threshold_sensitivity.py --offline  # re-analyse saved ranks
-
-    # re-analyse the frozen v1 OpenLibrary run without touching current files
-    python scripts/threshold_sensitivity.py --offline \
-        --judgments data/eval/v2/judgments.v1-openlibrary.json \
-        --pooled    data/eval/v2/pooled.v1-openlibrary.json \
-        --rankings  data/eval/v2/rankings_v1.json \
-        --out       data/eval/v2/threshold_sensitivity.v1-openlibrary.json
 """
 
 from __future__ import annotations
@@ -47,9 +41,6 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 V2 = REPO_ROOT / "data" / "eval" / "v2"
 JUDGMENTS_FILE = V2 / "judgments.json"
 POOLED_FILE = V2 / "pooled.json"
-# Deliberately NOT rankings_v1.json: that file is the frozen OpenLibrary record
-# the README cites, and pointing a write here at it would destroy the artifact
-# whose entire purpose is to outlive a corpus change.
 RANKINGS_FILE = V2 / "rankings.json"
 OUT_FILE = V2 / "threshold_sensitivity.json"
 
@@ -59,10 +50,11 @@ API = os.environ.get("EVAL_API_URL", DEFAULT_API)
 MODES = ["keyword", "vector", "hybrid", "hybrid+rerank"]
 K = 10
 
-# Markers identifying a frozen, superseded-corpus artifact. Two naming families
-# exist: the `.v1-openlibrary` suffix used when the corpus migrated, and the
-# older `rankings_v1.json`. Both must be recognised -- a guard that only knew
-# about the newer suffix would wave the original v1 file straight through.
+# Markers identifying a frozen, superseded-corpus artifact. `.v1-openlibrary` is
+# the suffix used when the corpus migrated; the `_v1.`/`.v1.` forms are kept so an
+# artifact following the older naming cannot be waved through as a write target.
+# The surviving v1 files are hand-labelled and cannot be regenerated, so this
+# guard is the only thing standing between a stray --out and permanent loss.
 _ARCHIVED_MARKERS = (".v1-openlibrary", "_v1.", ".v1.")
 
 

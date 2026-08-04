@@ -5,7 +5,6 @@ data/index/*
 !data/models/
 data/models/*
 !data/models/reranker-onnx/
-notebooks/
 web/
 .git/
 __pycache__/
