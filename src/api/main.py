@@ -4,6 +4,7 @@ Supports keyword (TF-IDF sparse), vector, and hybrid (RRF) retrieval modes.
 Backend: Qdrant (required).
 """
 
+import logging
 import os
 import threading
 from contextlib import asynccontextmanager
@@ -17,12 +18,25 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+logger = logging.getLogger(__name__)
+
+_DEFAULT_CORS_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if not os.environ.get("DISABLE_WARMUP") and os.environ.get("QDRANT_URL"):
         threading.Thread(target=_warmup, name="warmup", daemon=True).start()
     yield
+
+
+def _cors_origins() -> list[str]:
+    env = os.environ.get("CORS_ORIGINS", "")
+    extra = [o.strip() for o in env.split(",") if o.strip()] if env else []
+    return _DEFAULT_CORS_ORIGINS + extra
 
 
 app = FastAPI(
@@ -34,11 +48,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "https://black-grass-0df1c7a0f.7.azurestaticapps.net",
-    ],
+    allow_origins=_cors_origins(),
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -110,11 +120,11 @@ def _warmup() -> None:
         if engine.reranker is not None:
             engine.search(query="warmup", top_k=1, mode="hybrid", rerank=True)
         _warmup_state["status"] = "ready"
-        print("Warmup complete: engine, query pipeline, and reranker loaded.")
+        logger.info("Warmup complete: engine, query pipeline, and reranker loaded.")
     except Exception as exc:  # warmup is best-effort; requests still lazy-load
         _warmup_state["status"] = "failed"
         _warmup_state["error"] = str(exc)
-        print(f"Warmup failed (requests will lazy-load instead): {exc}")
+        logger.warning("Warmup failed (requests will lazy-load instead): %s", exc)
 
 
 @app.get("/search")

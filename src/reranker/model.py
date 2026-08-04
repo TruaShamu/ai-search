@@ -9,52 +9,18 @@ Usage:
     reranked = reranker.rerank("romance in Scotland", candidates, top_k=10)
 """
 
-import re
+import logging
 import time
 from dataclasses import dataclass
 
 from sentence_transformers import CrossEncoder
 
-from src.reranker.config import MAX_DESCRIPTION_CHARS, MAX_SEQUENCE_TOKENS  # noqa: F401
+from src.reranker.config import MAX_SEQUENCE_TOKENS  # noqa: F401
+from src.reranker.passage import build_passage
 
+logger = logging.getLogger(__name__)
 
 MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
-
-_MACHINE_METADATA_RE = re.compile(r"^\w+:\S+=|=\d{4}\b")
-_WHITESPACE_RE = re.compile(r"\s+")
-
-
-def _clean_subjects(raw: list[str], max_subjects: int = 5) -> list[str]:
-    """Clean and deduplicate subject tags for natural prose rendering.
-
-    Splits comma-separated entries, drops machine-metadata tokens,
-    deduplicates case-insensitively, and removes strict substrings.
-    """
-    # Flatten comma-separated multi-topic entries
-    flat = []
-    for entry in raw:
-        flat.extend(part.strip() for part in entry.split(",") if part.strip())
-
-    # Drop machine-metadata tokens (e.g. "Nyt:Mass-Market-Monthly=2021-11-07")
-    filtered = [s for s in flat if not _MACHINE_METADATA_RE.search(s)]
-
-    # Case-insensitive dedupe (normalizing hyphens), preserving first-seen order
-    seen: set[str] = set()
-    deduped: list[str] = []
-    for s in filtered:
-        key = s.lower().replace("-", " ")
-        if key not in seen:
-            seen.add(key)
-            deduped.append(s)
-
-    # Drop entries that are a strict substring of any other kept entry
-    result = []
-    for s in deduped:
-        s_lower = s.lower()
-        if not any(s_lower != o.lower() and s_lower in o.lower() for o in deduped):
-            result.append(s)
-
-    return result[:max_subjects]
 
 
 @dataclass
@@ -72,41 +38,9 @@ class CrossEncoderReranker:
 
     def __init__(self, model_name: str = MODEL_NAME):
         self.model_name = model_name
-        print(f"Loading cross-encoder: {model_name}...")
+        logger.info("Loading cross-encoder: %s", model_name)
         self.model = CrossEncoder(model_name)
-        print("Cross-encoder loaded.")
-
-    def _build_passage(self, doc: dict) -> str:
-        """Build passage text from document as natural prose for cross-encoder.
-
-        ms-marco was trained on web prose, so we avoid pipe-delimited metadata.
-        The tokenizer's MAX_SEQUENCE_TOKENS limit handles final truncation;
-        MAX_DESCRIPTION_CHARS is a cheap guard sized to keep the token limit as
-        the binding constraint.  These two constants are coupled — see config.py.
-        """
-        parts = []
-        title = doc.get("title", "")
-        authors = doc.get("authors", "")
-        if title and authors:
-            parts.append(f"{title} by {authors}.")
-        elif title:
-            parts.append(f"{title}.")
-
-        if doc.get("description"):
-            # Strip stray quote wrapping and collapse whitespace (\r\n, tabs, etc.)
-            desc = doc["description"].strip("\"'")
-            desc = _WHITESPACE_RE.sub(" ", desc).strip()
-            if desc:
-                parts.append(desc[:MAX_DESCRIPTION_CHARS])
-
-        if doc.get("subjects"):
-            subjects = doc["subjects"]
-            if isinstance(subjects, list):
-                cleaned = _clean_subjects(subjects)
-                if cleaned:
-                    parts.append(f"This book covers {', '.join(cleaned)}.")
-
-        return " ".join(parts)
+        logger.info("Cross-encoder loaded.")
 
     def rerank(
         self,
@@ -131,7 +65,7 @@ class CrossEncoderReranker:
         start = time.time()
 
         # Build (query, passage) pairs
-        pairs = [(query, self._build_passage(doc)) for doc in candidates]
+        pairs = [(query, build_passage(doc)) for doc in candidates]
 
         # Score all pairs
         scores = self.model.predict(pairs)
