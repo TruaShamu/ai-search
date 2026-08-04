@@ -7,14 +7,36 @@ i.e. how many of our 13,088 descriptions were a coin flip.
 """
 
 import json
+import re
+import unicodedata
 from collections import defaultdict
 from pathlib import Path
 
 from datasets import load_dataset
 
-from src.etl.augment_goodreads import normalize_title
-
 OUT = Path("data/eval/goodreads_ambiguity.json")
+
+
+def normalize_title(title: str) -> str:
+    """Reproduce the v1 ETL's title key exactly.
+
+    Kept verbatim from the deleted ``src/etl/augment_goodreads.py`` so this
+    measurement still reproduces the collision rate that condemned that join.
+    """
+    normalized = unicodedata.normalize("NFKD", title)
+    pieces: list[str] = []
+
+    for char in normalized:
+        if unicodedata.combining(char):
+            continue
+
+        category = unicodedata.category(char)
+        if category.startswith(("P", "S")) or char.isspace():
+            pieces.append(" ")
+        else:
+            pieces.append(char.casefold())
+
+    return re.sub(r"\s+", " ", "".join(pieces)).strip()
 
 
 def main() -> None:

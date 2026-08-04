@@ -10,8 +10,15 @@
 > [EVALUATION.md](EVALUATION.md).
 >
 > Artifacts named below that no longer exist: `DESIGN.md` described the OpenLibrary
-> and Azure AI Search design and was removed rather than rewritten, and `notebooks/`
-> held exploratory analysis of the OpenLibrary corpus that is no longer indexed.
+> and Azure AI Search design and was removed rather than rewritten, `notebooks/`
+> held exploratory analysis of the OpenLibrary corpus that is no longer indexed, and
+> the original `src/etl/` and `src/eval/` modules from this log (`pipeline.py`,
+> `clean.py`, `schema.py`, `scrape_descriptions.py`, `augment_goodreads.py`,
+> `dataset.py`, `run.py`, `engine.py`, `annotate.py`, `llm_judge.py` and the three
+> `eval_*.py` feature evals) were deleted once the corpus and eval were rebuilt —
+> their query set and gold ids were OpenLibrary work ids that no longer resolve
+> against the v2 index. The measurements they produced are quoted below as history,
+> not as reproducible results.
 
 ## Project: AI-Powered Book Search
 **Stack:** Python, PyTorch, FastAPI, Qdrant, Azure Container Apps

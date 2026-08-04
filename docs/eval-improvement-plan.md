@@ -12,7 +12,10 @@
 > asked for books the index did not contain.
 >
 > **Current results and methodology: [EVALUATION.md](EVALUATION.md).** Kept as a
-> record of what the eval looked like before it was rebuilt.
+> record of what the eval looked like before it was rebuilt. The `src/eval/` modules
+> named below (`llm_judge.py`, `run.py`, `dataset.py` and friends) no longer exist;
+> the surviving harnesses are `scripts/eval_redesign.py` and
+> `python -m src.eval.known_item_eval`.
 
 ## Current State
 
