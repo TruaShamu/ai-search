@@ -220,7 +220,7 @@ export default function Home() {
               <div className="mb-4">
                 <p className="text-sm text-muted-foreground mb-3">
                   <Zap className="h-3.5 w-3.5 inline mr-1" />
-                  Explore the catalog — 26K+ books with hybrid semantic search
+                  Explore the catalog — 84,801 books with hybrid semantic search
                 </p>
               </div>
             )}
