@@ -214,27 +214,3 @@ class OnnxReranker:
             "candidates_scored": len(candidates),
             "backend": self.backend,
         }
-
-
-if __name__ == "__main__":
-    # Quick test
-    reranker = OnnxReranker()
-
-    query = "romance set in Scotland"
-    candidates = [
-        {"title": "Desmond goes to Scotland", "authors": "Althea", "description": "A children's picture book about a bear visiting Scotland.", "subjects": ["Children's fiction"], "score": 24.7},
-        {"title": "Seducing the Highlander", "authors": "Emma Wildes", "description": "Three stories of romance, adventure, and passion in the Scottish Highlands.", "subjects": ["Fiction, Romance, Historical"], "score": 0.80},
-        {"title": "Computational Logic and Set Theory", "authors": "Jacob Schwartz", "description": "A technical book about mathematical logic.", "subjects": ["Mathematics"], "score": 19.5},
-        {"title": "The Bride", "authors": "Julie Garwood", "description": "A Scottish laird must take an English bride. A feisty beauty. Passion in the Highlands.", "subjects": ["Fiction, Romance, Historical", "Scotland In Fiction"], "score": 0.78},
-    ]
-
-    print(f"Backend: {reranker.backend}")
-    print(f"\nQuery: \"{query}\"")
-
-    result = reranker.rerank(query, candidates, top_k=4)
-    print(f"Latency: {result['latency_ms']}ms")
-    print("\nReranked results:")
-    for r in result["results"]:
-        change = r["rank_change"]
-        arrow = f"+{change}" if change > 0 else str(change) if change < 0 else "="
-        print(f"  {r['rerank_score']:+.4f} | {r['title']} (was #{r['original_rank']}, {arrow})")

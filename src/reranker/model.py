@@ -171,31 +171,3 @@ class CrossEncoderReranker:
             "latency_ms": round(latency_ms, 1),
             "candidates_scored": len(candidates),
         }
-
-
-if __name__ == "__main__":
-
-    # Quick test with synthetic data
-    reranker = CrossEncoderReranker()
-
-    query = "romance set in Scotland"
-    candidates = [
-        {"title": "Desmond goes to Scotland", "authors": "Althea", "description": "A children's picture book about a bear visiting Scotland.", "subjects": ["Children's fiction"], "score": 24.7},
-        {"title": "Seducing the Highlander", "authors": "Emma Wildes", "description": "Three stories of romance, adventure, and passion in the Scottish Highlands.", "subjects": ["Fiction, Romance, Historical"], "score": 0.80},
-        {"title": "Computational Logic and Set Theory", "authors": "Jacob Schwartz", "description": "A technical book about mathematical logic.", "subjects": ["Mathematics"], "score": 19.5},
-        {"title": "The Bride", "authors": "Julie Garwood", "description": "A Scottish laird must take an English bride. His choice was Jamie, a feisty beauty.", "subjects": ["Fiction, Romance, Historical", "Scotland In Fiction"], "score": 0.78},
-    ]
-
-    print(f"\nQuery: \"{query}\"")
-    print(f"{'='*60}")
-    print("\nBefore reranking (retriever order):")
-    for i, c in enumerate(candidates, 1):
-        print(f"  {i}. {c['title']} (score: {c['score']})")
-
-    result = reranker.rerank(query, candidates, top_k=4)
-
-    print(f"\nAfter reranking ({result['latency_ms']}ms, {result['candidates_scored']} scored):")
-    for r in result["results"]:
-        change = r["rank_change"]
-        arrow = f"+{change}" if change > 0 else str(change) if change < 0 else "="
-        print(f"  {r['rerank_score']:+.4f} | {r['title']} (was rank {r['original_rank']}, {arrow})")
