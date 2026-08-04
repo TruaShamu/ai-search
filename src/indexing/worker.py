@@ -21,9 +21,9 @@ Environment variables:
     EMBED_DIM                        — Matryoshka dimension (default: 256)
 
 Usage:
-    python -m scripts.embed_worker              # Process one message then exit
-    python -m scripts.embed_worker --loop       # Process until queue is empty
-    python -m scripts.embed_worker --enqueue    # Enqueue batch tasks for all books
+    python -m src.indexing.worker              # Process one message then exit
+    python -m src.indexing.worker --loop       # Process until queue is empty
+    python -m src.indexing.worker --enqueue    # Enqueue batch tasks for all books
 """
 
 import argparse
@@ -32,13 +32,10 @@ import math
 import os
 import sys
 import time
-from pathlib import Path
 
 import numpy as np
 from azure.storage.blob import BlobServiceClient
 from azure.storage.queue import QueueServiceClient
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.search.embed import MODEL_NAME, BATCH_SIZE, build_embedding_texts
 from src.etl.clean_descriptions import clean_description

@@ -16,7 +16,6 @@ RUN python -m pip install --upgrade pip && \
                qdrant-client scikit-learn tqdm
 
 COPY src ./src
-COPY scripts ./scripts
 
 # Bake the embedding model into the image. Downloading it from HuggingFace on
 # every replica start costs ~500MB of egress per replica and adds a network
@@ -24,4 +23,4 @@ COPY scripts ./scripts
 RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('nomic-ai/nomic-embed-text-v1.5', trust_remote_code=True)"
 
 # Default: process messages from queue until empty
-CMD ["python", "-m", "scripts.embed_worker", "--loop"]
+CMD ["python", "-m", "src.indexing.worker", "--loop"]

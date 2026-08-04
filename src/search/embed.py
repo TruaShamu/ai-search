@@ -97,7 +97,7 @@ def embed_and_index(
     print(f"  Embeddings shape: {embeddings.shape}")
 
     # 5. Build FAISS index
-    # Imported here, not at module scope: scripts/embed_worker.py imports this
+    # Imported here, not at module scope: src/indexing/worker.py imports this
     # module for load_books/build_embedding_texts only, and its container image
     # (Dockerfile.embed) does not install faiss-cpu.
     import faiss

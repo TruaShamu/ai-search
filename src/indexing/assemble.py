@@ -13,10 +13,10 @@ wrong metadata to a vector. Every row is matched back to its source record by
 exact.
 
 Usage (cloud shards):
-    python -m scripts.assemble_shards --corpus data/processed/books_goodreads_v2.jsonl
+    python -m src.indexing.assemble --corpus data/processed/books_goodreads_v2.jsonl
 
 Usage (local fallback shards):
-    python -m scripts.assemble_shards --local-shards data/shards \
+    python -m src.indexing.assemble --local-shards data/shards \
         --corpus data/processed/books_goodreads_v2.jsonl
 """
 
@@ -32,7 +32,7 @@ from pathlib import Path
 import faiss
 import numpy as np
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CORPUS = ROOT / "data" / "processed" / "books_goodreads_v2.jsonl"
 DEFAULT_OUT_DIR = ROOT / "data" / "index"
 

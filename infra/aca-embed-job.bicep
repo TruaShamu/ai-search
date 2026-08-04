@@ -130,7 +130,7 @@ resource embedJob 'Microsoft.App/jobs@2024-03-01' = {
         {
           name: 'embed-worker'
           image: embedImage
-          command: ['python', '-m', 'scripts.embed_worker', '--loop']
+          command: ['python', '-m', 'src.indexing.worker', '--loop']
           env: [
             {
               name: 'AZURE_STORAGE_CONNECTION_STRING'
