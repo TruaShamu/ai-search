@@ -1,12 +1,12 @@
-"""LLM-based query expansion — generates synonyms/related terms to improve BM25 recall.
+"""LLM-based query expansion — generates synonyms/related terms to improve TF-IDF recall.
 
 Uses gpt-5.4-nano to produce 3-5 expansion terms per query.
-Only applied to the keyword/BM25 component (vector search already handles synonyms via embeddings).
+Only applied to the keyword/TF-IDF component (vector search already handles synonyms via embeddings).
 
 Design:
 - Fast: single LLM call, ~200-500ms
 - Cached: in-memory dict (same query = same expansion)
-- Targeted: expansions are appended to BM25 search text, not the vector query
+- Targeted: expansions are appended to TF-IDF search text, not the vector query
 """
 
 import os

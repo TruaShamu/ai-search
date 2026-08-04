@@ -31,7 +31,7 @@ class QueryAnalysis:
     was_corrected: bool
     intent: Intent
     search_mode: str  # hybrid, vector, keyword
-    boost_keyword: float = 1.0  # weight for BM25 vs vector
+    boost_keyword: float = 1.0  # weight for TF-IDF vs vector
     filters: dict = field(default_factory=dict)
     extracted_title: str = ""  # for similar_to intent
     confidence: float = 0.0

@@ -2,7 +2,7 @@
 
 Compares:
   A) Baseline: hybrid search with raw query
-  B) Expanded: hybrid search with LLM-expanded query (BM25 gets extra terms)
+  B) Expanded: hybrid search with LLM-expanded query (TF-IDF gets extra terms)
 
 Usage:
     python -m src.eval.eval_expansion

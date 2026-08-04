@@ -1,7 +1,7 @@
 """LLM-as-Judge for search relevance evaluation.
 
 Uses Azure OpenAI (gpt-5.4-nano) to score (query, document) relevance on a 0-2 scale,
-replacing the keyword-overlap heuristic that biases toward BM25.
+replacing the keyword-overlap heuristic that biases toward lexical matching.
 
 Usage:
     python -m src.eval.llm_judge                    # Judge all pooled results

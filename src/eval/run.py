@@ -8,7 +8,7 @@ Usage:
     python -m src.eval.run --qdrant-url https://... # Target specific Qdrant
 
 NOTE: Historical numbers in this repo were measured against a ~13K-book Azure AI Search
-index (BM25 keyword scoring).  The current backend is Qdrant over a 26.5K-book corpus
+index (BM25 keyword scoring).  The current backend is Qdrant over an 84.8K-book corpus
 using TF-IDF sparse vectors for keyword mode and RRF fusion for hybrid mode, so old
 numbers are not directly comparable.
 """
