@@ -147,7 +147,7 @@ def write_shard_to_blob(blob_client, batch_id: str, books: list[dict],
     the whole corpus so that document vectors share a vocabulary with the query
     encoder's pickled vectorizer; fitting it per slice would silently produce
     incompatible sparse vectors. Assembly and the global TF-IDF fit happen in
-    src/qdrant/migrate.py.
+    src/indexing/load.py.
     """
     import io
 

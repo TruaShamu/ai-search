@@ -86,7 +86,7 @@ resource qdrantStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' =
   ]
 }
 
-@description('Whether Qdrant ingress is external (set true for initial data migration, false for prod).')
+@description('Whether Qdrant ingress is external (set true for the initial data load, false for prod).')
 param qdrantExternalIngress bool = true
 
 resource qdrantApp 'Microsoft.App/containerApps@2024-03-01' = {

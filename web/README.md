@@ -41,7 +41,7 @@ you on your own query rather than asking you to trust a table.
 ## Notes
 
 Mode labels must track the backend. The keyword arm is **TF-IDF**, not BM25
-(`src/qdrant/migrate.py`) — the two are easy to confuse and the labels here read as a
+(`src/indexing/load.py`) — the two are easy to confuse and the labels here read as a
 claim about how retrieval works.
 
 Reranking is a per-query toggle, off by default, because it costs roughly 1.8s against

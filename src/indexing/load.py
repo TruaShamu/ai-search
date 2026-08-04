@@ -1,3 +1,23 @@
+"""Load the assembled index into Qdrant — the final stage of the indexing pipeline.
+
+``worker.py`` embeds the corpus in parallel slices, ``assemble.py`` stitches the
+shards into ``embeddings.npy`` + ``metadata.jsonl``, and this script turns those
+into a queryable collection.
+
+It does two things that the API depends on at request time:
+
+1. Fits the TF-IDF vectorizer that defines the sparse arm of hybrid search and
+   writes it to ``data/index/tfidf_vectorizer.pkl``. ``Dockerfile.api`` bakes
+   that file into the image and ``src/qdrant/client.py`` refuses to start
+   without it, so the vectorizer here and the one serving queries are the same
+   object by construction.
+2. Creates the collection with named dense and sparse vectors and uploads every
+   point with its payload.
+
+Usage:
+    python -m src.indexing.load --qdrant-url http://localhost:6333 --recreate
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -18,7 +38,7 @@ BATCH_SIZE = 100
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Migrate the local dense index into Qdrant.")
+    parser = argparse.ArgumentParser(description="Load the assembled index into Qdrant.")
     parser.add_argument("--qdrant-url", default="http://localhost:6333", help="Qdrant base URL")
     parser.add_argument("--collection", default="books", help="Qdrant collection name")
     parser.add_argument("--recreate", action="store_true", help="Drop and recreate the collection")
@@ -187,7 +207,7 @@ def main() -> None:
         dense_vectors=dense_vectors,
         sparse_matrix=sparse_matrix,
     )
-    print("Migration complete.")
+    print("Index load complete.")
 
 
 if __name__ == "__main__":

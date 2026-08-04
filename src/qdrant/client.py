@@ -77,7 +77,7 @@ class QdrantSearch:
         if not VECTORIZER_PATH.exists():
             raise FileNotFoundError(
                 f"Missing TF-IDF vectorizer at {VECTORIZER_PATH}. "
-                "Run `python -m src.qdrant.migrate` first."
+                "Run `python -m src.indexing.load` first."
             )
         with VECTORIZER_PATH.open("rb") as f:
             self.vectorizer = pickle.load(f)

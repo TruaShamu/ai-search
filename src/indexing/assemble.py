@@ -1,4 +1,4 @@
-"""Assemble dense embedding shards into the vector array + metadata that migrate.py consumes.
+"""Assemble dense embedding shards into the vector array + metadata that load.py consumes.
 
 The embed workers each handle one slice of the corpus and write a compressed
 ``.npz`` shard containing the dense vectors plus the ``work_id`` of every row.
@@ -167,11 +167,11 @@ def main() -> None:
     np.save(vectors_path, matrix)
     print(f"Wrote {vectors_path} ({matrix.shape[0]} vectors, dim {matrix.shape[1]})")
 
-    # Round-trip so a corrupt write is caught here rather than in migrate.py.
+    # Round-trip so a corrupt write is caught here rather than in load.py.
     check = np.load(vectors_path, mmap_mode="r")
     assert check.shape == matrix.shape, f"Round-trip shape mismatch: {check.shape} vs {matrix.shape}"
     assert check.shape[0] == len(work_ids), f"Round-trip mismatch: {check.shape[0]} vs {len(work_ids)}"
-    print("\nRound-trip verified. Next: python -m src.qdrant.migrate --recreate --qdrant-url <url>")
+    print("\nRound-trip verified. Next: python -m src.indexing.load --recreate --qdrant-url <url>")
 
 
 if __name__ == "__main__":
