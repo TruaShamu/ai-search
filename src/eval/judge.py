@@ -888,7 +888,7 @@ def _read_grade(entry: dict) -> Optional[int]:
     """Read a grade from either the `grade` or `relevance` field.
 
     The self-consistency judge in this module writes `grade`; the pooled
-    judge in scripts/eval_redesign.py writes `relevance`. Accept both so
+    judge in scripts/graded_eval.py writes `relevance`. Accept both so
     the two can be compared without a conversion step.
     """
     g = entry.get("grade")

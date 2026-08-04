@@ -26,7 +26,7 @@ from src.eval.label import (
 
 @pytest.fixture
 def judgments():
-    """LLM judgments in eval_redesign.py format (uses `relevance`)."""
+    """LLM judgments in graded_eval.py format (uses `relevance`)."""
     out = {}
     for q in range(4):
         query = f"query {q}"

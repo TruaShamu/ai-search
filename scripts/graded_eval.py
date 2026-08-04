@@ -1,11 +1,11 @@
 """Full eval redesign: generate queries, pool from Qdrant, judge, compute CIs.
 
 Usage:
-    python scripts/eval_redesign.py --step generate   # Step 1: generate 100 queries
-    python scripts/eval_redesign.py --step pool       # Step 2: pool top-50 from all modes (incl. rerank)
-    python scripts/eval_redesign.py --step judge      # Step 3: LLM judge (keep zeros)
-    python scripts/eval_redesign.py --step eval       # Step 4: compute metrics + paired bootstrap CIs
-    python scripts/eval_redesign.py --step all        # Run all steps
+    python scripts/graded_eval.py --step generate   # Step 1: generate 100 queries
+    python scripts/graded_eval.py --step pool       # Step 2: pool top-50 from all modes (incl. rerank)
+    python scripts/graded_eval.py --step judge      # Step 3: LLM judge (keep zeros)
+    python scripts/graded_eval.py --step eval       # Step 4: compute metrics + paired bootstrap CIs
+    python scripts/graded_eval.py --step all        # Run all steps
 """
 
 import argparse
