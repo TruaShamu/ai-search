@@ -306,11 +306,10 @@ shards into the FAISS index and metadata that `src/qdrant/migrate.py` loads.
 | [docs/CORPUS_HISTORY.md](docs/CORPUS_HISTORY.md) | Where the data came from, the v1 description-provenance bug, what the v2 migration changed, and the archived v1 results |
 | [docs/embedding-model-selection.md](docs/embedding-model-selection.md) | Six embedding models compared on MTEB retrieval, CPU throughput, size and Matryoshka support, and why the 274 MB model beat the 900 MB one |
 
-Three further documents — [embedding-strategy.md](docs/embedding-strategy.md),
-[eval-improvement-plan.md](docs/eval-improvement-plan.md) and
-[progress.md](docs/progress.md) — are kept as a historical record. Each opens with a
-status banner naming what it got wrong and what replaced it, because several were
-written before the corpus migration and the move off Azure AI Search.
+One further document — [embedding-strategy.md](docs/embedding-strategy.md) — predates
+the corpus migration and is kept for a specific reason: its status banner maps what the
+embedding template was designed to do against what the v2 index actually embeds,
+including the field branches that are now permanently empty.
 
 ---
 
