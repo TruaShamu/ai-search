@@ -6,8 +6,6 @@ Search 84,801 books by what they are *about*, not what they are called. Ask for 
 
 Under the hood: TF-IDF sparse retrieval fused with dense vector search (nomic-embed-text-v1.5) via Reciprocal Rank Fusion, plus an optional cross-encoder reranker — self-hosted on Qdrant, deployed to Azure Container Apps with full CI/CD.
 
-Every quality claim below is measured against the live deployment and [reproducible from this repo](docs/EVALUATION.md#reproducing) — including the ones that came out badly.
-
 ---
 
 ## Architecture
@@ -49,8 +47,28 @@ graph TD
     GR --> HY --> EMB --> MIG --> QD
 ```
 
-<details>
-<summary><b>Query Flow</b> — a search request through fusion and reranking</summary>
+---
+
+## Search Algorithm
+
+A query goes through three stages: understanding, retrieval, and optional reranking.
+
+**Query understanding** runs first — SymSpell spell-correction against a corpus-derived
+dictionary, intent detection that classifies the query (title lookup vs. topical vs.
+author), and mode routing that picks keyword, vector, or hybrid based on the intent.
+
+**Retrieval** fetches 25 candidates from each arm — TF-IDF sparse and nomic-embed-text-v1.5
+dense (Matryoshka dim=256) — and fuses them with Reciprocal Rank Fusion inside Qdrant.
+The sparse arm gives keyword precision ("1984" finds *1984*); the dense arm gives
+semantic reach ("a heist that goes wrong" finds *Freezer Burn*). Hybrid buys both:
+**+0.121 NDCG over keyword, +0.004 over dense**, with the best Recall@10 of any
+single-stage mode.
+
+**Reranking** is opt-in because it costs ~1.8 s. An ONNX-optimized cross-encoder
+(ms-marco-MiniLM-L-6-v2) re-scores the top 25 candidates. Length-bucketed batching
+cuts inference time from 3.6 s to 1.8 s. The payoff: **+0.081 NDCG over hybrid**,
+and the margin **nearly quadruples under a stricter relevance bar**
+([threshold sensitivity](docs/EVALUATION.md#threshold-sensitivity-what-0982-actually-means)).
 
 ```mermaid
 sequenceDiagram
@@ -70,10 +88,21 @@ sequenceDiagram
     API-->>User: Freezer Burn, Taken, Criminal: Coward, ...
 ```
 
-</details>
+A **RAG pipeline** sits alongside search: natural-language Q&A grounded in retrieved
+books, with citation validation that rejects hallucinated titles before they reach
+the user. The frontend exposes a **compare view** — side-by-side keyword vs. hybrid
+vs. vector results on the same query.
 
-<details>
-<summary><b>ETL Pipeline</b> — how 100K raw rows become 84,801 indexed books</summary>
+---
+
+## Data Pipeline
+
+100K raw Goodreads rows become 84,801 indexed books through an ETL that enforces a
+single-source constraint: every field on a record comes from the same source row, so a
+description can never be attached to another author's book. That constraint is the
+reason the corpus was rebuilt from scratch rather than patched — the v1 provenance bug
+affected a **12.8% floor** of records
+([Corpus History](docs/CORPUS_HISTORY.md)).
 
 ```mermaid
 flowchart LR
@@ -85,13 +114,11 @@ flowchart LR
     F & G -->|load.py| H[(Qdrant)]
 ```
 
-Every field comes from the same source row, so a description can never be attached to
-another author's book — the whole reason for the migration ([Corpus History](docs/CORPUS_HISTORY.md)).
-
-</details>
-
-<details>
-<summary><b>Embedding Worker</b> — event-driven, scale-to-zero batch embedding</summary>
+**Distributed embedding** is where it gets interesting. No local GPU was available, so
+embedding runs as an Azure Container Apps job that scales 0→30 replicas via KEDA
+queue triggers. Each replica reads one pre-cut slice blob (~500 books) rather than the
+whole corpus — measured **+4.9 MB resident vs +429 MB**, which is what fixed the
+OOMKill that blocked the first attempt. 30 replicas embed 84.8K books in ~50 minutes.
 
 ```mermaid
 sequenceDiagram
@@ -111,33 +138,24 @@ sequenceDiagram
     Note over W: Scale back to 0
 ```
 
-</details>
+The pipeline is three stages in `src/indexing/`: **worker** (embed slices) →
+**assemble** (stitch shards into `embeddings.npy` + `metadata.jsonl`) →
+**load** (fit the global TF-IDF vectorizer and upload everything to Qdrant).
+The TF-IDF fit *must* be global — fitting per slice would silently produce
+incompatible sparse vectors between the index and the query encoder.
 
 ---
 
-## Features
+## Evaluation
 
-- **Hybrid Search (RRF)** — Reciprocal Rank Fusion of TF-IDF + dense vectors: keyword precision plus semantic understanding.
-- **Cross-Encoder Reranker** — Optional two-stage retrieval, ONNX-optimized for CPU with length-bucketed batching. Opt-in because it costs ~2.2 s; see [where it helps most](docs/EVALUATION.md#where-reranking-helps).
-- **Query Understanding** — Spell correction (SymSpell), intent detection, query-adaptive mode routing.
-- **RAG with Guardrails** — Natural language Q&A grounded in retrieved books. Citation validation prevents hallucinated titles.
-- **Compare View** — Side-by-side 3-column comparison of keyword vs. hybrid vs. vector results.
-- **Evaluation Framework** — Two independent harnesses (graded relevance with paired bootstrap CIs, and an objective known-item gate), an LLM judge validated against 89 hand-labeled pairs, and a [GitHub Actions workflow](.github/workflows/eval.yml) that runs the whole pipeline remotely.
+Two independent harnesses, both run against the live deployment. Full methodology,
+per-category breakdowns, judge validation and limitations:
+**[docs/EVALUATION.md](docs/EVALUATION.md)**.
 
----
+### Graded Relevance (k=10, 84,801-book corpus, n=98)
 
-## Eval Results
-
-Two independent harnesses, both run against the live production deployment: a
-**graded relevance eval** (100 corpus-grounded queries, **5,000 LLM-judged pairs**,
-zero unjudged, paired bootstrap confidence intervals) and an objective
-**known-item eval** (exact-title lookup — no judge, no pooling, verifiable by hand).
-
-> Full methodology, per-category breakdowns, judge validation and limitations:
-> **[docs/EVALUATION.md](docs/EVALUATION.md)** · corpus history and the v1 data bug:
-> **[docs/CORPUS_HISTORY.md](docs/CORPUS_HISTORY.md)**
-
-### Retrieval Quality (k=10, v2 84,801-book corpus, n=98)
+100 corpus-grounded queries, **5,000 LLM-judged pairs**, zero unjudged, paired
+bootstrap confidence intervals.
 
 | Mode | MRR@10 | NDCG@10 | Recall@10 | Median latency |
 |------|--------|---------|-----------|----------------|
@@ -146,7 +164,7 @@ zero unjudged, paired bootstrap confidence intervals) and an objective
 | Hybrid (RRF) | 0.953 [0.915, 0.985] | 0.754 [0.714, 0.793] | 0.414 [0.361, 0.471] | **216 ms** |
 | **Hybrid + Rerank** | **0.982 [0.954, 1.000]** | **0.835 [0.799, 0.865]** | **0.450 [0.398, 0.501]** | 2,158 ms |
 
-Paired deltas (bootstrap over per-query differences, all six intervals exclude zero):
+Paired deltas (all six intervals exclude zero):
 
 | Comparison | NDCG@10 | 95% CI |
 |------------|---------|--------|
@@ -154,11 +172,11 @@ Paired deltas (bootstrap over per-query differences, all six intervals exclude z
 | Hybrid+Rerank − Hybrid | **+0.081** | [+0.054, +0.110] |
 | Hybrid+Rerank − Keyword | **+0.202** | [+0.159, +0.250] |
 
-*0.982 counts grade ≥ 1 as relevant. Under a strict grade-2 bar it is **0.958 against
-a 0.231 random baseline** — a 4.1× lift, and reranking's margin over hybrid grows
-rather than shrinks ([why](docs/EVALUATION.md#threshold-sensitivity-what-0982-actually-means)).*
+### Known-Item Accuracy (50 titles sampled from the index)
 
-### Known-Item Accuracy (50 titles sampled from the v2 index)
+No judge, no pooling — sample a title, search it, check whether that book comes back.
+This harness gates every deploy: the build fails if either arm drops 5 points below
+baseline.
 
 | Mode | Acc@1 | Acc@5 | MRR |
 |------|-------|-------|-----|
@@ -166,40 +184,24 @@ rather than shrinks ([why](docs/EVALUATION.md#threshold-sensitivity-what-0982-ac
 | Hybrid (RRF) | 86% | **98%** | 0.917 |
 | Keyword (TF-IDF) | 66% | 80% | 0.732 |
 
-No judge, no pooling — sample a title from the index, search it, check whether that
-book comes back first. Anyone can verify it by hand. Reranking takes hybrid to **98%
-with zero regressions across 80 paired queries**
-([paired test](docs/EVALUATION.md#reranking-on-v2-a-paired-test)), and this harness
-gates every deploy: the build fails if either arm drops 5 points below baseline.
+### What the Eval Caught
 
-### Key Findings
+The eval's main value has been catching bugs in the system itself:
 
-- **Hybrid is not strictly better than dense here.** Pure vector wins known-item
-  Acc@1 **94% vs 86%** — RRF buys recall and pays for it in top-1 precision.
-- **Reranking's margin grows nearly 4x under a stricter relevance bar**
-  (+0.029 to +0.114). Lenient thresholds systematically understate it.
-- **8 of 40 queries returned a different #1 book** on byte-identical requests until
-  an RRF score-tie bug was fixed. Fusion is structurally exposed to this; dense
-  retrieval is not.
-- **56% of the remaining headroom is retrieval, not ranking.** A perfect reranker
-  over the same candidates would reach 0.940 against hybrid's 0.754.
-- **An earlier eval measured its own query set**, not the system — LLM-written
-  queries that no document in the index could answer.
+- **Hybrid search was silently non-deterministic.** 8 of 40 queries returned a
+  different #1 book on byte-identical requests — Qdrant's RRF gives tied documents
+  identical scores and broke ties by segment-merge order. Caught only because two
+  runs agreed on every other mode and disagreed on hybrid.
+- **Reranking looked harmful because of a truncation bug.** Passages truncated at
+  300 chars discarded 60% of description text — the cross-encoder scored fragments
+  while RRF fused the full index. Fixing it exposed a second bug: full-length
+  passages tripled token count and pushed rerank past the ingress timeout.
+- **An earlier eval measured its own query set, not the system.** LLM-generated
+  queries with no view of the corpus asked for *1984* and *The Great Gatsby*
+  against an index of mostly obscure works. Rebuilt from the corpus itself, the
+  margin is a clear +0.121 NDCG.
 
-**[Full reasoning, evidence and caveats -> docs/EVALUATION.md](docs/EVALUATION.md#key-findings)**
-
-
-### The Short Version of the Caveats
-
-The LLM judge agrees with a human only **~2/3 of the time** (Cohen's kappa **0.314**),
-and every graded number rests on that. **Recall is capped at 0.559** by pooling, so it
-is not comparable across systems. **Per-category results are underpowered** — `author`
-(n=13) and `combined` (n=9) have intervals that include zero. The corpus was migrated
-after a **12.8%-floor description-provenance defect** was found by hand-labeling, a bug
-the automated eval was structurally blind to.
-
-All expanded, with the reasoning, in [docs/EVALUATION.md](docs/EVALUATION.md) and
-[docs/CORPUS_HISTORY.md](docs/CORPUS_HISTORY.md).
+**[Full findings, evidence and caveats → docs/EVALUATION.md](docs/EVALUATION.md#key-findings)**
 
 ---
 
@@ -304,7 +306,7 @@ including the field branches that are now permanently empty.
 | **Qdrant over Azure AI Search** | Measured 15x faster at migration time (24ms vs 370ms), plus no tier limits, built-in RRF, and self-hosting. The Azure resource is since decommissioned, so that number is no longer re-runnable |
 | **TF-IDF over BM25** | Sufficient at the current scale; hybrid compensates. BM25's length norm matters more as the index grows — at 84.8K docs this is now the closest call in the table and the most likely next change |
 | **Matryoshka dim=256** | nomic-embed-text-v1.5 trained checkpoints: 768/512/256/128/64. 256 balances quality vs. index size |
-| **Reranker opt-in** | ~1.8s of cross-encoder time, down from ~3.6s after length-bucketed batching. The quality gain is real and reproduced two independent ways ([results](#eval-results)), but it is still too slow to impose on every search, so it is off by default and toggleable per query |
+| **Reranker opt-in** | ~1.8s of cross-encoder time, down from ~3.6s after length-bucketed batching. The quality gain is real and reproduced two independent ways ([results](#evaluation)), but it is still too slow to impose on every search, so it is off by default and toggleable per query |
 | **English-only index** | Measured: a Spanish translation scores 0.635 against an English query where an English paraphrase scores 0.787 and an unrelated English sentence scores 0.274 — foreign text outranks genuine matches, and the English-only reranker cannot fix it |
 | **ONNX reranker** | 3.7x faster than PyTorch on CPU (23ms vs 86ms for 4 candidates) |
 | **Cloud embedding (ACA job)** | Local GPU unavailable. 30 parallel replicas embed 84.8K docs in ~50 min. Each reads one pre-cut slice blob rather than the whole corpus: measured +4.9 MB resident vs +429 MB, which is what fixed the OOMKill |
