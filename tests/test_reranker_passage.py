@@ -1,8 +1,9 @@
 """Tests for reranker passage building and subject cleaning."""
 
 
-from src.reranker.onnx_reranker import OnnxReranker, _clean_subjects as onnx_clean
-from src.reranker.model import CrossEncoderReranker, _clean_subjects as pt_clean
+from src.reranker.onnx_reranker import OnnxReranker
+from src.reranker.model import CrossEncoderReranker
+from src.reranker.passage import clean_subjects
 
 
 DUNE_SUBJECTS = [
@@ -22,7 +23,7 @@ DUNE_SUBJECTS = [
 class TestCleanSubjects:
 
     def test_dune_subjects(self):
-        result = onnx_clean(DUNE_SUBJECTS)
+        result = clean_subjects(DUNE_SUBJECTS)
 
         # Machine tokens removed
         for s in result:
@@ -51,24 +52,10 @@ class TestCleanSubjects:
             "Award:Hugo_Award=1966",
             "Award:Hugo_Award=Novel",
         ]
-        assert onnx_clean(noise) == []
+        assert clean_subjects(noise) == []
 
     def test_empty_subjects(self):
-        assert onnx_clean([]) == []
-
-    def test_onnx_and_pytorch_clean_subjects_match(self):
-        """Both backends must produce identical subject cleaning."""
-        cases = [
-            DUNE_SUBJECTS,
-            [],
-            ["Fiction"],
-            ["A, B", "B, C"],
-            ["Nyt:X=2021"],
-        ]
-        for subjects in cases:
-            assert onnx_clean(subjects) == pt_clean(subjects), (
-                f"Diverged on {subjects}"
-            )
+        assert clean_subjects([]) == []
 
 
 # ---------------------------------------------------------------------------
@@ -102,19 +89,13 @@ class TestBuildPassageIdentity:
         {},
     ]
 
-    def test_passages_identical(self):
-        """Both backends must produce byte-identical passages."""
-        onnx_inst = object.__new__(OnnxReranker)
-        pt_inst = object.__new__(CrossEncoderReranker)
+    def test_onnx_delegates_to_shared(self):
+        """OnnxReranker._build_passage delegates to the shared build_passage."""
+        from src.reranker.passage import build_passage
 
+        onnx_inst = object.__new__(OnnxReranker)
         for doc in self.DOCS:
-            onnx_p = onnx_inst._build_passage(doc)
-            pt_p = pt_inst._build_passage(doc)
-            assert onnx_p == pt_p, (
-                f"Passages diverge for {doc.get('title', '(empty)')!r}:\n"
-                f"  ONNX:    {onnx_p!r}\n"
-                f"  PyTorch: {pt_p!r}"
-            )
+            assert onnx_inst._build_passage(doc) == build_passage(doc)
 
 
 # ---------------------------------------------------------------------------
