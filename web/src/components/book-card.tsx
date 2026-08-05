@@ -4,7 +4,7 @@ import { useState } from "react";
 import { BookResult } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen } from "lucide-react";
+import { BookImage } from "lucide-react";
 
 export function BookCard({ book, compact }: { book: BookResult; compact?: boolean }) {
   const [expanded, setExpanded] = useState(false);
@@ -39,14 +39,11 @@ export function BookCard({ book, compact }: { book: BookResult; compact?: boolea
               />
             ) : (
               <div
-                className="flex h-full w-full flex-col items-center justify-center gap-1 border border-border/70 bg-muted/70 px-1 text-center text-muted-foreground"
+                className="flex h-full w-full items-center justify-center border border-border/70 bg-muted/70 text-muted-foreground"
                 aria-label={`No cover available for ${book.title}`}
                 role="img"
               >
-                <BookOpen className="h-5 w-5" aria-hidden="true" />
-                <span className="text-[8px] font-medium uppercase tracking-wider">
-                  No cover
-                </span>
+                <BookImage className="h-8 w-8" strokeWidth={1.5} aria-hidden="true" />
               </div>
             )}
           </div>
