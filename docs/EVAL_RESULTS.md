@@ -44,11 +44,6 @@ support, see [EVAL_METHODOLOGY.md](EVAL_METHODOLOGY.md).
   standard error near 0.07). Rebuilt from the corpus, the margin is a clear +0.121
   NDCG. [Details](EVAL_METHODOLOGY.md#how-queries-are-built)
 
-Three of these surfaced as **bugs in my own code**: a `[:300]` passage truncation
-that was discarding 60.2% of description text and making reranking look actively
-harmful, an ingress timeout it was masking, and the tie instability above. The
-harness has mostly paid for itself by contradicting me.
-
 ---
 
 ## Retrieval Quality

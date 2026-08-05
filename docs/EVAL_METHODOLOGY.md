@@ -49,6 +49,25 @@ judged-irrelevant documents must be penalized for it. Failures are recorded as
 Grade distribution across the 5,000 pairs: **2,720 zeros (54.4%), 1,684 ones
 (33.7%), 596 twos (11.9%)**. This run had **0 unjudged pairs**.
 
+## Metrics
+
+| Metric | What it measures | Why it's here |
+|---|---|---|
+| **NDCG@10** | Ranking quality — higher-graded documents near the top score more | The primary metric. Graded (not binary), so it distinguishes "partially relevant at #2" from "fully relevant at #2" |
+| **MRR@10** | How high the *first* relevant result appears | Captures the "I just need one good answer" use case |
+| **Recall@10** | Fraction of all relevant documents that appear in the top 10 | Measures coverage — important because hybrid's main payoff is recall, not precision |
+| **Acc@k** | Whether *any* relevant result appears in the top k (k=1, 5, 10) | Binary success/failure per query, easy to interpret ("86% of queries have a relevant #1") |
+
+All metrics use the graded relevance labels (0/1/2) from the LLM judge. NDCG
+uses graded gains directly; MRR, Recall, and Acc treat grade ≥ 1 as relevant
+by default (the [threshold sensitivity analysis](EVAL_RESULTS.md#threshold-sensitivity-what-0982-actually-means)
+shows what happens at grade ≥ 2). Confidence intervals are 95% bootstrap
+(10,000 resamples, percentile method) over per-query scores.
+
+---
+
+## How Comparisons Work
+
 **Comparisons are paired.** Mode differences use a bootstrap over per-query
 *deltas* rather than a comparison of independent means. Query difficulty varies
 far more than the gap between modes, so pairing is what makes these differences
