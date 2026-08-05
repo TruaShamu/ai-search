@@ -177,7 +177,7 @@ class AzureOpenAIClient:
 
             except RuntimeError:
                 raise
-            except (httpx.TimeoutException, httpx.ConnectError, httpx.HTTPStatusError) as exc:
+            except (httpx.TimeoutException, httpx.ConnectError, httpx.HTTPStatusError):
                 net_attempts += 1
                 if net_attempts >= self.max_retries:
                     return None

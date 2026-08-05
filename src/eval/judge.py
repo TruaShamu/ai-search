@@ -44,6 +44,12 @@ from src.eval.agreement import (
     krippendorffs_alpha,
     self_consistency_report,
 )
+
+# Re-exported for tests
+__all__ = [
+    "cohens_kappa",
+    "krippendorffs_alpha",
+]
 from src.eval.llm_client import AzureOpenAIClient
 
 # ---------------------------------------------------------------------------
