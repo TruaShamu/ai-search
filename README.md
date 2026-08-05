@@ -6,6 +6,10 @@ Search 84,801 books by what they are *about*, not what they are called. Ask for 
 
 Under the hood: TF-IDF sparse retrieval fused with dense vector search (nomic-embed-text-v1.5) via Reciprocal Rank Fusion, plus an optional cross-encoder reranker — self-hosted on Qdrant, deployed to Azure Container Apps with full CI/CD.
 
+A **RAG pipeline** sits alongside search: natural-language Q&A grounded in retrieved
+books, with citation validation that rejects hallucinated titles before they reach
+the user.
+
 ---
 
 ## Architecture
@@ -87,10 +91,6 @@ sequenceDiagram
     RR-->>API: Reranked top 10
     API-->>User: Freezer Burn, Taken, Criminal: Coward, ...
 ```
-
-A **RAG pipeline** sits alongside search: natural-language Q&A grounded in retrieved
-books, with citation validation that rejects hallucinated titles before they reach
-the user.
 
 ---
 
