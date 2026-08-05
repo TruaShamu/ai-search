@@ -10,7 +10,6 @@ Usage:
 
 import argparse
 import json
-import os
 import random
 import subprocess
 import sys
@@ -20,13 +19,16 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-import httpx
-from dotenv import load_dotenv
-
-load_dotenv()
+from src.eval.llm_client import (
+    AzureOpenAIClient,
+    DEFAULT_RETRY_BACKOFF,
+    JUDGE_RATE_LIMIT_BASE_WAIT,
+    JUDGE_RATE_LIMIT_MAX_ATTEMPTS,
+    JUDGE_RATE_LIMIT_MAX_WAIT,
+)
 
 DEFAULT_API = "https://booksearch-api.thankfulstone-e6f7cf40.eastus.azurecontainerapps.io"
-API = os.environ.get("EVAL_API_URL", DEFAULT_API)
+API = __import__("os").environ.get("EVAL_API_URL", DEFAULT_API)
 DATA_DIR = Path("data/eval/v2")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -35,8 +37,8 @@ POOLED_FILE = DATA_DIR / "pooled.json"
 JUDGMENTS_FILE = DATA_DIR / "judgments.json"
 RESULTS_FILE = DATA_DIR / "results.json"
 
-MAX_RETRIES = 4
-RETRY_BACKOFF = [2, 5, 15, 30]
+MAX_RETRIES = len(DEFAULT_RETRY_BACKOFF) + 1
+RETRY_BACKOFF = DEFAULT_RETRY_BACKOFF
 
 # Rate limiting is handled separately from network errors, and deliberately does
 # NOT honour Retry-After.
@@ -61,9 +63,9 @@ RETRY_BACKOFF = [2, 5, 15, 30]
 #      the jitter stops workers resynchronising into a thundering herd.
 #
 # A 429 is cheap (~0.1s, no tokens billed), so attempts are generous.
-RATE_LIMIT_MAX_ATTEMPTS = 12
-RATE_LIMIT_BASE_WAIT = 0.6
-RATE_LIMIT_MAX_WAIT = 8.0
+RATE_LIMIT_MAX_ATTEMPTS = JUDGE_RATE_LIMIT_MAX_ATTEMPTS
+RATE_LIMIT_BASE_WAIT = JUDGE_RATE_LIMIT_BASE_WAIT
+RATE_LIMIT_MAX_WAIT = JUDGE_RATE_LIMIT_MAX_WAIT
 
 # Concurrent judge calls. With the deployment at 500 RPM (see the rate-limit
 # note above), throughput is bounded by whichever is smaller: the server quota,
@@ -204,86 +206,33 @@ Rate the relevance of this document to the query on a scale of 0-2:
 Respond with ONLY a single digit: 0, 1, or 2."""
 
 
-def _is_content_filter(resp) -> bool:
-    """True when a 4xx is Azure's content filter rejecting this specific input.
-
-    A filtered document is a property of one book blurb, not of the run. The
-    distinction matters because the two 400s need opposite handling: a bad
-    deployment name or malformed payload repeats on every pair and should abort
-    immediately, while a filtered blurb should cost exactly one unjudged pair.
-    """
-    try:
-        err = resp.json().get("error") or {}
-    except Exception:
-        return False
-    codes = " ".join(str(x) for x in (
-        err.get("code", ""),
-        (err.get("innererror") or {}).get("code", ""),
-        err.get("message", ""),
-    )).lower()
-    return "content_filter" in codes or "responsibleaipolicyviolation" in codes
-
-
 def _call_judge(client, url, headers, prompt) -> int | None:
-    """Call LLM judge with retries. Returns relevance (0-2) or None on failure.
-
-    Rate-limit retries and transient-failure retries are tracked separately: a
-    429 says nothing about whether the request was malformed, so it must not
-    consume the budget reserved for genuine network faults.
-    """
-    body = {
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": 0.0,
-        "max_completion_tokens": 5,
-    }
-
-    net_attempts = 0
-    rate_attempts = 0
-
-    while True:
-        try:
-            resp = client.post(url, json=body, headers=headers)
-            resp.raise_for_status()
-            content = resp.json()["choices"][0]["message"]["content"].strip()
-            if content and content[0].isdigit():
-                return min(2, max(0, int(content[0])))
-            return None  # Non-digit response is unjudged, not "irrelevant"
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code == 429:
-                rate_attempts += 1
-                if rate_attempts >= RATE_LIMIT_MAX_ATTEMPTS:
-                    return None
-                wait = min(RATE_LIMIT_MAX_WAIT,
-                           RATE_LIMIT_BASE_WAIT * (1.7 ** (rate_attempts - 1)))
-                time.sleep(wait * random.uniform(0.7, 1.3))
-                continue
-            # Fail fast on auth/permission errors (4xx other than rate-limit),
-            # but never let one filtered document abort a 5,000-pair run.
-            if 400 <= e.response.status_code < 500:
-                if _is_content_filter(e.response):
-                    return None
-                print(f"  FATAL {e.response.status_code}: {e.response.text[:400]}")
-                raise
-            net_attempts += 1
-            if net_attempts >= MAX_RETRIES:
-                return None
-            time.sleep(RETRY_BACKOFF[net_attempts - 1])
-        except (httpx.TimeoutException, httpx.ConnectError):
-            net_attempts += 1
-            if net_attempts >= MAX_RETRIES:
-                return None  # Exhausted retries — mark as unjudged
-            time.sleep(RETRY_BACKOFF[net_attempts - 1])
+    """Call LLM judge with retries. Returns relevance (0-2) or None on failure."""
+    del url, headers
+    content = client.call(
+        user=prompt,
+        temperature=0.0,
+        max_tokens=5,
+        content_filter_as_none=True,
+        respect_retry_after=False,
+        jitter_rate_limit=True,
+    )
+    if content and content[0].isdigit():
+        return min(2, max(0, int(content[0])))
+    return None
 
 
 def judge_documents(queries: list[dict], pooled: dict):
     """Judge each (query, doc) pair. KEEPS zeros. Uses None for failures (excluded from metrics)."""
-    endpoint = os.getenv("AZURE_OPENAI_ENDPOINT", "").rstrip("/")
-    key = os.getenv("AZURE_OPENAI_KEY", "")
-    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-54-nano")
-
-    url = f"{endpoint}/openai/deployments/{deployment}/chat/completions?api-version=2024-12-01-preview"
-    headers = {"api-key": key, "Content-Type": "application/json"}
-    client = httpx.Client(timeout=30)
+    url = None
+    headers = None
+    client = AzureOpenAIClient(
+        timeout=30,
+        retry_backoff=RETRY_BACKOFF,
+        rate_limit_max_attempts=RATE_LIMIT_MAX_ATTEMPTS,
+        rate_limit_base_wait=RATE_LIMIT_BASE_WAIT,
+        rate_limit_max_wait=RATE_LIMIT_MAX_WAIT,
+    )
 
     # Load existing judgments if resuming
     judgments = {}
@@ -382,6 +331,7 @@ def judge_documents(queries: list[dict], pooled: dict):
     null_count = sum(1 for jlist in judgments.values() for j in jlist if j["relevance"] is None)
     print(f"\nJudging complete: {len(all_grades)} pairs judged, {null_count} failures (excluded)")
     print(f"Grade distribution: {dict(sorted(dist.items()))}")
+    client.close()
     return judgments
 
 

@@ -38,7 +38,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import random
 import re
 import textwrap
@@ -46,10 +45,7 @@ from collections import Counter, defaultdict
 from difflib import SequenceMatcher
 from pathlib import Path
 
-import httpx
-from dotenv import load_dotenv
-
-load_dotenv()
+from src.eval.llm_client import AzureOpenAIClient, QUERY_GEN_RETRY_BACKOFF, QUERY_GEN_TIMEOUT
 
 # ── Paths ────────────────────────────────────────────────────────────────────
 
@@ -485,36 +481,24 @@ IMPORTANT:
 
 
 def _call_azure_openai(
-    client: httpx.Client,
+    client: AzureOpenAIClient,
     url: str,
     headers: dict[str, str],
     prompt: str,
     temperature: float = 0.9,
 ) -> str | None:
     """Single Azure OpenAI call with retry."""
-    body = {
-        "messages": [{"role": "user", "content": prompt}],
-        "temperature": temperature,
-        "max_completion_tokens": 150,
-    }
-    backoff = [2, 5, 15]
-    for attempt in range(3):
-        try:
-            resp = client.post(url, json=body, headers=headers)
-            resp.raise_for_status()
-            content = resp.json()["choices"][0]["message"]["content"].strip()
-            # Strip quotes if model wraps in quotes
-            content = content.strip('"').strip("'")
-            return content
-        except Exception:
-            if attempt < 2:
-                import time
-                time.sleep(backoff[attempt])
-    return None
+    del url, headers
+    return client.call(
+        user=prompt,
+        temperature=temperature,
+        max_tokens=150,
+        strip_quotes=True,
+    )
 
 
 def generate_api_query(
-    client: httpx.Client,
+    client: AzureOpenAIClient,
     url: str,
     headers: dict[str, str],
     book: dict,
@@ -718,23 +702,18 @@ def generate_query_set(
     categories = assign_categories(n_seeds, rng)
 
     # Azure OpenAI setup (only if not dry-run)
-    client = None
+    client: AzureOpenAIClient | None = None
     api_url = None
     api_headers = None
     if not dry_run:
-        endpoint = os.getenv("AZURE_OPENAI_ENDPOINT", "").rstrip("/")
-        key = os.getenv("AZURE_OPENAI_KEY") or os.getenv("AZURE_OPENAI_API_KEY", "")
-        deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-54-nano")
-        if not endpoint or not key:
+        try:
+            client = AzureOpenAIClient(
+                timeout=QUERY_GEN_TIMEOUT,
+                retry_backoff=QUERY_GEN_RETRY_BACKOFF,
+            )
+        except ValueError:
             print("WARNING: Azure OpenAI credentials not found. Falling back to dry-run mode.")
             dry_run = True
-        else:
-            api_url = (
-                f"{endpoint}/openai/deployments/{deployment}"
-                f"/chat/completions?api-version=2024-12-01-preview"
-            )
-            api_headers = {"api-key": key, "Content-Type": "application/json"}
-            client = httpx.Client(timeout=60)
 
     queries: list[dict] = []
     existing_query_texts: list[str] = []
