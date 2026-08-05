@@ -18,7 +18,7 @@ graph TD
 
     subgraph API Layer
         FP[FastAPI]
-        QU[Query Understanding<br/>Spell Correct · Intent Classification]
+        QU[Query Preprocessing<br/>Spell Correct · Intent Classification]
         RR[Cross-Encoder Reranker<br/>ONNX · ms-marco-MiniLM]
         RAG[RAG Pipeline<br/>GPT + Citation Validation]
     end
@@ -51,9 +51,9 @@ graph TD
 
 ## Search Algorithm
 
-A query goes through three stages: understanding, retrieval, and optional reranking.
+A query goes through three stages: preprocessing, retrieval, and optional reranking.
 
-**Query understanding** applies SymSpell correction against a corpus-derived dictionary
+**Query preprocessing** applies SymSpell correction against a corpus-derived dictionary
 and returns rule-based intent metadata. It does not route retrieval: keyword, vector,
 or hybrid remains selected by the request parameter.
 
@@ -74,7 +74,7 @@ and the margin **nearly quadruples under a stricter relevance bar**
 sequenceDiagram
     participant User
     participant API as FastAPI
-    participant QU as Query Understanding
+    participant QU as Query Preprocessing
     participant Q as Qdrant
     participant RR as Reranker (opt-in)
 
@@ -246,7 +246,7 @@ Copy `.env.example` to `.env` and fill it in — it lists every variable the pro
 ## Project Structure
 
 `src/` is the system: one package each for the API, Qdrant client, embedding
-model, indexing pipeline, reranker, RAG, query understanding, eval framework and
+model, indexing pipeline, reranker, RAG, query preprocessing, eval framework and
 ETL. `web/` is the Next.js frontend, `infra/` the Bicep templates, and
 `data/` the corpus, eval sets and ONNX model.
 
@@ -264,7 +264,7 @@ the TF-IDF vectorizer over and uploads.
 | [docs/EVAL_RESULTS.md](docs/EVAL_RESULTS.md) | Full result tables, threshold sensitivity, paired comparisons, ceiling analysis, known-item accuracy, reranker performance |
 | [docs/CORPUS_HISTORY.md](docs/CORPUS_HISTORY.md) | Where the data came from, the v1 description-provenance bug, what the v2 migration changed, and the archived v1 results |
 | [docs/EMBEDDING.md](docs/EMBEDDING.md) | Why nomic-embed-text-v1.5 over five alternatives, the embedding template, dimensionality choice, and the TF-IDF sparse arm |
-| [docs/SEARCH.md](docs/SEARCH.md) | Dense and sparse retrieval arms, RRF fusion and its limitations, query understanding pipeline and its limitations |
+| [docs/SEARCH.md](docs/SEARCH.md) | Dense and sparse retrieval arms, RRF fusion and its limitations, query preprocessing pipeline and its limitations |
 | [docs/RERANKER.md](docs/RERANKER.md) | Two-stage retrieval design, ms-marco-MiniLM-L-6-v2 and its limitations, ONNX optimization, length-bucketed batching |
 
 ---
