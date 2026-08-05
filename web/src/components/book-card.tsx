@@ -4,11 +4,16 @@ import { useState } from "react";
 import { BookResult } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { BookOpen } from "lucide-react";
 
 export function BookCard({ book, compact }: { book: BookResult; compact?: boolean }) {
   const [expanded, setExpanded] = useState(false);
+  const [coverFailed, setCoverFailed] = useState(false);
   const coverUrl =
-    book.cover_url || `https://covers.openlibrary.org/b/olid/${book.work_id}-M.jpg`;
+    book.cover_url ||
+    (book.work_id
+      ? `https://covers.openlibrary.org/b/olid/${book.work_id}-M.jpg?default=false`
+      : null);
 
   const hasLongDesc = book.description && book.description.length > 100;
 
@@ -25,14 +30,25 @@ export function BookCard({ book, compact }: { book: BookResult; compact?: boolea
         {/* Cover thumbnail */}
         {!compact && (
           <div className="flex-shrink-0 w-16 h-24 bg-muted rounded overflow-hidden">
-            <img
-              src={coverUrl}
-              alt={book.title}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
-            />
+            {coverUrl && !coverFailed ? (
+              <img
+                src={coverUrl}
+                alt={`${book.title} cover`}
+                className="w-full h-full object-cover"
+                onError={() => setCoverFailed(true)}
+              />
+            ) : (
+              <div
+                className="flex h-full w-full flex-col items-center justify-center gap-1 border border-border/70 bg-muted/70 px-1 text-center text-muted-foreground"
+                aria-label={`No cover available for ${book.title}`}
+                role="img"
+              >
+                <BookOpen className="h-5 w-5" aria-hidden="true" />
+                <span className="text-[8px] font-medium uppercase tracking-wider">
+                  No cover
+                </span>
+              </div>
+            )}
           </div>
         )}
 
