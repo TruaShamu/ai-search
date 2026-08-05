@@ -723,7 +723,7 @@ def generate_query_set(
     api_headers = None
     if not dry_run:
         endpoint = os.getenv("AZURE_OPENAI_ENDPOINT", "").rstrip("/")
-        key = os.getenv("AZURE_OPENAI_KEY", "")
+        key = os.getenv("AZURE_OPENAI_KEY") or os.getenv("AZURE_OPENAI_API_KEY", "")
         deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-54-nano")
         if not endpoint or not key:
             print("WARNING: Azure OpenAI credentials not found. Falling back to dry-run mode.")
