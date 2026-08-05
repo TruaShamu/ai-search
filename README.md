@@ -197,8 +197,8 @@ baseline.
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/TruaShamu/ai-search.git
-cd ai-search
+git clone https://github.com/TruaShamu/booksearch.git
+cd booksearch
 pip install -r requirements.txt
 cp .env.example .env    # then fill in values
 
