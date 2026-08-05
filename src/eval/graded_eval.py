@@ -10,6 +10,7 @@ Usage:
 
 import argparse
 import json
+import os
 import random
 import subprocess
 import sys
@@ -28,7 +29,7 @@ from src.eval.llm_client import (
 )
 
 DEFAULT_API = "https://booksearch-api.thankfulstone-e6f7cf40.eastus.azurecontainerapps.io"
-API = __import__("os").environ.get("EVAL_API_URL", DEFAULT_API)
+API = os.environ.get("EVAL_API_URL", DEFAULT_API)
 DATA_DIR = Path("data/eval/v2")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -37,7 +38,6 @@ POOLED_FILE = DATA_DIR / "pooled.json"
 JUDGMENTS_FILE = DATA_DIR / "judgments.json"
 RESULTS_FILE = DATA_DIR / "results.json"
 
-MAX_RETRIES = len(DEFAULT_RETRY_BACKOFF) + 1
 RETRY_BACKOFF = DEFAULT_RETRY_BACKOFF
 
 # Rate limiting is handled separately from network errors, and deliberately does
@@ -206,9 +206,8 @@ Rate the relevance of this document to the query on a scale of 0-2:
 Respond with ONLY a single digit: 0, 1, or 2."""
 
 
-def _call_judge(client, url, headers, prompt) -> int | None:
+def _call_judge(client: AzureOpenAIClient, prompt: str) -> int | None:
     """Call LLM judge with retries. Returns relevance (0-2) or None on failure."""
-    del url, headers
     content = client.call(
         user=prompt,
         temperature=0.0,
@@ -224,8 +223,6 @@ def _call_judge(client, url, headers, prompt) -> int | None:
 
 def judge_documents(queries: list[dict], pooled: dict):
     """Judge each (query, doc) pair. KEEPS zeros. Uses None for failures (excluded from metrics)."""
-    url = None
-    headers = None
     client = AzureOpenAIClient(
         timeout=30,
         retry_backoff=RETRY_BACKOFF,
@@ -274,7 +271,7 @@ def judge_documents(queries: list[dict], pooled: dict):
                     subjects=", ".join(doc.get("subjects", [])[:5]) or "N/A",
                     description=f"Description: {doc['description']}" if doc.get("description") else "",
                 )
-                relevance = _call_judge(client, url, headers, prompt)
+                relevance = _call_judge(client, prompt)
                 if relevance is not None:
                     existing[idx]["relevance"] = relevance
                 else:
@@ -300,7 +297,7 @@ def judge_documents(queries: list[dict], pooled: dict):
                 subjects=", ".join(doc.get("subjects", [])[:5]) or "N/A",
                 description=f"Description: {doc['description']}" if doc.get("description") else "",
             )
-            return idx, doc, _call_judge(client, url, headers, prompt)
+            return idx, doc, _call_judge(client, prompt)
 
         with ThreadPoolExecutor(max_workers=JUDGE_WORKERS) as pool_exec:
             for idx, doc, relevance in pool_exec.map(_judge_one, enumerate(docs)):

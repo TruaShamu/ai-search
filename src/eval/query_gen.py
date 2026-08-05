@@ -482,13 +482,10 @@ IMPORTANT:
 
 def _call_azure_openai(
     client: AzureOpenAIClient,
-    url: str,
-    headers: dict[str, str],
     prompt: str,
     temperature: float = 0.9,
 ) -> str | None:
     """Single Azure OpenAI call with retry."""
-    del url, headers
     return client.call(
         user=prompt,
         temperature=temperature,
@@ -499,8 +496,6 @@ def _call_azure_openai(
 
 def generate_api_query(
     client: AzureOpenAIClient,
-    url: str,
-    headers: dict[str, str],
     book: dict,
     category: str,
 ) -> str | None:
@@ -513,7 +508,7 @@ def generate_api_query(
         description=(book.get("description", "") or "")[:500],
         category=category,
     )
-    return _call_azure_openai(client, url, headers, prompt)
+    return _call_azure_openai(client, prompt)
 
 
 # ── Near-duplicate detection ────────────────────────────────────────────────
@@ -703,8 +698,6 @@ def generate_query_set(
 
     # Azure OpenAI setup (only if not dry-run)
     client: AzureOpenAIClient | None = None
-    api_url = None
-    api_headers = None
     if not dry_run:
         try:
             client = AzureOpenAIClient(
@@ -740,7 +733,7 @@ def generate_query_set(
                 candidate_source = "template"
             else:
                 candidate = generate_api_query(
-                    client, api_url, api_headers, book, category
+                    client, book, category
                 )
                 if candidate is None:
                     api_failures += 1
