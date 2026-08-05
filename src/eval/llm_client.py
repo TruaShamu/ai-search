@@ -15,11 +15,6 @@ DEFAULT_API_VERSION = "2024-12-01-preview"
 DEFAULT_DEPLOYMENT = "gpt-54-nano"
 DEFAULT_TIMEOUT = 30
 DEFAULT_RETRY_BACKOFF: tuple[float, ...] = (2, 5, 15, 30)
-QUERY_GEN_RETRY_BACKOFF: tuple[float, ...] = (2, 5, 15)
-QUERY_GEN_TIMEOUT = 60
-JUDGE_RATE_LIMIT_MAX_ATTEMPTS = 12
-JUDGE_RATE_LIMIT_BASE_WAIT = 0.6
-JUDGE_RATE_LIMIT_MAX_WAIT = 8.0
 INPUT_TOKEN_PRICE_PER_MILLION = 0.20
 OUTPUT_TOKEN_PRICE_PER_MILLION = 1.25
 
@@ -37,8 +32,8 @@ class AzureOpenAIClient:
         timeout: float = DEFAULT_TIMEOUT,
         retry_backoff: tuple[float, ...] = DEFAULT_RETRY_BACKOFF,
         rate_limit_max_attempts: int | None = None,
-        rate_limit_base_wait: float = JUDGE_RATE_LIMIT_BASE_WAIT,
-        rate_limit_max_wait: float = JUDGE_RATE_LIMIT_MAX_WAIT,
+        rate_limit_base_wait: float = 0.6,
+        rate_limit_max_wait: float = 8.0,
     ):
         self.dry_run = dry_run
         self.api_version = api_version

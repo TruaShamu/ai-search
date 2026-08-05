@@ -20,13 +20,7 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from src.eval.llm_client import (
-    AzureOpenAIClient,
-    DEFAULT_RETRY_BACKOFF,
-    JUDGE_RATE_LIMIT_BASE_WAIT,
-    JUDGE_RATE_LIMIT_MAX_ATTEMPTS,
-    JUDGE_RATE_LIMIT_MAX_WAIT,
-)
+from src.eval.llm_client import AzureOpenAIClient, DEFAULT_RETRY_BACKOFF
 
 DEFAULT_API = "https://booksearch-api.thankfulstone-e6f7cf40.eastus.azurecontainerapps.io"
 API = os.environ.get("EVAL_API_URL", DEFAULT_API)
@@ -63,9 +57,9 @@ RETRY_BACKOFF = DEFAULT_RETRY_BACKOFF
 #      the jitter stops workers resynchronising into a thundering herd.
 #
 # A 429 is cheap (~0.1s, no tokens billed), so attempts are generous.
-RATE_LIMIT_MAX_ATTEMPTS = JUDGE_RATE_LIMIT_MAX_ATTEMPTS
-RATE_LIMIT_BASE_WAIT = JUDGE_RATE_LIMIT_BASE_WAIT
-RATE_LIMIT_MAX_WAIT = JUDGE_RATE_LIMIT_MAX_WAIT
+RATE_LIMIT_MAX_ATTEMPTS = 12
+RATE_LIMIT_BASE_WAIT = 0.6
+RATE_LIMIT_MAX_WAIT = 8.0
 
 # Concurrent judge calls. With the deployment at 500 RPM (see the rate-limit
 # note above), throughput is bounded by whichever is smaller: the server quota,

@@ -45,7 +45,10 @@ from collections import Counter, defaultdict
 from difflib import SequenceMatcher
 from pathlib import Path
 
-from src.eval.llm_client import AzureOpenAIClient, QUERY_GEN_RETRY_BACKOFF, QUERY_GEN_TIMEOUT
+from src.eval.llm_client import AzureOpenAIClient
+
+QUERY_GEN_RETRY_BACKOFF: tuple[float, ...] = (2, 5, 15)
+QUERY_GEN_TIMEOUT = 60
 
 # ── Paths ────────────────────────────────────────────────────────────────────
 
