@@ -116,7 +116,7 @@ modes — which doubles as a reproducibility check on the main harness. Raw rank
 lists are committed to `data/eval/v2/rankings.json` so these numbers stay
 verifiable after the corpus changes.
 
-Reproduce with `python scripts/threshold_sensitivity.py --offline`.
+Reproduce with `python -m src.eval.threshold_sensitivity --offline`.
 
 ---
 

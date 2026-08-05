@@ -256,10 +256,9 @@ Copy `.env.example` to `.env` and fill it in — it lists every variable the pro
 
 `src/` is the system: one package each for the API, Qdrant client, embedding
 model, indexing pipeline, reranker, RAG, query understanding, eval framework and
-ETL. `scripts/` is what operates on it — the eval harnesses CI runs and the
-corpus-validation analyses — so nothing deployed lives there.
-[`web/`](web/README.md) is the Next.js frontend, `infra/` the Bicep templates, and
-`data/` the corpus, eval sets and ONNX model.
+ETL. `scripts/` holds corpus-validation analyses that were run once during the
+data migration. [`web/`](web/README.md) is the Next.js frontend, `infra/` the
+Bicep templates, and `data/` the corpus, eval sets and ONNX model.
 
 The indexing pipeline is the substantial part: `src/indexing/worker.py` runs as a
 queue-driven Azure Container Apps job that scales 0→30 replicas, each embedding

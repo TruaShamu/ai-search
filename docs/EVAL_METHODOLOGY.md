@@ -16,7 +16,7 @@ spot.
 
 | | Graded relevance eval | Known-item eval |
 |---|---|---|
-| Script | `scripts/graded_eval.py` | `python -m src.eval.known_item_eval` |
+| Script | `python -m src.eval.graded_eval` | `python -m src.eval.known_item_eval` |
 | Question | *Given an exploratory query, how good is the ranking?* | *Given an exact title, is that book #1?* |
 | Labels | LLM judge, graded 0/1/2 | Objective — the sampled book either comes back first or it does not |
 | Strength | Measures the actual product | No judge, no pooling, no subjectivity; verifiable by hand |
@@ -138,7 +138,7 @@ support.
 - **Two queries were dropped** for having no relevant document, which slightly
   biases those categories toward queries the system could already answer.
 - **Labels come from a zero-shot `gpt-5.4-nano` judge**, not the richer
-  calibrated judge in `src/eval/judge.py` — `scripts/graded_eval.py` uses its
+  calibrated judge in `src/eval/judge.py` — `src/eval/graded_eval.py` uses its
   own simpler prompt.
 
 Reproduce the agreement analysis:
@@ -158,16 +158,16 @@ tokens.
 
 ```bash
 # Full pipeline: generate -> pool -> judge -> eval
-python scripts/graded_eval.py --step all
+python -m src.eval.graded_eval --step all
 
 # Individual steps
-python scripts/graded_eval.py --step generate   # corpus-grounded queries
-python scripts/graded_eval.py --step pool       # union candidates across modes
-python scripts/graded_eval.py --step judge      # LLM grading (costs tokens)
-python scripts/graded_eval.py --step eval       # metrics, no judging cost
+python -m src.eval.graded_eval --step generate   # corpus-grounded queries
+python -m src.eval.graded_eval --step pool       # union candidates across modes
+python -m src.eval.graded_eval --step judge      # LLM grading (costs tokens)
+python -m src.eval.graded_eval --step eval       # metrics, no judging cost
 
 # Threshold sensitivity (offline: reuses committed ranked lists)
-python scripts/threshold_sensitivity.py --offline
+python -m src.eval.threshold_sensitivity --offline
 
 # Known-item eval against the live deployment
 python -m src.eval.known_item_eval --modes hybrid,hybrid+rerank

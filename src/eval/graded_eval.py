@@ -1,11 +1,11 @@
-"""Full eval redesign: generate queries, pool from Qdrant, judge, compute CIs.
+"""Graded relevance eval: generate queries, pool from Qdrant, judge, compute CIs.
 
 Usage:
-    python scripts/graded_eval.py --step generate   # Step 1: generate 100 queries
-    python scripts/graded_eval.py --step pool       # Step 2: pool top-50 from all modes (incl. rerank)
-    python scripts/graded_eval.py --step judge      # Step 3: LLM judge (keep zeros)
-    python scripts/graded_eval.py --step eval       # Step 4: compute metrics + paired bootstrap CIs
-    python scripts/graded_eval.py --step all        # Run all steps
+    python -m src.eval.graded_eval --step generate   # Step 1: generate 100 queries
+    python -m src.eval.graded_eval --step pool       # Step 2: pool top-50 from all modes (incl. rerank)
+    python -m src.eval.graded_eval --step judge      # Step 3: LLM judge (keep zeros)
+    python -m src.eval.graded_eval --step eval       # Step 4: compute metrics + paired bootstrap CIs
+    python -m src.eval.graded_eval --step all        # Run all steps
 """
 
 import argparse
@@ -23,7 +23,6 @@ from pathlib import Path
 import httpx
 from dotenv import load_dotenv
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 load_dotenv()
 
 DEFAULT_API = "https://booksearch-api.thankfulstone-e6f7cf40.eastus.azurecontainerapps.io"

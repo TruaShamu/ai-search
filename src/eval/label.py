@@ -362,7 +362,7 @@ def main(argv: list[str] | None = None) -> None:
         if not path.exists():
             p.error(
                 f"{path} not found. Run the eval pipeline first "
-                f"(python scripts/graded_eval.py --step pool)."
+                f"(python -m src.eval.graded_eval --step pool)."
             )
 
     judgments = json.loads(args.judgments.read_text(encoding="utf-8"))

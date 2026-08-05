@@ -92,14 +92,14 @@ jobs:
           EVAL_API_URL: ${{ steps.api.outputs.url }}
           AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
           AZURE_OPENAI_KEY: ${{ secrets.AZURE_OPENAI_KEY }}
-        run: python -u scripts/graded_eval.py --step ${{ inputs.step }}
+        run: python -u -m src.eval.graded_eval --step ${{ inputs.step }}
 
       - name: Threshold sensitivity
         if: ${{ inputs.threshold_sensitivity }}
         env:
           PYTHONPATH: .
           EVAL_API_URL: ${{ steps.api.outputs.url }}
-        run: python -u scripts/threshold_sensitivity.py
+        run: python -u -m src.eval.threshold_sensitivity
 
       - name: Upload results
         if: always()

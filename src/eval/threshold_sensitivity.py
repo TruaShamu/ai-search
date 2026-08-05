@@ -21,8 +21,8 @@ migrated, so the v1 threshold run is no longer re-derivable. What still carries 
 script must never overwrite -- those labels cannot be regenerated.
 
 Usage:
-    python scripts/threshold_sensitivity.py            # fetch + analyse
-    python scripts/threshold_sensitivity.py --offline  # re-analyse saved ranks
+    python -m src.eval.threshold_sensitivity            # fetch + analyse
+    python -m src.eval.threshold_sensitivity --offline   # re-analyse saved ranks
 """
 
 from __future__ import annotations
@@ -37,7 +37,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 V2 = REPO_ROOT / "data" / "eval" / "v2"
 JUDGMENTS_FILE = V2 / "judgments.json"
 POOLED_FILE = V2 / "pooled.json"
