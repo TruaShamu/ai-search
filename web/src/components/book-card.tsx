@@ -4,11 +4,16 @@ import { useState } from "react";
 import { BookResult } from "@/lib/api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { BookImage } from "lucide-react";
 
 export function BookCard({ book, compact }: { book: BookResult; compact?: boolean }) {
   const [expanded, setExpanded] = useState(false);
+  const [coverFailed, setCoverFailed] = useState(false);
   const coverUrl =
-    book.cover_url || `https://covers.openlibrary.org/b/olid/${book.work_id}-M.jpg`;
+    book.cover_url ||
+    (book.work_id
+      ? `https://covers.openlibrary.org/b/olid/${book.work_id}-M.jpg?default=false`
+      : null);
 
   const hasLongDesc = book.description && book.description.length > 100;
 
@@ -25,14 +30,22 @@ export function BookCard({ book, compact }: { book: BookResult; compact?: boolea
         {/* Cover thumbnail */}
         {!compact && (
           <div className="flex-shrink-0 w-16 h-24 bg-muted rounded overflow-hidden">
-            <img
-              src={coverUrl}
-              alt={book.title}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
-            />
+            {coverUrl && !coverFailed ? (
+              <img
+                src={coverUrl}
+                alt={`${book.title} cover`}
+                className="w-full h-full object-cover"
+                onError={() => setCoverFailed(true)}
+              />
+            ) : (
+              <div
+                className="flex h-full w-full items-center justify-center border border-border/70 bg-muted/70 text-muted-foreground"
+                aria-label={`No cover available for ${book.title}`}
+                role="img"
+              >
+                <BookImage className="h-8 w-8" strokeWidth={1.5} aria-hidden="true" />
+              </div>
+            )}
           </div>
         )}
 
