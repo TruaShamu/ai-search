@@ -18,7 +18,7 @@ graph TD
 
     subgraph API Layer
         FP[FastAPI]
-        QU[Query Understanding<br/>Spell Correct · Intent Routing]
+        QU[Query Understanding<br/>Spell Correct · Intent Classification]
         RR[Cross-Encoder Reranker<br/>ONNX · ms-marco-MiniLM]
         RAG[RAG Pipeline<br/>GPT + Citation Validation]
     end
@@ -184,24 +184,7 @@ baseline.
 | Hybrid (RRF) | 86% | **98%** | 0.917 |
 | Keyword (TF-IDF) | 66% | 80% | 0.732 |
 
-### What the Eval Caught
-
-The eval's main value has been catching bugs in the system itself:
-
-- **Hybrid search was silently non-deterministic.** 8 of 40 queries returned a
-  different #1 book on byte-identical requests — Qdrant's RRF gives tied documents
-  identical scores and broke ties by segment-merge order. Caught only because two
-  runs agreed on every other mode and disagreed on hybrid.
-- **Reranking looked harmful because of a truncation bug.** Passages truncated at
-  300 chars discarded 60% of description text — the cross-encoder scored fragments
-  while RRF fused the full index. Fixing it exposed a second bug: full-length
-  passages tripled token count and pushed rerank past the ingress timeout.
-- **An earlier eval measured its own query set, not the system.** LLM-generated
-  queries with no view of the corpus asked for *1984* and *The Great Gatsby*
-  against an index of mostly obscure works. Rebuilt from the corpus itself, the
-  margin is a clear +0.121 NDCG.
-
-**[Full findings, evidence and caveats → docs/EVAL_RESULTS.md](docs/EVAL_RESULTS.md#key-findings)**
+**[Full methodology, evidence and caveats → docs/EVAL_RESULTS.md](docs/EVAL_RESULTS.md)**
 
 ---
 
