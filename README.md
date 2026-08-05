@@ -53,9 +53,9 @@ graph TD
 
 A query goes through three stages: understanding, retrieval, and optional reranking.
 
-**Query understanding** runs first — SymSpell spell-correction against a corpus-derived
-dictionary, intent detection that classifies the query (title lookup vs. topical vs.
-author), and mode routing that picks keyword, vector, or hybrid based on the intent.
+**Query understanding** applies SymSpell correction against a corpus-derived dictionary
+and returns rule-based intent metadata. It does not route retrieval: keyword, vector,
+or hybrid remains selected by the request parameter.
 
 **Retrieval** fetches 25 candidates from each arm — TF-IDF sparse and nomic-embed-text-v1.5
 dense (Matryoshka dim=256) — and fuses them with Reciprocal Rank Fusion inside Qdrant.
@@ -80,7 +80,7 @@ sequenceDiagram
 
     User->>API: GET /search?q=a+heist+that+goes+wrong&rerank=true
     API->>QU: Spell correct + intent detect
-    QU-->>API: corrected query, mode=hybrid
+    QU-->>API: corrected query + intent metadata
     API->>Q: Prefetch dense (top 25) + sparse (top 25)
     Q-->>API: RRF fused results (top 25)
     API->>RR: Score 25 candidates (2.5x top_k)
@@ -113,11 +113,9 @@ flowchart LR
     F & G -->|load.py| H[(Qdrant)]
 ```
 
-**Distributed embedding** is where it gets interesting. No local GPU was available, so
-embedding runs as an Azure Container Apps job that scales 0→30 replicas via KEDA
-queue triggers. Each replica reads one pre-cut slice blob (~500 books) rather than the
-whole corpus — measured **+4.9 MB resident vs +429 MB**, which is what fixed the
-OOMKill that blocked the first attempt. 30 replicas embed 84.8K books in ~50 minutes.
+**Embedding** uses a KEDA-scaled work queue with up to 30 Azure Container Apps
+replicas. Pre-sliced ~500-book inputs reduced per-worker memory growth from 429 MB
+to 4.9 MB, eliminating OOMKills; 84.8K books embedded in ~50 minutes.
 
 ```mermaid
 sequenceDiagram
