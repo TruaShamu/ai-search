@@ -181,7 +181,7 @@ larger**: the same query now competes against three times as many plausible
 titles. The v1 column is shown for scale, not as a regression — the two numbers
 describe different systems, which is why the v1 baseline was never reused as a CI
 gate. Its raw artifacts have since been deleted, so that column is a frozen
-historical figure; see [Corpus History](CORPUS_HISTORY.md#the-superseded-v1-results).
+historical figure; see [Corpus](CORPUS_HISTORY.md#superseded-v1-results).
 
 **The interesting result is that hybrid no longer wins at rank 1.** On v1, hybrid
 (94%) sat between vector (100%) and keyword (74%). On v2 the keyword arm degrades
