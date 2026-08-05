@@ -271,6 +271,7 @@ the TF-IDF vectorizer over and uploads.
 | [docs/EVAL_RESULTS.md](docs/EVAL_RESULTS.md) | Full result tables, threshold sensitivity, paired comparisons, ceiling analysis, known-item accuracy, reranker performance |
 | [docs/CORPUS_HISTORY.md](docs/CORPUS_HISTORY.md) | Where the data came from, the v1 description-provenance bug, what the v2 migration changed, and the archived v1 results |
 | [docs/EMBEDDING.md](docs/EMBEDDING.md) | Why nomic-embed-text-v1.5 over five alternatives, the embedding template, dimensionality choice, and the TF-IDF sparse arm |
+| [docs/SEARCH.md](docs/SEARCH.md) | Dense and sparse retrieval arms, RRF fusion and its limitations, query understanding pipeline and its limitations |
 | [docs/RERANKER.md](docs/RERANKER.md) | Two-stage retrieval design, ms-marco-MiniLM-L-6-v2 and its limitations, ONNX optimization, length-bucketed batching |
 
 ---
