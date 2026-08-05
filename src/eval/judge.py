@@ -250,7 +250,7 @@ class AzureJudgeClient:
 
         load_dotenv(ENV_PATH)
         self.endpoint = os.getenv("AZURE_OPENAI_ENDPOINT", "").rstrip("/")
-        self.key = os.getenv("AZURE_OPENAI_KEY", "")
+        self.key = os.getenv("AZURE_OPENAI_KEY") or os.getenv("AZURE_OPENAI_API_KEY", "")
         self.deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-54-nano")
 
         if not self.endpoint or not self.key:
