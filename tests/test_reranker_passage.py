@@ -1,8 +1,9 @@
 """Tests for reranker passage building and subject cleaning."""
 
 
+import pytest
+
 from src.reranker.onnx_reranker import OnnxReranker
-from src.reranker.model import CrossEncoderReranker
 from src.reranker.passage import clean_subjects
 
 
@@ -96,6 +97,11 @@ class TestBuildPassageIdentity:
         onnx_inst = object.__new__(OnnxReranker)
         for doc in self.DOCS:
             assert onnx_inst._build_passage(doc) == build_passage(doc)
+
+
+def test_missing_onnx_model_fails_clearly(tmp_path):
+    with pytest.raises(FileNotFoundError, match="Missing ONNX reranker model"):
+        OnnxReranker(tmp_path)
 
 
 # ---------------------------------------------------------------------------

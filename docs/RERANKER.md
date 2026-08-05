@@ -83,10 +83,10 @@ speedup on the same 25-candidate input:
 | PyTorch | 86 ms (4 docs), ~3.6 s (25 docs) | — |
 | ONNX Runtime | 23 ms (4 docs), ~1.8 s (25 docs) | **3.7×** (per-call) |
 
-The ONNX model (86 MB) is checked into the repo at `data/models/reranker-onnx/`
-and baked into the API container image. If the model file is missing, the
-reranker falls back to PyTorch automatically
-(`onnx_reranker.py:OnnxReranker.__init__`).
+The ONNX model (86 MB) is stored in Azure Blob Storage, downloaded by the
+deployment workflow, and baked into the API container image at
+`data/models/reranker-onnx/`. Reranker initialization fails clearly if the
+artifact is missing rather than silently switching to a slower backend.
 
 ---
 
