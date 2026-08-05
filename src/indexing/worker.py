@@ -37,7 +37,7 @@ import numpy as np
 from azure.storage.blob import BlobServiceClient
 from azure.storage.queue import QueueServiceClient
 
-from src.search.embed import MODEL_NAME, BATCH_SIZE, build_embedding_texts
+from src.indexing.embed import MODEL_NAME, BATCH_SIZE, build_embedding_texts
 from src.etl.clean_descriptions import clean_description
 
 # Config from environment

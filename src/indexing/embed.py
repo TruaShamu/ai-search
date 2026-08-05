@@ -1,7 +1,7 @@
 """
-Corpus loading and embedding-text construction, shared by the indexing pipeline.
+Corpus loading and embedding-text construction for the indexing pipeline.
 
-``src/indexing/worker.py`` imports ``MODEL_NAME``, ``BATCH_SIZE`` and
+``worker.py`` imports ``MODEL_NAME``, ``BATCH_SIZE`` and
 ``build_embedding_texts`` from here so the distributed embedding job and any
 local experiment build byte-identical inputs to the model.
 """
