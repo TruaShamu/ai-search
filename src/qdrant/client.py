@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import pickle
 import threading
@@ -12,6 +13,8 @@ from qdrant_client import QdrantClient, models
 from sentence_transformers import SentenceTransformer
 
 from src.reranker.config import rerank_fetch_k
+
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 
@@ -57,7 +60,7 @@ class QdrantSearch:
         self.collection = os.getenv("QDRANT_COLLECTION", collection)
         self.dim = dim
 
-        print(f"Connecting to Qdrant at {self.url}...")
+        logger.info("Connecting to Qdrant at %s", self.url)
         if self.url.startswith("https://"):
             self.client = QdrantClient(url=self.url, port=443, https=True, timeout=60)
         elif "localhost" in self.url or "127.0.0.1" in self.url:
@@ -70,9 +73,9 @@ class QdrantSearch:
             host = parsed.hostname
             self.client = QdrantClient(host=host, port=port, timeout=60)
 
-        print(f"Loading embedding model: {model_name}...")
+        logger.info("Loading embedding model: %s", model_name)
         self.model = SentenceTransformer(model_name, trust_remote_code=True)
-        print("Model loaded.")
+        logger.info("Model loaded.")
 
         if not VECTORIZER_PATH.exists():
             raise FileNotFoundError(
@@ -96,7 +99,7 @@ class QdrantSearch:
                     from src.reranker.onnx_reranker import OnnxReranker
                     self._reranker = OnnxReranker()
                 except Exception as e:
-                    print(f"Reranker not available: {e}")
+                    logger.warning("Reranker not available: %s", e)
                     self._reranker = None
         return self._reranker
 
