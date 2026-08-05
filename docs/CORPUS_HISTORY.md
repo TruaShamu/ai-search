@@ -109,15 +109,3 @@ Measured on 26,519 books, n=94 queries:
 > mode searched the same index. What the defect undermines is the absolute claim
 > that a top-ranked result is the *right book*.
 
----
-
-## Open Infrastructure Issue
-
-Qdrant reports `status: red` with `IO Error (os error 5)` from its segment
-optimizer. The storage volume is Azure Files (SMB), which lacks the mmap/fsync
-semantics Qdrant expects.
-
-Measured serving impact: none — all 84,801 points are queryable, warm hybrid
-latency is 182 ms median / 434 ms p95. A failed optimization degrades toward
-exact search (costs latency, not correctness). The fix requires block storage,
-which the ACA Consumption tier does not offer.
