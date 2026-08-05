@@ -13,7 +13,7 @@ Under the hood: TF-IDF sparse retrieval fused with dense vector search (nomic-em
 ```mermaid
 graph TD
     subgraph Frontend
-        UI[Next.js + shadcn/ui<br/>Search · Compare · Ask · Rerank Toggle]
+        UI[Web App]
     end
 
     subgraph API Layer
@@ -248,17 +248,14 @@ Copy `.env.example` to `.env` and fill it in — it lists every variable the pro
 | `AZURE_OPENAI_DEPLOYMENT` | Chat deployment name | `gpt-54-nano` |
 | `EVAL_API_URL` | Target for the eval harnesses | deployed URL |
 
-> The deployed container also sets `AZURE_OPENAI_API_KEY` to the same secret. Only `AZURE_OPENAI_KEY` is read by the code; the alias exists because the two names are easy to confuse and a mismatch is easy to miss — `/ask` returns a 502 with the failure detail rather than taking the service down, and search keeps working.
-
 ---
 
 ## Project Structure
 
 `src/` is the system: one package each for the API, Qdrant client, embedding
 model, indexing pipeline, reranker, RAG, query understanding, eval framework and
-ETL. `scripts/` holds corpus-validation analyses that were run once during the
-data migration. [`web/`](web/README.md) is the Next.js frontend, `infra/` the
-Bicep templates, and `data/` the corpus, eval sets and ONNX model.
+ETL. `web/` is the Next.js frontend, `infra/` the Bicep templates, and
+`data/` the corpus, eval sets and ONNX model.
 
 The indexing pipeline is the substantial part: `src/indexing/worker.py` runs as a
 queue-driven Azure Container Apps job that scales 0→30 replicas, each embedding
