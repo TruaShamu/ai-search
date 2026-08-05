@@ -1,10 +1,9 @@
 """ONNX-optimized cross-encoder reranker.
 
 2-3x faster than PyTorch on CPU by using ONNX Runtime.
-Falls back to PyTorch if ONNX model not found.
 
 Usage:
-    reranker = OnnxReranker()  # auto-detects ONNX or PyTorch
+    reranker = OnnxReranker()
     result = reranker.rerank("query", candidates, top_k=10)
 """
 
@@ -26,7 +25,6 @@ from src.reranker.passage import build_passage
 logger = logging.getLogger(__name__)
 
 ONNX_DIR = Path("data/models/reranker-onnx")
-MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 
 
 class OnnxReranker:
@@ -36,23 +34,21 @@ class OnnxReranker:
         self.onnx_dir = onnx_dir
         onnx_path = onnx_dir / "model.onnx"
 
-        if onnx_path.exists():
-            import onnxruntime as ort
-
-            self.backend = "onnx"
-            self.tokenizer = AutoTokenizer.from_pretrained(str(onnx_dir))
-            self.session = ort.InferenceSession(
-                str(onnx_path),
-                providers=["CPUExecutionProvider"],
+        if not onnx_path.exists():
+            raise FileNotFoundError(
+                f"Missing ONNX reranker model at {onnx_path}. "
+                "Provision data/models/reranker-onnx before enabling reranking."
             )
-            logger.info("Reranker loaded (ONNX): %s", onnx_dir)
-        else:
-            # Fallback to PyTorch
-            from src.reranker.model import CrossEncoderReranker
 
-            self.backend = "pytorch"
-            self._pytorch_reranker = CrossEncoderReranker()
-            logger.info("Reranker loaded (PyTorch fallback — run onnx_export for speedup)")
+        import onnxruntime as ort
+
+        self.backend = "onnx"
+        self.tokenizer = AutoTokenizer.from_pretrained(str(onnx_dir))
+        self.session = ort.InferenceSession(
+            str(onnx_path),
+            providers=["CPUExecutionProvider"],
+        )
+        logger.info("Reranker loaded (ONNX): %s", onnx_dir)
 
     def _predict_onnx(self, query: str, passages: list[str]) -> np.ndarray:
         """Score (query, passage) pairs using ONNX Runtime.
@@ -117,10 +113,7 @@ class OnnxReranker:
         return build_passage(doc)
 
     def rerank(self, query: str, candidates: list[dict], top_k: int = 10) -> dict:
-        """Rerank candidates. Uses ONNX if available, else PyTorch."""
-        if self.backend == "pytorch":
-            return self._pytorch_reranker.rerank(query, candidates, top_k)
-
+        """Rerank candidates with ONNX Runtime."""
         if not candidates:
             return {"results": [], "latency_ms": 0, "candidates_scored": 0}
 
