@@ -256,7 +256,7 @@ Copy `.env.example` to `.env` and fill it in — it lists every variable the pro
 model, indexing pipeline, reranker, RAG, query understanding, eval framework and
 ETL. `scripts/` is what operates on it — the eval harnesses CI runs and the
 corpus-validation analyses — so nothing deployed lives there.
-[`web/`](web/README.md) is the Next.js frontend, `infra/` the Bicep templates, and
+`web/` is the Next.js frontend, `infra/` the Bicep templates, and
 `data/` the corpus, eval sets and ONNX model.
 
 The indexing pipeline is the substantial part: `src/indexing/worker.py` runs as a
