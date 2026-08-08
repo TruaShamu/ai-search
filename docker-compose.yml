@@ -4,11 +4,12 @@
 # AWS/MinIO dependency). The API and an embed worker are opt-in behind the "app"
 # profile because the API image bakes in index artifacts that are not in git.
 #
-#   docker compose up -d                 # infra only: kafka, qdrant, azurite
+#   docker compose up -d                 # infra only: kafka, qdrant, azurite, jaeger
 #   docker compose --profile app up -d   # + api and a single embed worker
 #
 # Host tools reach Kafka on localhost:19092 and Azurite Blob on localhost:10000;
-# in-network containers use kafka:9092 and azurite:10000.
+# in-network containers use kafka:9092 and azurite:10000. Traces are viewable in
+# the Jaeger UI at http://localhost:16686.
 
 services:
   kafka:
@@ -52,6 +53,17 @@ services:
     volumes:
       - qdrant-data:/qdrant/storage
 
+  # Distributed-trace backend. Jaeger all-in-one accepts OTLP directly (gRPC
+  # 4317 / HTTP 4318) and serves the trace UI on 16686. The API and worker
+  # export here when OTEL_EXPORTER_OTLP_ENDPOINT is set (below).
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"   # UI
+      - "4318:4318"     # OTLP/HTTP
+
   api:
     profiles: ["app"]
     build:
@@ -65,8 +77,12 @@ services:
       # RAG /ask needs these; search works without them.
       AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT:-}
       AZURE_OPENAI_KEY: ${AZURE_OPENAI_KEY:-}
+      # Tracing → Jaeger (OTLP/HTTP). Unset this to turn tracing off.
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: booksearch-api
     depends_on:
       - qdrant
+      - jaeger
 
   embed-worker:
     profiles: ["app"]
@@ -86,6 +102,10 @@ services:
       STORAGE_CONTAINER: embeddings
       QDRANT_URL: http://qdrant:6333
       EMBED_OUTPUT_MODE: blob
+      # Tracing → Jaeger. Worker spans continue the enqueue trace via Kafka
+      # message headers.
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: booksearch-embed
     depends_on:
       kafka:
         condition: service_healthy

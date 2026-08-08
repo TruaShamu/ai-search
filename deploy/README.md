@@ -49,7 +49,7 @@ The fastest loop needs no cluster. `docker-compose.yml` brings up the same
 component types the cluster runs, on one machine:
 
 ```sh
-docker compose up -d          # Kafka (Redpanda) + Azurite (Blob) + Qdrant
+docker compose up -d          # Kafka (Redpanda) + Azurite (Blob) + Qdrant + Jaeger
 # run the API / worker against them, or add the "app" profile to containerise:
 docker compose --profile app up -d
 ```
@@ -60,6 +60,33 @@ docker compose --profile app up -d
 > Kafka** (Bitnami chart, KRaft mode) and a managed Azure Blob account. The
 > application only ever speaks the Kafka protocol and the Azure Blob API, so
 > this is transparent to the code; it is a dev-ergonomics choice, made explicit.
+
+## Observability (distributed tracing)
+
+The API and worker are instrumented with **OpenTelemetry**. Tracing is off
+unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set, so production, tests, and a clean
+clone pay nothing (see [`../src/telemetry.py`](../src/telemetry.py)). The compose
+stack runs **Jaeger** and points both services at it, so traces work out of the
+box:
+
+```sh
+docker compose --profile app up -d
+# ... issue a search or run an embedding backfill ...
+open http://localhost:16686        # Jaeger UI
+```
+
+A search request is one trace spanning `query.understand → retrieval.embed_query
+→ retrieval.qdrant_query → retrieval.fusion_rank → rerank.cross_encoder`, and
+`/ask` adds `rag.build_context → rag.generate → rag.validate_citations` with the
+outbound Azure OpenAI call captured automatically via httpx instrumentation.
+
+The embedding backfill is a **single distributed trace across the Kafka work
+queue**: the enqueue span injects a W3C `traceparent` into each message's Kafka
+headers, and every worker that picks up a slice continues that trace
+(`enqueue.slice → embed.process_message → embed.download_slice → embed.encode →
+embed.write_shard`). Point `OTEL_EXPORTER_OTLP_ENDPOINT` at an in-cluster
+collector (OpenTelemetry Collector or Jaeger with OTLP) to get the same in
+Kubernetes.
 
 ## Kubernetes quick start (kind)
 

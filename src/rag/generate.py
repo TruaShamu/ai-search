@@ -13,6 +13,8 @@ from pathlib import Path
 import httpx
 from dotenv import load_dotenv
 
+from src.telemetry import span
+
 ENV_PATH = Path(__file__).resolve().parents[2] / ".env"
 load_dotenv(ENV_PATH)
 
@@ -146,16 +148,19 @@ class RAGPipeline:
         """Full RAG pipeline: context building → generation → validation."""
         # Build context
         t0 = time.time()
-        context, sources = self.build_context(search_results, max_sources)
+        with span("rag.build_context", **{"rag.max_sources": max_sources}):
+            context, sources = self.build_context(search_results, max_sources)
         context_ms = (time.time() - t0) * 1000
 
         # Generate answer
         t1 = time.time()
-        answer, usage = self.generate(question, context)
+        with span("rag.generate", **{"llm.model": self.deployment}):
+            answer, usage = self.generate(question, context)
         generation_ms = (time.time() - t1) * 1000
 
         # Validate citations
-        citations_valid, hallucinated = self.validate_citations(answer, sources)
+        with span("rag.validate_citations"):
+            citations_valid, hallucinated = self.validate_citations(answer, sources)
 
         return RAGResponse(
             answer=answer,

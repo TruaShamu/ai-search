@@ -47,5 +47,14 @@ langdetect>=1.0.9
 # Query Understanding
 symspellpy>=6.7.7
 
+# Observability — OpenTelemetry tracing (optional at runtime; spans are exported
+# only when OTEL_EXPORTER_OTLP_ENDPOINT is set, see src/telemetry.py). Kept in
+# the image so the API can emit traces to a collector (Jaeger) with no rebuild.
+opentelemetry-api>=1.27.0
+opentelemetry-sdk>=1.27.0
+opentelemetry-exporter-otlp-proto-http>=1.27.0
+opentelemetry-instrumentation-fastapi>=0.48b0
+opentelemetry-instrumentation-httpx>=0.48b0
+
 # Evaluation
 # (no extra deps — uses stdlib + above)

@@ -45,6 +45,10 @@ class Message:
 
     content: str
     handle: Any = field(default=None, repr=False)
+    #: Trace-propagation headers (W3C traceparent etc.) carried alongside the
+    #: message. Populated by backends that support headers (Kafka); empty for
+    #: those that do not (Azure Storage Queue).
+    headers: dict[str, str] = field(default_factory=dict)
 
     def json(self) -> dict:
         return json.loads(self.content)
@@ -135,7 +139,17 @@ class KafkaQueue(MessageQueue):
         # Key by batch_id so a re-enqueued slice keeps a stable partition. Order
         # across slices does not matter, but a stable key keeps retries local.
         key = str(payload.get("batch_id", "")) or None
-        producer.produce(self.topic, value=json.dumps(payload).encode("utf-8"), key=key)
+        # Carry the current trace context in message headers so a worker can
+        # continue the producer's trace (no-op dict when tracing is off).
+        from src.telemetry import inject_context  # noqa: PLC0415
+
+        headers = [(k, v.encode("utf-8")) for k, v in inject_context().items()] or None
+        producer.produce(
+            self.topic,
+            value=json.dumps(payload).encode("utf-8"),
+            key=key,
+            headers=headers,
+        )
         producer.poll(0)
 
     # -- consumer path ----------------------------------------------------- #
@@ -177,10 +191,16 @@ class KafkaQueue(MessageQueue):
                     break
                 raise RuntimeError(f"Kafka consume error: {record.error()}")
             value = record.value()
+            raw_headers = record.headers() or []
+            headers = {
+                k: (v.decode("utf-8") if isinstance(v, (bytes, bytearray)) else str(v))
+                for k, v in raw_headers
+            }
             out.append(
                 Message(
                     content=value.decode("utf-8") if isinstance(value, (bytes, bytearray)) else str(value),
                     handle=record,
+                    headers=headers,
                 )
             )
         return out

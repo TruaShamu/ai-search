@@ -253,7 +253,11 @@ def write_error(store, batch_id: str, detail: str) -> None:
 
 def process_message(queue, store, message) -> bool:
     """Process a single task: download → embed → persist → ack the message."""
+    from src.telemetry import span, extract_context, span_with_context
+
     batch_id = "unknown"
+    # Continue the producer's trace if it propagated one through Kafka headers.
+    parent = extract_context(getattr(message, "headers", None))
     try:
         payload = message.json()
         batch_id = payload["batch_id"]
@@ -265,22 +269,31 @@ def process_message(queue, store, message) -> bool:
         print(f"Processing batch: {batch_id} [{start_idx}–{end_idx})")
         print(f"{'='*60}")
 
-        books = download_books_slice(store, blob_path, start_idx, end_idx)
-        if not books:
-            print("  No tier-1 books in this slice, skipping.")
+        with span_with_context(
+            "embed.process_message",
+            parent,
+            **{"batch.id": batch_id, "batch.start_idx": start_idx, "batch.end_idx": end_idx},
+        ):
+            with span("embed.download_slice", **{"object.path": blob_path}):
+                books = download_books_slice(store, blob_path, start_idx, end_idx)
+            if not books:
+                print("  No tier-1 books in this slice, skipping.")
+                queue.ack(message)
+                return True
+
+            with span("embed.encode", **{"embed.count": len(books)}):
+                embeddings = embed_books(books)
+            if EMBED_OUTPUT_MODE == "qdrant":
+                with span("embed.upsert_qdrant", **{"embed.count": len(books)}):
+                    upsert_to_qdrant(books, embeddings, start_idx)
+            else:
+                with span("embed.write_shard", **{"batch.id": batch_id}):
+                    write_shard(store, batch_id, books, embeddings, start_idx)
+
+            # Ack (commit offset / delete message) only after the slice is durable.
             queue.ack(message)
+            print(f"✓ Batch {batch_id} complete.")
             return True
-
-        embeddings = embed_books(books)
-        if EMBED_OUTPUT_MODE == "qdrant":
-            upsert_to_qdrant(books, embeddings, start_idx)
-        else:
-            write_shard(store, batch_id, books, embeddings, start_idx)
-
-        # Ack (commit offset / delete message) only after the slice is durable.
-        queue.ack(message)
-        print(f"✓ Batch {batch_id} complete.")
-        return True
 
     except Exception as e:
         import traceback
@@ -398,14 +411,18 @@ def enqueue_batches(
         blob_path = f"{slice_prefix}/{batch_id}.jsonl"
 
         payload = ("\n".join(lines[start:end]) + "\n").encode("utf-8")
-        store.put_bytes(blob_path, payload)
+        # One span per enqueued slice so the traceparent carried in the Kafka
+        # message headers roots the worker's processing span in this producer.
+        from src.telemetry import span  # noqa: PLC0415
 
-        queue.send({
-            "batch_id": batch_id,
-            "blob_path": blob_path,
-            "start_idx": start,
-            "end_idx": end,
-        })
+        with span("enqueue.slice", **{"batch.id": batch_id, "batch.start_idx": start, "batch.end_idx": end}):
+            store.put_bytes(blob_path, payload)
+            queue.send({
+                "batch_id": batch_id,
+                "blob_path": blob_path,
+                "start_idx": start,
+                "end_idx": end,
+            })
         if n % 25 == 0 or n == len(selected):
             print(f"  {n}/{len(selected)} slices uploaded and enqueued")
 
@@ -414,6 +431,10 @@ def enqueue_batches(
 
 
 def main():
+    from src.telemetry import setup_telemetry
+
+    setup_telemetry("booksearch-embed")
+
     parser = argparse.ArgumentParser(description="Event-driven embedding worker")
     parser.add_argument("--loop", action="store_true", help="Process all messages until the queue drains")
     parser.add_argument("--enqueue", action="store_true", help="Enqueue batch tasks (producer mode)")
