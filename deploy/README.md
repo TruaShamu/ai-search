@@ -3,27 +3,26 @@
 BookSearch is **portable by design**. The application code speaks only
 vendor-neutral protocols — the Kafka wire protocol for its work queue and a
 small object-store interface (`src/indexing/backends/`) with interchangeable
-Azure Blob and S3 implementations. That lets the exact same images run on two
-targets:
+Azure Blob and S3 implementations — so the same images run anywhere Kubernetes
+does:
 
-| Target | Queue | Object store | Vector store | Orchestration | Registry |
-|--------|-------|--------------|--------------|---------------|----------|
-| **Kubernetes** (portable default) | Apache Kafka | Azure Blob (S3 optional) | Qdrant | KEDA `ScaledJob` + `Deployment`/`HPA` | GHCR |
-| **Azure Container Apps** (reference cloud) | Storage Queue | Blob | Qdrant | Event-driven ACA Job + Container App | ACR |
+| Component | Default | Pluggable alternative |
+|-----------|---------|-----------------------|
+| Work queue | Apache Kafka | Azure Storage Queue (`QUEUE_BACKEND=azure`) |
+| Object store | Azure Blob (managed) | any S3-compatible store (`OBJECT_STORE_BACKEND=s3`) |
+| Vector store | Qdrant | — |
+| Orchestration | KEDA `ScaledJob` + `Deployment`/`HPA` | — |
+| Registry | GHCR | — |
 
-The queue and compute are fully portable — Kafka on Kubernetes replaces Azure
-Storage Queue on ACA. Object storage stays on managed **Azure Blob** by default
-(no AWS account required), but the backend is pluggable: set
-`OBJECT_STORE_BACKEND=s3` to run against any S3-compatible store. Switching is
-configuration, not code:
+Object storage stays on managed **Azure Blob** by default (no AWS account
+required), but the backend is pluggable: set `OBJECT_STORE_BACKEND=s3` to run
+against any S3-compatible store. Switching is configuration, not code:
 
 ```sh
 # portable compute, managed Blob (default)
 QUEUE_BACKEND=kafka  OBJECT_STORE_BACKEND=azure
 # fully S3-compatible object store
 QUEUE_BACKEND=kafka  OBJECT_STORE_BACKEND=s3
-# reference cloud (ACA)
-QUEUE_BACKEND=azure  OBJECT_STORE_BACKEND=azure
 ```
 
 ## Layout
@@ -33,7 +32,6 @@ deploy/
   helm/     third-party infra as pinned Helm charts (Kafka, Qdrant, KEDA)
   k8s/      first-party app as Kustomize (API Deployment/Service/HPA + embed ScaledJob)
 ../infra/terraform/   Azure platform as Terraform (RG, Storage, AKS, workload identity)
-../infra/*.bicep      the reference ACA deployment (still supported)
 ../docker-compose.yml   local one-machine stack (Redpanda + Azurite + Qdrant)
 ```
 
@@ -133,13 +131,17 @@ helm template kafka bitnami/kafka --version 30.0.4 -f deploy/helm/values-kafka.y
 
 ## Continuous deployment to AKS
 
-CI/CD is a two-stage pipeline against the Terraform-provisioned cluster
+CI/CD is a multi-stage pipeline against the Terraform-provisioned cluster
 ([`infra/terraform`](../infra/terraform)):
 
-1. **[`publish-images.yml`](../.github/workflows/publish-images.yml)** — on push
+1. **[`terraform.yml`](../.github/workflows/terraform.yml)** ("Terraform") —
+   `fmt -check` + `validate` (offline, backendless) on every PR; a real `plan`
+   on PRs and `apply` on push to `master`, both gated on the remote-state
+   variables so they skip neutrally until the platform is bootstrapped.
+2. **[`publish-images.yml`](../.github/workflows/publish-images.yml)** — on push
    to `master`, builds and pushes `booksearch-{api,embed}` to GHCR, tagged with
    both `latest` and the commit SHA.
-2. **[`deploy.yml`](../.github/workflows/deploy.yml)** ("Deploy to AKS") — runs
+3. **[`deploy.yml`](../.github/workflows/deploy.yml)** ("Deploy to AKS") — runs
    on that workflow's success, lints + tests, then pins the
    [`overlays/aks`](k8s/overlays/aks) image tags to the same SHA
    (`kustomize edit set image`), `kubectl apply -k`s it, and waits on the API
