@@ -1,0 +1,8 @@
+# Copy to backend.hcl (git-ignored) and fill from the bootstrap module's output
+# (`terraform -chdir=bootstrap output -raw backend_hcl`), then:
+#   terraform init -backend-config=backend.hcl
+
+resource_group_name  = "rg-booksearch-tfstate"
+storage_account_name = "booksearchtfstate<suffix>"
+container_name       = "tfstate"
+key                  = "booksearch.tfstate"

@@ -1,0 +1,17 @@
+# Terraform working files — never commit state (may hold secrets) or local config.
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
+# Real values (may contain subscription ids / account names). Examples are kept.
+*.tfvars
+!*.tfvars.example
+backend.hcl
+!backend.hcl.example
+
+# Plan output
+*.tfplan
+tfplan

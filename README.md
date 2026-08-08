@@ -253,8 +253,9 @@ model, indexing pipeline, reranker, RAG, query preprocessing, eval framework and
 ETL. `src/indexing/backends/` holds the pluggable queue (Kafka / Azure) and
 object-store (Azure Blob / S3) backends. `web/` is the Next.js frontend, `deploy/`
 the portable Kubernetes deployment (Helm for infra, Kustomize for the app),
-`infra/` the Azure Bicep reference templates, and `data/` the corpus, eval sets
-and ONNX model.
+`infra/terraform/` the Azure platform as Terraform (AKS, storage, workload
+identity), `infra/*.bicep` the Azure Container Apps reference templates, and
+`data/` the corpus, eval sets and ONNX model.
 
 The indexing pipeline is the substantial part: `src/indexing/worker.py` runs as a
 queue-driven worker that scales 0→30 replicas (a KEDA `ScaledJob` on Kafka lag in
@@ -268,9 +269,12 @@ vectorizer over and uploads.
 Portable by design — see **[deploy/README.md](deploy/README.md)** for the
 Kubernetes path (Helm-installed Kafka/Qdrant/KEDA + Kustomize app manifests,
 images from GHCR, managed Azure Blob for object storage) and a local
-`docker-compose` stack (Redpanda + Azurite + Qdrant). The Azure Container Apps
-Bicep in `infra/` remains a supported reference deployment; the same images run
-on either by setting `QUEUE_BACKEND` / `OBJECT_STORE_BACKEND`.
+`docker-compose` stack (Redpanda + Azurite + Qdrant). The cloud substrate that
+Kubernetes runs on — AKS, the storage account, and the passwordless **workload
+identity** the worker uses for Blob access — is provisioned with **Terraform**
+(**[infra/terraform/README.md](infra/terraform/README.md)**). The Azure Container
+Apps Bicep in `infra/` remains a supported reference deployment; the same images
+run on either by setting `QUEUE_BACKEND` / `OBJECT_STORE_BACKEND`.
 
 ### Documentation
 

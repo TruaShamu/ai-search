@@ -1,0 +1,13 @@
+# Copy to terraform.tfvars and fill in. Storage account names are GLOBALLY
+# unique, so pick your own. `terraform.tfvars` is git-ignored.
+
+subscription_id      = "00000000-0000-0000-0000-000000000000"
+storage_account_name = "booksearchembed<suffix>" # 3-24 lowercase alphanumerics, globally unique
+
+# Optional overrides (defaults shown):
+# project             = "booksearch"
+# environment         = "dev"
+# location            = "westus2"
+# node_vm_size        = "Standard_D4s_v5"
+# node_count          = 2
+# kubernetes_version  = null          # null = region default

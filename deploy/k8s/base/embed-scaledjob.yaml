@@ -19,8 +19,14 @@ spec:
     backoffLimit: 2
     activeDeadlineSeconds: 10800
     template:
+      metadata:
+        labels:
+          # Required by the workload-identity webhook to project an AAD token
+          # into the pod for the federated ServiceAccount below.
+          azure.workload.identity/use: "true"
       spec:
         restartPolicy: Never
+        serviceAccountName: booksearch-worker
         containers:
           - name: embed-worker
             image: ghcr.io/truashamu/booksearch-embed:latest
@@ -31,6 +37,11 @@ spec:
             env:
               - name: PYTHONPATH
                 value: /app
+              # Passwordless in-cluster: AZURE_STORAGE_ACCOUNT_URL (from the
+              # configmap, set to the Terraform `storage_account_url` output)
+              # drives DefaultAzureCredential via workload identity. The
+              # connection-string secret stays wired as the local/emulator
+              # fallback and is honored first when non-empty.
               - name: AZURE_STORAGE_CONNECTION_STRING
                 valueFrom:
                   secretKeyRef:
