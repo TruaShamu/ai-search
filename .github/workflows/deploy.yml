@@ -1,24 +1,22 @@
-name: Build & Deploy to Azure Container Apps
+name: Deploy to AKS
+
+# Deploys the app to the Terraform-provisioned AKS cluster (infra/terraform).
+# It runs after "Publish images to GHCR" succeeds so the images it rolls out are
+# guaranteed to exist at the same commit SHA, pins the Kustomize image tags to
+# that SHA, and applies deploy/k8s/overlays/aks.
+#
+# The deploy job is gated on the AKS_CLUSTER_NAME / AKS_RESOURCE_GROUP repository
+# variables: until the cluster is provisioned and those are set, the job is
+# skipped (neutral) rather than failing every push. Auth reuses the existing
+# AZURE_CREDENTIALS secret; migrating to OIDC (id-token federation) is the
+# recommended hardening once set up.
 
 on:
-  push:
+  workflow_run:
+    workflows: ["Publish images to GHCR"]
+    types: [completed]
     branches: [master]
-    paths:
-      - 'src/**'
-      - 'Dockerfile.api'
-      - '.dockerignore'
-      - 'requirements.txt'
-      - 'infra/**'
-      - 'data/processed/corpus_dictionary.txt'
-      - '.github/workflows/deploy.yml'
   workflow_dispatch:
-
-env:
-  AZURE_RESOURCE_GROUP: ai-search-rg
-  ACR_NAME: booksearchacr
-  ACR_LOGIN_SERVER: booksearchacr.azurecr.io
-  API_IMAGE: booksearch-api
-  ACA_API_APP: booksearch-api
 
 jobs:
   lint:
@@ -31,11 +29,11 @@ jobs:
           python-version: "3.11"
 
       - name: Lint with ruff
-        # Version pinned deliberately: this step previously ran `pip install
-        # ruff` unpinned, and 0.16.0 broadened its default rule set enough to
-        # fail the deploy with 58 findings on unchanged code. Rules live in
-        # ruff.toml so local and CI agree.
-        run: pip install ruff==0.16.0 && ruff check src/ tests/ scripts/
+        # Version pinned deliberately: 0.16.0 broadened its default rule set
+        # enough to fail on unchanged code, so both local and CI use it with the
+        # rules in ruff.toml. (`scripts/` was removed in a refactor; linting a
+        # non-existent path raised E902 and failed the whole workflow.)
+        run: pip install ruff==0.16.0 && ruff check src/ tests/
 
   test:
     runs-on: ubuntu-latest
@@ -59,98 +57,63 @@ jobs:
         # Tests needing a live Qdrant self-skip; everything else must pass.
         run: PYTHONPATH=. python -m pytest tests/ -q
 
-  build-and-push:
-    runs-on: ubuntu-latest
-    needs: [lint, test]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Login to ACR
-        run: az acr login --name ${{ env.ACR_NAME }}
-
-      - name: Download model artifacts from Blob Storage
-        run: |
-          mkdir -p data/index data/models/reranker-onnx
-          az storage blob download \
-            --account-name booksearchblobs --container-name models \
-            --name tfidf_vectorizer.pkl --file data/index/tfidf_vectorizer.pkl \
-            --account-key "${{ secrets.STORAGE_ACCOUNT_KEY }}"
-          az storage blob download-batch \
-            --account-name booksearchblobs --source models \
-            --pattern "reranker-onnx/*" --destination data/models \
-            --account-key "${{ secrets.STORAGE_ACCOUNT_KEY }}"
-
-      - name: Build & push API image
-        run: |
-          docker build -f Dockerfile.api \
-            -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.API_IMAGE }}:${{ github.sha }} \
-            -t ${{ env.ACR_LOGIN_SERVER }}/${{ env.API_IMAGE }}:latest \
-            .
-          docker push ${{ env.ACR_LOGIN_SERVER }}/${{ env.API_IMAGE }} --all-tags
-
   deploy:
     runs-on: ubuntu-latest
-    needs: build-and-push
+    needs: [lint, test]
+    # Only deploy on a successful image publish (or a manual run), and only once
+    # the cluster coordinates are configured. Skips neutrally otherwise.
+    if: >-
+      (github.event_name == 'workflow_dispatch' ||
+       github.event.workflow_run.conclusion == 'success') &&
+      vars.AKS_CLUSTER_NAME != '' && vars.AKS_RESOURCE_GROUP != ''
+    env:
+      # The commit whose images were just published (workflow_run) or the ref
+      # this was dispatched on.
+      DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+      IMAGE_API: ghcr.io/truashamu/booksearch-api
+      IMAGE_EMBED: ghcr.io/truashamu/booksearch-embed
+      OVERLAY: deploy/k8s/overlays/aks
+      NAMESPACE: booksearch
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Azure Login
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Deploy ACA (Bicep)
-        run: |
-          az deployment group create \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --template-file infra/aca-search.bicep \
-            --parameters \
-              acrName=${{ env.ACR_NAME }} \
-              acrLoginServer=${{ env.ACR_LOGIN_SERVER }} \
-              apiImageName=${{ env.API_IMAGE }}:${{ github.sha }} \
-              azureOpenAIEndpoint=${{ secrets.AZURE_OPENAI_ENDPOINT }} \
-              azureOpenAIKey=${{ secrets.AZURE_OPENAI_KEY }} \
-              qdrantExternalIngress=false
+      - name: Set AKS context
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ vars.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ vars.AKS_CLUSTER_NAME }}
 
-      - name: Verify deployment
+      - name: Install kustomize
         run: |
-          API_URL=$(az deployment group show \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --name aca-search \
-            --query "properties.outputs.apiUrl.value" -o tsv 2>/dev/null || echo "")
-          if [ -z "$API_URL" ]; then
-            API_URL="https://booksearch-api.thankfulstone-e6f7cf40.eastus.azurecontainerapps.io"
-          fi
-          echo "API URL: $API_URL"
-          echo "API_URL=$API_URL" >> "$GITHUB_ENV"
+          curl -sSL -o kustomize.tar.gz \
+            https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.5.0/kustomize_v5.5.0_linux_amd64.tar.gz
+          tar xzf kustomize.tar.gz
+          sudo mv kustomize /usr/local/bin/
 
-          # Wait for models to finish loading. /ready is the same signal the
-          # ACA readiness probe uses, so this waits on exactly what ingress
-          # waits on. /health would answer 200 while still warming.
-          for i in $(seq 1 60); do
-            CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$API_URL/ready" || echo 000)
-            echo "  attempt $i: /ready -> HTTP $CODE"
-            if [ "$CODE" = "200" ]; then
-              echo "Ready after ${i} attempts."
-              break
-            fi
-            if [ "$i" = "60" ]; then
-              echo "::error::Container never became ready."
-              curl -s "$API_URL/health" || true
-              exit 1
-            fi
-            sleep 10
-          done
-
-      - name: Known-item regression gate
+      - name: Pin image tags to the published SHA
         run: |
-          pip install -q requests
-          cd ${{ github.workspace }}
-          PYTHONPATH=. python -m src.eval.known_item_eval \
-            --api-url "$API_URL" --max-drop 5 \
-            --modes keyword,vector,hybrid,hybrid+rerank
+          cd "$OVERLAY"
+          kustomize edit set image \
+            "${IMAGE_API}=${IMAGE_API}:${DEPLOY_SHA}" \
+            "${IMAGE_EMBED}=${IMAGE_EMBED}:${DEPLOY_SHA}"
+
+      - name: Apply manifests
+        run: |
+          kubectl create namespace "$NAMESPACE" \
+            --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -k "$OVERLAY"
+
+      - name: Wait for the API rollout
+        # rollout status blocks on the readiness probe (/ready), the same signal
+        # the Service uses before routing traffic, so a green rollout means the
+        # models loaded and the pod is serving.
+        run: |
+          kubectl -n "$NAMESPACE" rollout status deployment/booksearch-api \
+            --timeout=8m

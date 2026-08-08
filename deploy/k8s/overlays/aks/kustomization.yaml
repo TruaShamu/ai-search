@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# AKS deployment overlay. The CI pipeline (.github/workflows/deploy.yml) pins the
+# image tags to the pushed commit SHA here with `kustomize edit set image`, then
+# `kubectl apply -k` this overlay against the Terraform-provisioned cluster
+# (infra/terraform). Unlike the local overlay it pulls the real GHCR images, so
+# no image remap or imagePullPolicy override is needed — only the tag is set.
+namespace: booksearch
+
+resources:
+  - ../../base
+
+images:
+  - name: ghcr.io/truashamu/booksearch-api
+    newTag: latest
+  - name: ghcr.io/truashamu/booksearch-embed
+    newTag: latest
