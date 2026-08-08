@@ -1,0 +1,67 @@
+name: Validate Kubernetes Manifests
+
+# Static validation of the portable deployment: the Kustomize app manifests are
+# built and schema-checked (including the KEDA ScaledJob CRD), and the Helm
+# dependency values are lint-templated. Nothing here touches a live cluster --
+# it is the manifests-are-well-formed gate that mirrors what `deploy.yml` does
+# for the app image.
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'deploy/**'
+      - '.github/workflows/validate-k8s.yml'
+  pull_request:
+    paths:
+      - 'deploy/**'
+      - '.github/workflows/validate-k8s.yml'
+  workflow_dispatch:
+
+jobs:
+  kustomize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -sSL -o kubeconform.tar.gz \
+            https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
+          tar xzf kubeconform.tar.gz
+          sudo mv kubeconform /usr/local/bin/
+
+      - name: Build and validate every overlay
+        # kubectl ships with kustomize built in. The KEDA ScaledJob is a CRD, so
+        # its schema comes from the datree CRDs-catalog; -strict rejects unknown
+        # fields, which is what catches a typo'd probe or resource key.
+        run: |
+          for overlay in deploy/k8s/overlays/*/; do
+            echo "== $overlay =="
+            kubectl kustomize "$overlay" | kubeconform \
+              -strict -summary \
+              -schema-location default \
+              -schema-location 'https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+          done
+
+  helm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.16.1
+
+      - name: Lint-template the dependency charts against the pinned values
+        # `helm template` renders each chart with our values so a broken value
+        # key fails here rather than at `helm install` time. Charts are fetched
+        # read-only; nothing is installed.
+        run: |
+          helm repo add bitnami https://charts.bitnami.com/bitnami
+          helm repo add qdrant  https://qdrant.github.io/qdrant-helm
+          helm repo update
+          helm template kafka  bitnami/kafka --version 30.0.4  -f deploy/helm/values-kafka.yaml  > /dev/null
+          helm template qdrant qdrant/qdrant --version 1.12.1 -f deploy/helm/values-qdrant.yaml > /dev/null
+          helm template minio  bitnami/minio --version 14.7.5 -f deploy/helm/values-minio.yaml  > /dev/null
+          echo "All dependency charts render with the pinned values."

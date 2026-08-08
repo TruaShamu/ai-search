@@ -1,0 +1,75 @@
+# FastAPI search service. The direct analog of the ACA "booksearch-api"
+# container app: same probes, same warm-at-all-times scaling, same 2 vCPU /
+# 4Gi footprint the cross-encoder reranker needs.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booksearch-api
+  labels:
+    app: booksearch-api
+spec:
+  # Warm at all times. At zero replicas the first request after an idle period
+  # paid a ~20s model load; scale-up also sent traffic to cold replicas faster
+  # than they could warm. The HPA takes it up from here.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: booksearch-api
+  template:
+    metadata:
+      labels:
+        app: booksearch-api
+    spec:
+      containers:
+        - name: booksearch-api
+          image: booksearch-api:latest
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: booksearch-config
+          env:
+            - name: PYTHONPATH
+              value: /app
+            - name: AZURE_OPENAI_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: booksearch-secrets
+                  key: AZURE_OPENAI_ENDPOINT
+            - name: AZURE_OPENAI_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: booksearch-secrets
+                  key: AZURE_OPENAI_KEY
+          resources:
+            # 2 vCPU: the cross-encoder scores 25 candidates at up to 512 tokens
+            # each. On 1 vCPU that exceeded the ingress timeout once passage
+            # truncation was removed.
+            requests:
+              cpu: "1"
+              memory: 2Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
+          readinessProbe:
+            # Keeps the Service from routing to a replica that is still loading
+            # models. /ready returns 503 until warmup completes. 40 x 10s allows
+            # ~6.5min for a cold start before giving up.
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 40
+          livenessProbe:
+            # /health answers 200 as soon as the process is up. It must not
+            # depend on warmup, or a slow model load would restart the container
+            # in a loop.
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 20
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 5

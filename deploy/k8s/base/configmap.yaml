@@ -1,0 +1,34 @@
+# Non-secret configuration shared by the API and the embedding worker.
+# Selects the portable backends (Kafka + S3/MinIO) and points them at the
+# in-cluster service names created by the Helm releases.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: booksearch-config
+data:
+  # Backend selection
+  QUEUE_BACKEND: "kafka"
+  OBJECT_STORE_BACKEND: "s3"
+
+  # Kafka (Apache Kafka Helm release "kafka")
+  KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+  KAFKA_TOPIC: "embed-tasks"
+  KAFKA_GROUP_ID: "embed-workers"
+  KAFKA_PARTITIONS: "6"
+  KAFKA_IDLE_TIMEOUT: "30"
+
+  # Object store (MinIO Helm release "minio")
+  S3_ENDPOINT_URL: "http://minio:9000"
+  S3_BUCKET: "embeddings"
+  AWS_REGION: "us-east-1"
+
+  # Vector store (Qdrant Helm release "qdrant")
+  QDRANT_URL: "http://qdrant:6333"
+  QDRANT_COLLECTION: "books"
+
+  # Embedding worker tuning — the knob that keeps a pod inside its memory limit.
+  EMBED_DIM: "256"
+  EMBED_BATCH_SIZE: "32"
+  EMBED_MAX_SEQ_LEN: "1024"
+  BATCH_CHUNK_SIZE: "500"
+  EMBED_OUTPUT_MODE: "blob"

@@ -1,0 +1,24 @@
+# MinIO (Bitnami chart), S3-compatible object store for slices/shards/errors.
+#
+# Demo credentials only — override with a Secret in any real environment. The
+# worker reaches it in-cluster at http://minio:9000.
+
+mode: standalone
+
+auth:
+  rootUser: minioadmin
+  rootPassword: minioadmin
+
+defaultBuckets: "embeddings"
+
+persistence:
+  enabled: true
+  size: 20Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi

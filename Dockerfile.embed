@@ -12,6 +12,7 @@ COPY requirements.txt ./
 RUN python -m pip install --upgrade pip && \
     pip install --index-url https://download.pytorch.org/whl/cpu torch && \
     pip install sentence-transformers numpy einops \
+               confluent-kafka boto3 \
                azure-storage-blob azure-storage-queue \
                qdrant-client scikit-learn tqdm
 

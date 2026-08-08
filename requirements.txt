@@ -23,7 +23,14 @@ optimum-onnx>=0.1.0
 qdrant-client>=1.12.0
 scikit-learn>=1.5.0
 
-# Azure
+# Portable infrastructure backends (default deployment target)
+# Kafka work queue (librdkafka is bundled in the manylinux wheel) + S3/MinIO
+# object store. These drive the embedding backfill on Kubernetes.
+confluent-kafka>=2.5.0
+boto3>=1.35.0
+
+# Azure — the reference cloud backend, selected with QUEUE_BACKEND=azure /
+# OBJECT_STORE_BACKEND=azure. Kept so the original ACA/Blob path still works.
 azure-core>=1.32.0
 azure-identity>=1.19.0
 azure-storage-queue>=12.9.0

@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Local cluster overlay (kind / minikube). Build the images and load them into
+# the cluster, then `kubectl apply -k deploy/k8s/overlays/local`:
+#
+#   docker build -f Dockerfile.api   -t booksearch-api:local   .
+#   docker build -f Dockerfile.embed -t booksearch-embed:local .
+#   kind load docker-image booksearch-api:local booksearch-embed:local
+#
+# imagePullPolicy: Never forces the kubelet to use the loaded image instead of
+# trying to pull the tag from a registry.
+resources:
+  - ../../base
+
+images:
+  - name: booksearch-api
+    newTag: local
+  - name: booksearch-embed
+    newTag: local
+
+patches:
+  - target:
+      kind: Deployment
+      name: booksearch-api
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Never
+  - target:
+      kind: ScaledJob
+      name: embed-worker
+    patch: |-
+      - op: add
+        path: /spec/jobTargetRef/template/spec/containers/0/imagePullPolicy
+        value: Never

@@ -4,7 +4,7 @@
 
 Search 84,801 books by what they are *about*, not what they are called. Ask for *"a heist that goes wrong"* and the top hits are *Freezer Burn* and *Criminal: Coward* — neither shares a single word with the query.
 
-Under the hood: TF-IDF sparse retrieval fused with dense vector search (nomic-embed-text-v1.5) via Reciprocal Rank Fusion, plus an optional cross-encoder reranker — self-hosted on Qdrant, deployed to Azure Container Apps with full CI/CD.
+Under the hood: TF-IDF sparse retrieval fused with dense vector search (nomic-embed-text-v1.5) via Reciprocal Rank Fusion, plus an optional cross-encoder reranker — self-hosted on Qdrant. **Portable by design**: the whole system runs on vendor-neutral, cloud-native infrastructure (Kubernetes + KEDA, Apache Kafka, S3/MinIO), with Azure Container Apps kept as a reference cloud deployment. Full CI/CD.
 
 A **RAG pipeline** sits alongside search: natural-language Q&A grounded in retrieved
 books, with citation validation that rejects hallucinated titles before they reach
@@ -37,7 +37,7 @@ graph TD
     subgraph Data Pipeline
         GR[Goodreads dump<br/>100K single-source rows]
         HY[Text hygiene<br/>ftfy · langdetect]
-        EMB[Cloud Embedding<br/>ACA job · 30 replicas]
+        EMB[Cloud Embedding<br/>KEDA ScaledJob · 30 replicas]
         MIG[Index Load<br/>shards → vectors → Qdrant]
     end
 
@@ -113,25 +113,28 @@ flowchart LR
     F & G -->|load.py| H[(Qdrant)]
 ```
 
-**Embedding** uses a KEDA-scaled work queue with up to 30 Azure Container Apps
-replicas. Pre-sliced ~500-book inputs reduced per-worker memory growth from 429 MB
-to 4.9 MB, eliminating OOMKills; 84.8K books embedded in ~50 minutes.
+**Embedding** uses a KEDA-scaled work queue with up to 30 worker replicas. On
+Kubernetes this is a KEDA `ScaledJob` that scales 0→30 on **Apache Kafka**
+consumer-group lag; the same worker runs unchanged on Azure Container Apps
+against a Storage Queue (the reference cloud path). Pre-sliced ~500-book inputs
+reduced per-worker memory growth from 429 MB to 4.9 MB, eliminating OOMKills;
+84.8K books embedded in ~50 minutes.
 
 ```mermaid
 sequenceDiagram
     participant ETL as Enqueue Script
-    participant Q as Azure Storage Queue
-    participant W as ACA Job (scale 0→1)
-    participant Blob as Azure Blob Storage
+    participant Q as Kafka topic (embed-tasks)
+    participant W as Worker (KEDA ScaledJob, scale 0→N)
+    participant Blob as Object store (S3 / MinIO)
     participant QD as Qdrant
 
-    ETL->>Q: Enqueue N batch messages<br/>(start_idx, end_idx, blob_path)
+    ETL->>Q: Produce N slice tasks<br/>(start_idx, end_idx, blob_path)
     Note over W: Idle (0 replicas)
-    Q-->>W: KEDA trigger (message arrives)
+    Q-->>W: KEDA trigger (consumer-group lag > 0)
     W->>Blob: Download book slice [start, end)
     W->>W: Embed with nomic-embed-text-v1.5
     W->>QD: Upsert dense + sparse vectors
-    W->>Q: Delete message (ack)
+    W->>Q: Commit offset (ack)
     Note over W: Scale back to 0
 ```
 
@@ -247,14 +250,26 @@ Copy `.env.example` to `.env` and fill it in — it lists every variable the pro
 
 `src/` is the system: one package each for the API, Qdrant client, embedding
 model, indexing pipeline, reranker, RAG, query preprocessing, eval framework and
-ETL. `web/` is the Next.js frontend, `infra/` the Bicep templates, and
-`data/` the corpus, eval sets and ONNX model.
+ETL. `src/indexing/backends/` holds the pluggable queue (Kafka / Azure) and
+object-store (S3 / Azure) backends. `web/` is the Next.js frontend, `deploy/`
+the portable Kubernetes deployment (Helm for infra, Kustomize for the app),
+`infra/` the Azure Bicep reference templates, and `data/` the corpus, eval sets
+and ONNX model.
 
 The indexing pipeline is the substantial part: `src/indexing/worker.py` runs as a
-queue-driven Azure Container Apps job that scales 0→30 replicas, each embedding
-one slice of the corpus, and `src/indexing/assemble.py` stitches the resulting
-shards into the dense vector array and metadata that `src/indexing/load.py` fits
-the TF-IDF vectorizer over and uploads.
+queue-driven worker that scales 0→30 replicas (a KEDA `ScaledJob` on Kafka lag in
+Kubernetes, or an event-driven Azure Container Apps job), each embedding one slice
+of the corpus, and `src/indexing/assemble.py` stitches the resulting shards into
+the dense vector array and metadata that `src/indexing/load.py` fits the TF-IDF
+vectorizer over and uploads.
+
+### Deployment
+
+Portable by design — see **[deploy/README.md](deploy/README.md)** for the
+Kubernetes path (Helm-installed Kafka/Qdrant/MinIO/KEDA + Kustomize app manifests)
+and a local `docker-compose` stack. The Azure Container Apps Bicep in `infra/`
+remains a supported reference deployment; the same images run on either by
+setting `QUEUE_BACKEND` / `OBJECT_STORE_BACKEND`.
 
 ### Documentation
 
