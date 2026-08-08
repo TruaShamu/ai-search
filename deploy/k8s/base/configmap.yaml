@@ -35,3 +35,10 @@ data:
   EMBED_MAX_SEQ_LEN: "1024"
   BATCH_CHUNK_SIZE: "500"
   EMBED_OUTPUT_MODE: "blob"
+
+  # Observability (OpenTelemetry). Tracing is off unless an OTLP endpoint is
+  # set — point this at an in-cluster collector (e.g. an OpenTelemetry Collector
+  # or Jaeger with OTLP enabled) to turn it on. Left empty so the base is inert;
+  # override per-environment. The service name is set in code per component
+  # (booksearch-api / booksearch-embed), so it is intentionally not shared here.
+  OTEL_EXPORTER_OTLP_ENDPOINT: ""

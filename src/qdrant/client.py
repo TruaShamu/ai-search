@@ -13,6 +13,7 @@ from qdrant_client import QdrantClient, models
 from sentence_transformers import SentenceTransformer
 
 from src.reranker.config import rerank_fetch_k
+from src.telemetry import span
 
 logger = logging.getLogger(__name__)
 
@@ -197,56 +198,64 @@ class QdrantSearch:
         # Extra headroom so the ranked page we return is not cut on a score tie.
         window = fetch_k + TIE_BREAK_MARGIN
         query_filter = self._build_filter(year_min=year_min, year_max=year_max, tier=tier)
-        dense_vector = self.embed_query(query) if mode in {"vector", "hybrid"} else None
-        sparse_vector = self._build_sparse_query(query) if mode in {"keyword", "hybrid"} else None
+        with span("retrieval.embed_query", **{"search.mode": mode}):
+            dense_vector = self.embed_query(query) if mode in {"vector", "hybrid"} else None
+        with span("retrieval.build_sparse", **{"search.mode": mode}):
+            sparse_vector = self._build_sparse_query(query) if mode in {"keyword", "hybrid"} else None
 
         start = time.perf_counter()
-        if mode == "vector":
-            response = self.client.query_points(
-                collection_name=self.collection,
-                query=dense_vector,
-                using="dense",
-                query_filter=query_filter,
-                with_payload=True,
-                limit=window,
-            )
-        elif mode == "keyword":
-            response = self.client.query_points(
-                collection_name=self.collection,
-                query=sparse_vector,
-                using="sparse",
-                query_filter=query_filter,
-                with_payload=True,
-                limit=window,
-            )
-        elif mode == "hybrid":
-            prefetch_limit = max(fetch_k * 2, fetch_k)
-            response = self.client.query_points(
-                collection_name=self.collection,
-                prefetch=[
-                    models.Prefetch(query=dense_vector, using="dense", limit=prefetch_limit),
-                    models.Prefetch(query=sparse_vector, using="sparse", limit=prefetch_limit),
-                ],
-                query=models.FusionQuery(fusion=models.Fusion.RRF),
-                query_filter=query_filter,
-                with_payload=True,
-                limit=window,
-            )
-        else:
-            raise ValueError(f"Unsupported search mode: {mode}")
+        with span(
+            "retrieval.qdrant_query",
+            **{"search.mode": mode, "search.limit": window, "db.system": "qdrant"},
+        ):
+            if mode == "vector":
+                response = self.client.query_points(
+                    collection_name=self.collection,
+                    query=dense_vector,
+                    using="dense",
+                    query_filter=query_filter,
+                    with_payload=True,
+                    limit=window,
+                )
+            elif mode == "keyword":
+                response = self.client.query_points(
+                    collection_name=self.collection,
+                    query=sparse_vector,
+                    using="sparse",
+                    query_filter=query_filter,
+                    with_payload=True,
+                    limit=window,
+                )
+            elif mode == "hybrid":
+                prefetch_limit = max(fetch_k * 2, fetch_k)
+                response = self.client.query_points(
+                    collection_name=self.collection,
+                    prefetch=[
+                        models.Prefetch(query=dense_vector, using="dense", limit=prefetch_limit),
+                        models.Prefetch(query=sparse_vector, using="sparse", limit=prefetch_limit),
+                    ],
+                    query=models.FusionQuery(fusion=models.Fusion.RRF),
+                    query_filter=query_filter,
+                    with_payload=True,
+                    limit=window,
+                )
+            else:
+                raise ValueError(f"Unsupported search mode: {mode}")
 
         retrieval_latency_ms = round((time.perf_counter() - start) * 1000, 1)
         points = getattr(response, "points", response)
-        results = [self._format_point(point) for point in points]
-        # Make the cut ourselves, deterministically, rather than trusting the
-        # server's tie ordering (see TIE_BREAK_MARGIN).
-        results = self._stable_rank(results)[:fetch_k]
+        with span("retrieval.fusion_rank"):
+            results = [self._format_point(point) for point in points]
+            # Make the cut ourselves, deterministically, rather than trusting the
+            # server's tie ordering (see TIE_BREAK_MARGIN).
+            results = self._stable_rank(results)[:fetch_k]
 
         # Rerank if requested and reranker is available
         reranked = False
         rerank_latency_ms = 0
         if rerank and self.reranker and results:
-            rerank_result = self.reranker.rerank(query=query, candidates=results, top_k=top_k)
+            with span("rerank.cross_encoder", **{"rerank.candidates": len(results)}):
+                rerank_result = self.reranker.rerank(query=query, candidates=results, top_k=top_k)
             results = rerank_result["results"]
             rerank_latency_ms = rerank_result["latency_ms"]
             reranked = True

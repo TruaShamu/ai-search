@@ -53,6 +53,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Tracing is a no-op unless OTEL_EXPORTER_OTLP_ENDPOINT is set (see
+# src/telemetry.py). When set, this instruments the FastAPI app and outbound
+# httpx so every request is a trace with the retrieval pipeline as child spans.
+from src.telemetry import setup_telemetry  # noqa: E402
+
+setup_telemetry("booksearch-api", fastapi_app=app)
+
 
 class SearchMode(str, Enum):
     hybrid = "hybrid"
@@ -150,7 +157,9 @@ def search(
 
     if understand:
         qp = get_query_pipeline()
-        analysis = qp.process(q)
+        from src.telemetry import span
+        with span("query.understand", **{"query.text": q}):
+            analysis = qp.process(q)
         search_query = analysis.corrected
 
         query_info = {

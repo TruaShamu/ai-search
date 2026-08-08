@@ -4,7 +4,7 @@
 
 Search 84,801 books by what they are *about*, not what they are called. Ask for *"a heist that goes wrong"* and the top hits are *Freezer Burn* and *Criminal: Coward* — neither shares a single word with the query.
 
-Under the hood: TF-IDF sparse retrieval fused with dense vector search (nomic-embed-text-v1.5) via Reciprocal Rank Fusion, plus an optional cross-encoder reranker — self-hosted on Qdrant. **Portable by design**: the compute runs on vendor-neutral, cloud-native infrastructure (Kubernetes + KEDA, Apache Kafka), with images published to GHCR and Azure Container Apps kept as a reference cloud deployment. Object storage stays on managed Azure Blob (with a pluggable S3-compatible backend). Full CI/CD.
+Under the hood: TF-IDF sparse retrieval fused with dense vector search (nomic-embed-text-v1.5) via Reciprocal Rank Fusion, plus an optional cross-encoder reranker — self-hosted on Qdrant. **Portable by design**: the compute runs on vendor-neutral, cloud-native infrastructure (Kubernetes + KEDA, Apache Kafka), with images published to GHCR and Azure Container Apps kept as a reference cloud deployment. Object storage stays on managed Azure Blob (with a pluggable S3-compatible backend). Distributed tracing via OpenTelemetry (traces propagate across the Kafka queue). Full CI/CD.
 
 A **RAG pipeline** sits alongside search: natural-language Q&A grounded in retrieved
 books, with citation validation that rejects hallucinated titles before they reach
@@ -268,9 +268,18 @@ vectorizer over and uploads.
 Portable by design — see **[deploy/README.md](deploy/README.md)** for the
 Kubernetes path (Helm-installed Kafka/Qdrant/KEDA + Kustomize app manifests,
 images from GHCR, managed Azure Blob for object storage) and a local
-`docker-compose` stack (Redpanda + Azurite + Qdrant). The Azure Container Apps
-Bicep in `infra/` remains a supported reference deployment; the same images run
-on either by setting `QUEUE_BACKEND` / `OBJECT_STORE_BACKEND`.
+`docker-compose` stack (Redpanda + Azurite + Qdrant + Jaeger). The Azure
+Container Apps Bicep in `infra/` remains a supported reference deployment; the
+same images run on either by setting `QUEUE_BACKEND` / `OBJECT_STORE_BACKEND`.
+
+### Observability
+
+The API and worker are traced with **OpenTelemetry** (off unless
+`OTEL_EXPORTER_OTLP_ENDPOINT` is set — see [`src/telemetry.py`](src/telemetry.py)).
+A search is one trace through the retrieval pipeline; the embedding backfill is a
+single distributed trace that **propagates across the Kafka work queue** via W3C
+`traceparent` headers, so the enqueue and every worker that handles a slice share
+one trace. `docker compose` ships a Jaeger UI at `http://localhost:16686`.
 
 ### Documentation
 
