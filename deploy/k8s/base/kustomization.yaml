@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: booksearch
+
+resources:
+  - configmap.yaml
+  - secret.yaml
+  - api-deployment.yaml
+  - api-service.yaml
+  - api-hpa.yaml
+  - embed-scaledjob.yaml
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: booksearch
+    includeSelectors: false

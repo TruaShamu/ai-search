@@ -25,7 +25,6 @@ from __future__ import annotations
 import argparse
 import io
 import json
-import os
 import sys
 from pathlib import Path
 
@@ -40,10 +39,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--corpus", type=Path, default=DEFAULT_CORPUS, help="JSONL corpus the shards were built from")
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR, help="Where to write embeddings.npy + metadata.jsonl")
-    parser.add_argument("--container", default="embeddings", help="Blob container holding the shards")
-    parser.add_argument("--shard-prefix", default="shards", help="Blob prefix for shards")
-    parser.add_argument("--local-shards", type=Path, default=None, help="Read .npz shards from this directory instead of blob")
-    parser.add_argument("--connection-string", default=None, help="Azure storage connection string (or set AZURE_STORAGE_CONNECTION_STRING)")
+    parser.add_argument("--shard-prefix", default="shards", help="Object-store prefix for shards")
+    parser.add_argument("--local-shards", type=Path, default=None, help="Read .npz shards from this directory instead of the object store")
     parser.add_argument("--dim", type=int, default=256, help="Expected embedding dimension")
     parser.add_argument("--allow-partial", action="store_true", help="Proceed even if some eligible corpus records have no vector")
     return parser.parse_args()
@@ -61,19 +58,23 @@ def load_local_shards(directory: Path) -> list[tuple[int, np.ndarray, list[str]]
     return shards
 
 
-def load_blob_shards(connection_string: str, container: str, prefix: str) -> list[tuple[int, np.ndarray, list[str]]]:
-    from azure.storage.blob import BlobServiceClient
+def load_object_store_shards(prefix: str) -> list[tuple[int, np.ndarray, list[str]]]:
+    """Download every ``.npz`` shard under ``prefix`` from the configured store.
 
-    service = BlobServiceClient.from_connection_string(connection_string)
-    client = service.get_container_client(container)
-    names = sorted(b.name for b in client.list_blobs(name_starts_with=f"{prefix}/") if b.name.endswith(".npz"))
+    Backend is chosen by ``OBJECT_STORE_BACKEND`` (azure Blob by default, s3 as
+    the optional portable path) -- the same abstraction the worker writes through.
+    """
+    from src.indexing.backends import get_object_store
+
+    store = get_object_store()
+    names = [n for n in store.list(f"{prefix}/") if n.endswith(".npz")]
     if not names:
-        sys.exit(f"No shards found under {container}/{prefix}/")
-    print(f"Found {len(names)} shards in {container}/{prefix}/")
+        sys.exit(f"No shards found under {prefix}/")
+    print(f"Found {len(names)} shards under {prefix}/")
 
     shards = []
     for i, name in enumerate(names, 1):
-        raw = client.download_blob(name).readall()
+        raw = store.get_bytes(name)
         with np.load(io.BytesIO(raw), allow_pickle=True) as data:
             shards.append((int(data["start_idx"][0]), data["embeddings"], [str(w) for w in data["work_ids"]]))
         if i % 25 == 0 or i == len(names):
@@ -107,10 +108,7 @@ def main() -> None:
         print(f"Reading shards from {args.local_shards}...")
         shards = load_local_shards(args.local_shards)
     else:
-        connection_string = args.connection_string or os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-        if not connection_string:
-            sys.exit("Provide --connection-string or set AZURE_STORAGE_CONNECTION_STRING")
-        shards = load_blob_shards(connection_string, args.container, args.shard_prefix)
+        shards = load_object_store_shards(args.shard_prefix)
 
     # Deterministic order: by the slice offset the worker was given.
     shards.sort(key=lambda s: s[0])

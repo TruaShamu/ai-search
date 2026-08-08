@@ -1,0 +1,67 @@
+# Embedding worker as a KEDA ScaledJob — the Kubernetes analog of the ACA
+# event-driven Job that scaled 0→30 on Azure Storage Queue depth.
+#
+# KEDA watches consumer-group lag on the Kafka topic `embed-tasks` and starts
+# one Job (one pod) per unit of pending work, up to maxReplicaCount, then scales
+# back to zero when the backlog is drained. Each pod runs the worker in --loop
+# mode: it keeps pulling slices until the topic is idle for KAFKA_IDLE_TIMEOUT
+# seconds, then exits 0. A crash mid-slice leaves the offset uncommitted, so the
+# slice is redelivered — at-least-once, the same guarantee the Azure path had
+# via the visibility timeout.
+apiVersion: keda.sh/v1alpha1
+kind: ScaledJob
+metadata:
+  name: embed-worker
+spec:
+  jobTargetRef:
+    # A slice can take minutes; give a pod plenty of head-room and do not retry
+    # the whole Job (redelivery handles a failed slice at the message level).
+    backoffLimit: 2
+    activeDeadlineSeconds: 10800
+    template:
+      spec:
+        restartPolicy: Never
+        containers:
+          - name: embed-worker
+            image: ghcr.io/truashamu/booksearch-embed:latest
+            command: ["python", "-m", "src.indexing.worker", "--loop"]
+            envFrom:
+              - configMapRef:
+                  name: booksearch-config
+            env:
+              - name: PYTHONPATH
+                value: /app
+              - name: AZURE_STORAGE_CONNECTION_STRING
+                valueFrom:
+                  secretKeyRef:
+                    name: booksearch-secrets
+                    key: AZURE_STORAGE_CONNECTION_STRING
+            resources:
+              # 4Gi is the cap the OOMKill work was tuned against: the model
+              # plus a 32-wide batch fits, a 128-wide batch does not. Requests
+              # and limits are equal so the scheduler reserves the real
+              # footprint and the pod is not evicted under node pressure.
+              requests:
+                cpu: "1"
+                memory: 4Gi
+              limits:
+                cpu: "2"
+                memory: 4Gi
+  pollingInterval: 15          # how often KEDA checks Kafka lag
+  maxReplicaCount: 30          # same ceiling as the ACA job's 30 executions
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 5
+  # Do not kill a pod that is mid-slice when the lag drops; let it finish and
+  # exit on idle. A slice is not resumable, so eviction would just redo work.
+  scalingStrategy:
+    strategy: default
+  triggers:
+    - type: kafka
+      metadata:
+        bootstrapServers: kafka:9092
+        consumerGroup: embed-workers
+        topic: embed-tasks
+        # Start a worker as soon as a single slice is pending; add another for
+        # every 1 additional unit of lag, up to maxReplicaCount.
+        lagThreshold: "1"
+        offsetResetPolicy: earliest
