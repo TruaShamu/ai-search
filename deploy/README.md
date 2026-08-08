@@ -32,9 +32,16 @@ QUEUE_BACKEND=azure  OBJECT_STORE_BACKEND=azure
 deploy/
   helm/     third-party infra as pinned Helm charts (Kafka, Qdrant, KEDA)
   k8s/      first-party app as Kustomize (API Deployment/Service/HPA + embed ScaledJob)
-../infra/   Azure Bicep — the reference ACA deployment (still supported)
+../infra/terraform/   Azure platform as Terraform (RG, Storage, AKS, workload identity)
+../infra/*.bicep      the reference ACA deployment (still supported)
 ../docker-compose.yml   local one-machine stack (Redpanda + Azurite + Qdrant)
 ```
+
+The cloud substrate — resource group, storage account, the AKS cluster itself,
+and the passwordless **workload identity** the embedding worker uses to reach
+Blob storage — is provisioned with **Terraform** (`../infra/terraform`). Terraform
+stops at the cluster boundary: Helm installs the in-cluster dependencies and
+Kustomize deploys the app onto the cluster it created.
 
 The **Helm-for-infrastructure / Kustomize-for-application** split is deliberate:
 upstream dependencies come from their maintained charts pinned to a version, and

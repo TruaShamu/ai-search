@@ -25,6 +25,13 @@ data:
   STORAGE_CONTAINER: "embeddings"
   SHARD_PREFIX: "shards"
 
+  # Passwordless Blob auth: set to the Terraform `storage_account_url` output
+  # (https://<account>.blob.core.windows.net/). When set and no connection
+  # string is provided, the worker authenticates with its federated workload
+  # identity via DefaultAzureCredential. Left blank so local/Azurite (which uses
+  # the connection-string secret) works out of the box.
+  AZURE_STORAGE_ACCOUNT_URL: ""
+
   # Vector store (Qdrant Helm release "qdrant")
   QDRANT_URL: "http://qdrant:6333"
   QDRANT_COLLECTION: "books"

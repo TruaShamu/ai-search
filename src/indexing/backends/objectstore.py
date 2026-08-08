@@ -124,24 +124,46 @@ class S3ObjectStore(ObjectStore):
 # Azure Blob                                                                   #
 # --------------------------------------------------------------------------- #
 class AzureBlobStore(ObjectStore):
-    """The original Azure Blob container, kept as a reference cloud path."""
+    """The Azure Blob container object store.
+
+    Two auth modes, chosen by which env var is set: ``AZURE_STORAGE_CONNECTION_STRING``
+    for the emulator / local dev, or ``AZURE_STORAGE_ACCOUNT_URL`` for passwordless
+    Entra ID auth via ``DefaultAzureCredential`` (the worker's federated workload
+    identity in AKS — see infra/terraform).
+    """
 
     def __init__(
         self,
         *,
         container: str | None = None,
         connection_string: str | None = None,
+        account_url: str | None = None,
     ) -> None:
         self.container = container or os.getenv("STORAGE_CONTAINER", "embeddings")
         connection_string = connection_string or os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-        if not connection_string:
-            raise RuntimeError("AZURE_STORAGE_CONNECTION_STRING is required for the azure object store")
+        account_url = account_url or os.getenv("AZURE_STORAGE_ACCOUNT_URL")
 
         from azure.storage.blob import BlobServiceClient  # noqa: PLC0415
 
-        self._client = BlobServiceClient.from_connection_string(connection_string).get_container_client(
-            self.container
-        )
+        if connection_string:
+            # Local / emulator path: Azurite and dev accounts hand out a key.
+            service = BlobServiceClient.from_connection_string(connection_string)
+        elif account_url:
+            # Passwordless path: authenticate to <account>.blob.core.windows.net
+            # with Entra ID. In AKS DefaultAzureCredential resolves to the
+            # worker's federated workload identity (see infra/terraform); locally
+            # it falls back to `az login` / environment credentials. No secret,
+            # and it works against an account with shared keys disabled.
+            from azure.identity import DefaultAzureCredential  # noqa: PLC0415
+
+            service = BlobServiceClient(account_url, credential=DefaultAzureCredential())
+        else:
+            raise RuntimeError(
+                "Azure Blob store needs AZURE_STORAGE_CONNECTION_STRING (emulator/local) "
+                "or AZURE_STORAGE_ACCOUNT_URL (passwordless via workload identity)"
+            )
+
+        self._client = service.get_container_client(self.container)
         try:
             self._client.create_container()
         except Exception:  # noqa: BLE001 - already exists

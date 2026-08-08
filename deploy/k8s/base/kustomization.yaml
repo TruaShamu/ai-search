@@ -6,6 +6,7 @@ namespace: booksearch
 resources:
   - configmap.yaml
   - secret.yaml
+  - serviceaccount.yaml
   - api-deployment.yaml
   - api-service.yaml
   - api-hpa.yaml
