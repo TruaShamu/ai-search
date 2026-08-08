@@ -37,9 +37,8 @@ deployment onto vendor-neutral Kubernetes:
 The queue and compute move fully off Azure (Kafka + Kubernetes); object storage
 stays on managed **Azure Blob** so no AWS account is needed, while the backend
 stays pluggable. The application selects backends purely through the
-`booksearch-config` ConfigMap, so the same images run against the reference ACA
-path by flipping `QUEUE_BACKEND` / `OBJECT_STORE_BACKEND` — see the Bicep in
-[`../../infra`](../../infra) for that deployment, which remains supported.
+`booksearch-config` ConfigMap, so the same images run against any supported
+backend by flipping `QUEUE_BACKEND` / `OBJECT_STORE_BACKEND`.
 
 ## Deploy (local, kind)
 

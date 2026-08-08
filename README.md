@@ -4,7 +4,7 @@
 
 Search 84,801 books by what they are *about*, not what they are called. Ask for *"a heist that goes wrong"* and the top hits are *Freezer Burn* and *Criminal: Coward* — neither shares a single word with the query.
 
-Under the hood: TF-IDF sparse retrieval fused with dense vector search (nomic-embed-text-v1.5) via Reciprocal Rank Fusion, plus an optional cross-encoder reranker — self-hosted on Qdrant. **Portable by design**: the compute runs on vendor-neutral, cloud-native infrastructure (Kubernetes + KEDA, Apache Kafka), with images published to GHCR and Azure Container Apps kept as a reference cloud deployment. Object storage stays on managed Azure Blob (with a pluggable S3-compatible backend). Distributed tracing via OpenTelemetry (traces propagate across the Kafka queue). Full CI/CD.
+Under the hood: TF-IDF sparse retrieval fused with dense vector search (nomic-embed-text-v1.5) via Reciprocal Rank Fusion, plus an optional cross-encoder reranker — self-hosted on Qdrant. **Portable by design**: the compute runs on vendor-neutral, cloud-native infrastructure (Kubernetes + KEDA, Apache Kafka), with images published to GHCR and the Azure platform provisioned as code with Terraform. Object storage stays on managed Azure Blob (with a pluggable S3-compatible backend). Distributed tracing via OpenTelemetry (traces propagate across the Kafka queue). Full CI/CD.
 
 A **RAG pipeline** sits alongside search: natural-language Q&A grounded in retrieved
 books, with citation validation that rejects hallucinated titles before they reach
@@ -115,8 +115,8 @@ flowchart LR
 
 **Embedding** uses a KEDA-scaled work queue with up to 30 worker replicas. On
 Kubernetes this is a KEDA `ScaledJob` that scales 0→30 on **Apache Kafka**
-consumer-group lag; the same worker runs unchanged on Azure Container Apps
-against a Storage Queue (the reference cloud path). Pre-sliced ~500-book inputs
+consumer-group lag; the queue backend is pluggable (`src/indexing/backends/`).
+Pre-sliced ~500-book inputs
 reduced per-worker memory growth from 429 MB to 4.9 MB, eliminating OOMKills;
 84.8K books embedded in ~50 minutes.
 
@@ -254,12 +254,11 @@ ETL. `src/indexing/backends/` holds the pluggable queue (Kafka / Azure) and
 object-store (Azure Blob / S3) backends. `web/` is the Next.js frontend, `deploy/`
 the portable Kubernetes deployment (Helm for infra, Kustomize for the app),
 `infra/terraform/` the Azure platform as Terraform (AKS, storage, workload
-identity), `infra/*.bicep` the Azure Container Apps reference templates, and
-`data/` the corpus, eval sets and ONNX model.
+identity), and `data/` the corpus, eval sets and ONNX model.
 
 The indexing pipeline is the substantial part: `src/indexing/worker.py` runs as a
 queue-driven worker that scales 0→30 replicas (a KEDA `ScaledJob` on Kafka lag in
-Kubernetes, or an event-driven Azure Container Apps job), each embedding one slice
+Kubernetes), each embedding one slice
 of the corpus, and `src/indexing/assemble.py` stitches the resulting shards into
 the dense vector array and metadata that `src/indexing/load.py` fits the TF-IDF
 vectorizer over and uploads.
@@ -273,14 +272,14 @@ images from GHCR, managed Azure Blob for object storage) and a local
 substrate that Kubernetes runs on — AKS, the storage account, and the
 passwordless **workload identity** the worker uses for Blob access — is
 provisioned with **Terraform**
-(**[infra/terraform/README.md](infra/terraform/README.md)**). The Azure Container
-Apps Bicep in `infra/` remains a supported reference deployment; the same images
-run on either by setting `QUEUE_BACKEND` / `OBJECT_STORE_BACKEND`.
+(**[infra/terraform/README.md](infra/terraform/README.md)**).
 
-**CI/CD** is a two-stage GitHub Actions pipeline: `publish-images.yml` builds and
-pushes the API and worker images to GHCR on every push to `master`, then
-`deploy.yml` ("Deploy to AKS") pins the Kustomize image tags to that commit SHA
-and rolls it out to the AKS cluster, waiting on the API readiness probe.
+**CI/CD** is a multi-stage GitHub Actions pipeline: `terraform.yml` formats,
+validates, and — once cloud credentials are configured — plans and applies the
+Terraform infra; `publish-images.yml` builds and pushes the API and worker images
+to GHCR on every push to `master`; then `deploy.yml` ("Deploy to AKS") pins the
+Kustomize image tags to that commit SHA and rolls it out to the AKS cluster,
+waiting on the API readiness probe.
 
 ### Observability
 

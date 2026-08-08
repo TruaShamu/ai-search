@@ -30,7 +30,7 @@ scikit-learn>=1.5.0
 confluent-kafka>=2.5.0
 boto3>=1.35.0
 
-# Azure — default object store (Blob) plus the reference ACA queue path,
+# Azure — default object store (Blob) plus the pluggable Storage Queue backend,
 # selected with OBJECT_STORE_BACKEND=azure (default) / QUEUE_BACKEND=azure.
 azure-core>=1.32.0
 azure-identity>=1.19.0

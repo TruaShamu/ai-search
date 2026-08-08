@@ -1,0 +1,169 @@
+name: Terraform
+
+# CI/CD for the Azure platform defined in infra/terraform (RG, Storage, AKS,
+# workload identity) and its bootstrap remote-state module.
+#
+# Two tiers, so PRs always get useful feedback without any cloud credentials:
+#
+#   validate  — fmt -check + init -backend=false + validate, for both the root
+#               module and bootstrap. Runs on every PR/push. No secrets needed.
+#   plan      — terraform plan against the real remote state, commented into the
+#               job summary. Runs on PRs.
+#   apply     — terraform apply on push to master (or manual dispatch).
+#
+# plan/apply are gated on the TF_STATE_STORAGE_ACCOUNT repository variable: until
+# the remote state account exists (created once by `infra/terraform/bootstrap`)
+# and the backend/cloud vars are set, those jobs skip neutrally instead of
+# failing every push. See infra/terraform/README.md for the one-time setup and
+# the required variables/secrets listed at the bottom of this file.
+
+on:
+  pull_request:
+    paths:
+      - "infra/terraform/**"
+      - ".github/workflows/terraform.yml"
+  push:
+    branches: [master]
+    paths:
+      - "infra/terraform/**"
+      - ".github/workflows/terraform.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  TF_VERSION: "1.10.5"
+  ROOT_DIR: infra/terraform
+  BOOTSTRAP_DIR: infra/terraform/bootstrap
+
+jobs:
+  validate:
+    # Offline checks — no Azure backend or credentials. fmt keeps the whole tree
+    # canonical; validate runs with -backend=false so no state account is needed.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: terraform fmt (check, recursive)
+        run: terraform -chdir=$ROOT_DIR fmt -check -recursive
+
+      - name: Validate root module
+        run: |
+          terraform -chdir=$ROOT_DIR init -backend=false -input=false
+          terraform -chdir=$ROOT_DIR validate
+
+      - name: Validate bootstrap module
+        run: |
+          terraform -chdir=$BOOTSTRAP_DIR init -backend=false -input=false
+          terraform -chdir=$BOOTSTRAP_DIR validate
+
+  plan:
+    # Real plan against remote state. Gated on the state account being configured
+    # so it skips neutrally until the platform is bootstrapped.
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name == 'pull_request' && vars.TF_STATE_STORAGE_ACCOUNT != ''
+    environment: infra-plan
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Export ARM_* from AZURE_CREDENTIALS
+        # azurerm provider + azurerm backend authenticate from ARM_* env vars.
+        # AZURE_CREDENTIALS is the azure/login service-principal JSON
+        # ({clientId, clientSecret, subscriptionId, tenantId}); AAD auth is used
+        # for the state account (its shared keys may be disabled).
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          echo "ARM_CLIENT_ID=$(jq -r .clientId <<<"$AZURE_CREDENTIALS")" >> "$GITHUB_ENV"
+          echo "ARM_CLIENT_SECRET=$(jq -r .clientSecret <<<"$AZURE_CREDENTIALS")" >> "$GITHUB_ENV"
+          echo "ARM_SUBSCRIPTION_ID=$(jq -r .subscriptionId <<<"$AZURE_CREDENTIALS")" >> "$GITHUB_ENV"
+          echo "ARM_TENANT_ID=$(jq -r .tenantId <<<"$AZURE_CREDENTIALS")" >> "$GITHUB_ENV"
+          echo "ARM_USE_AZUREAD=true" >> "$GITHUB_ENV"
+
+      - name: terraform init
+        run: |
+          terraform -chdir=$ROOT_DIR init -input=false \
+            -backend-config="resource_group_name=${{ vars.TF_STATE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ vars.TF_STATE_STORAGE_ACCOUNT }}" \
+            -backend-config="container_name=${{ vars.TF_STATE_CONTAINER || 'tfstate' }}" \
+            -backend-config="key=booksearch.tfstate"
+
+      - name: terraform plan
+        id: plan
+        run: |
+          terraform -chdir=$ROOT_DIR plan -input=false -no-color \
+            -var="subscription_id=${ARM_SUBSCRIPTION_ID}" \
+            -var="storage_account_name=${{ vars.TF_STORAGE_ACCOUNT_NAME }}" \
+            2>&1 | tee plan.txt
+
+      - name: Publish plan to job summary
+        if: always()
+        run: |
+          {
+            echo '### Terraform plan';
+            echo '```terraform';
+            cat plan.txt;
+            echo '```';
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  apply:
+    # Apply on merge to master or a manual dispatch. Same gating as plan.
+    runs-on: ubuntu-latest
+    needs: validate
+    if: >-
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      vars.TF_STATE_STORAGE_ACCOUNT != ''
+    environment: infra-apply
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Export ARM_* from AZURE_CREDENTIALS
+        env:
+          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+        run: |
+          echo "ARM_CLIENT_ID=$(jq -r .clientId <<<"$AZURE_CREDENTIALS")" >> "$GITHUB_ENV"
+          echo "ARM_CLIENT_SECRET=$(jq -r .clientSecret <<<"$AZURE_CREDENTIALS")" >> "$GITHUB_ENV"
+          echo "ARM_SUBSCRIPTION_ID=$(jq -r .subscriptionId <<<"$AZURE_CREDENTIALS")" >> "$GITHUB_ENV"
+          echo "ARM_TENANT_ID=$(jq -r .tenantId <<<"$AZURE_CREDENTIALS")" >> "$GITHUB_ENV"
+          echo "ARM_USE_AZUREAD=true" >> "$GITHUB_ENV"
+
+      - name: terraform init
+        run: |
+          terraform -chdir=$ROOT_DIR init -input=false \
+            -backend-config="resource_group_name=${{ vars.TF_STATE_RESOURCE_GROUP }}" \
+            -backend-config="storage_account_name=${{ vars.TF_STATE_STORAGE_ACCOUNT }}" \
+            -backend-config="container_name=${{ vars.TF_STATE_CONTAINER || 'tfstate' }}" \
+            -backend-config="key=booksearch.tfstate"
+
+      - name: terraform apply
+        run: |
+          terraform -chdir=$ROOT_DIR apply -input=false -auto-approve \
+            -var="subscription_id=${ARM_SUBSCRIPTION_ID}" \
+            -var="storage_account_name=${{ vars.TF_STORAGE_ACCOUNT_NAME }}"
+
+# ── One-time configuration (see infra/terraform/README.md) ────────────────────
+# After running the bootstrap module once to create the remote-state account,
+# set these so plan/apply activate:
+#
+#   Repo variable  TF_STATE_RESOURCE_GROUP   bootstrap `resource_group_name`
+#   Repo variable  TF_STATE_STORAGE_ACCOUNT  bootstrap `storage_account_name`
+#   Repo variable  TF_STATE_CONTAINER        state container (default: tfstate)
+#   Repo variable  TF_STORAGE_ACCOUNT_NAME   globally-unique embeddings account
+#   Repo secret    AZURE_CREDENTIALS         service-principal JSON (azure/login)
+#
+# The service principal needs Contributor on the subscription/RG and Storage
+# Blob Data Contributor on the state account (ARM_USE_AZUREAD auth).
