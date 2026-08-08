@@ -14,7 +14,9 @@ RUN python -m pip install --upgrade pip && \
     pip install sentence-transformers numpy einops \
                confluent-kafka boto3 \
                azure-storage-blob azure-storage-queue \
-               qdrant-client scikit-learn tqdm
+               qdrant-client scikit-learn tqdm \
+               opentelemetry-api opentelemetry-sdk \
+               opentelemetry-exporter-otlp-proto-http
 
 COPY src ./src
 
