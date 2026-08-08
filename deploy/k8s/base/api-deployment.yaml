@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
         - name: booksearch-api
-          image: booksearch-api:latest
+          image: ghcr.io/truashamu/booksearch-api:latest
           ports:
             - containerPort: 8000
           envFrom:

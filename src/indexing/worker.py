@@ -2,17 +2,17 @@
 books, and either writes dense shards to the object store or upserts directly to
 Qdrant.
 
-Architecture (portable default):
+Architecture (portable compute):
     Kafka topic → worker (KEDA ScaledJob, scale 0→N on lag) → embed slice →
-    write shard to S3/MinIO (or upsert to Qdrant) → commit offset
+    write shard to the object store (or upsert to Qdrant) → commit offset
 
 The queue and object store are pluggable (see ``src.indexing.backends``):
 
     QUEUE_BACKEND         kafka (default) | azure
-    OBJECT_STORE_BACKEND  s3 (default)    | azure
+    OBJECT_STORE_BACKEND  azure (default) | s3
 
-so the same worker runs on Kafka + MinIO in a Kubernetes cluster or on Azure
-Storage Queue + Blob, with no code change.
+so the same worker runs on Kafka in a Kubernetes cluster (with Azure Blob or an
+S3-compatible store) or on Azure Storage Queue + Blob, with no code change.
 
 Message format (JSON):
     {

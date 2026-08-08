@@ -4,7 +4,7 @@
 
 Search 84,801 books by what they are *about*, not what they are called. Ask for *"a heist that goes wrong"* and the top hits are *Freezer Burn* and *Criminal: Coward* — neither shares a single word with the query.
 
-Under the hood: TF-IDF sparse retrieval fused with dense vector search (nomic-embed-text-v1.5) via Reciprocal Rank Fusion, plus an optional cross-encoder reranker — self-hosted on Qdrant. **Portable by design**: the whole system runs on vendor-neutral, cloud-native infrastructure (Kubernetes + KEDA, Apache Kafka, S3/MinIO), with Azure Container Apps kept as a reference cloud deployment. Full CI/CD.
+Under the hood: TF-IDF sparse retrieval fused with dense vector search (nomic-embed-text-v1.5) via Reciprocal Rank Fusion, plus an optional cross-encoder reranker — self-hosted on Qdrant. **Portable by design**: the compute runs on vendor-neutral, cloud-native infrastructure (Kubernetes + KEDA, Apache Kafka), with images published to GHCR and Azure Container Apps kept as a reference cloud deployment. Object storage stays on managed Azure Blob (with a pluggable S3-compatible backend). Full CI/CD.
 
 A **RAG pipeline** sits alongside search: natural-language Q&A grounded in retrieved
 books, with citation validation that rejects hallucinated titles before they reach
@@ -125,7 +125,7 @@ sequenceDiagram
     participant ETL as Enqueue Script
     participant Q as Kafka topic (embed-tasks)
     participant W as Worker (KEDA ScaledJob, scale 0→N)
-    participant Blob as Object store (S3 / MinIO)
+    participant Blob as Object store (Azure Blob / S3)
     participant QD as Qdrant
 
     ETL->>Q: Produce N slice tasks<br/>(start_idx, end_idx, blob_path)
@@ -251,7 +251,7 @@ Copy `.env.example` to `.env` and fill it in — it lists every variable the pro
 `src/` is the system: one package each for the API, Qdrant client, embedding
 model, indexing pipeline, reranker, RAG, query preprocessing, eval framework and
 ETL. `src/indexing/backends/` holds the pluggable queue (Kafka / Azure) and
-object-store (S3 / Azure) backends. `web/` is the Next.js frontend, `deploy/`
+object-store (Azure Blob / S3) backends. `web/` is the Next.js frontend, `deploy/`
 the portable Kubernetes deployment (Helm for infra, Kustomize for the app),
 `infra/` the Azure Bicep reference templates, and `data/` the corpus, eval sets
 and ONNX model.
@@ -266,10 +266,11 @@ vectorizer over and uploads.
 ### Deployment
 
 Portable by design — see **[deploy/README.md](deploy/README.md)** for the
-Kubernetes path (Helm-installed Kafka/Qdrant/MinIO/KEDA + Kustomize app manifests)
-and a local `docker-compose` stack. The Azure Container Apps Bicep in `infra/`
-remains a supported reference deployment; the same images run on either by
-setting `QUEUE_BACKEND` / `OBJECT_STORE_BACKEND`.
+Kubernetes path (Helm-installed Kafka/Qdrant/KEDA + Kustomize app manifests,
+images from GHCR, managed Azure Blob for object storage) and a local
+`docker-compose` stack (Redpanda + Azurite + Qdrant). The Azure Container Apps
+Bicep in `infra/` remains a supported reference deployment; the same images run
+on either by setting `QUEUE_BACKEND` / `OBJECT_STORE_BACKEND`.
 
 ### Documentation
 

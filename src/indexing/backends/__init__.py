@@ -4,11 +4,12 @@ The embedding backfill talks to two pieces of infrastructure: a work *queue*
 that hands out slice tasks, and an *object store* that holds the input slices,
 the dense shards, and failure diagnostics. Both were originally hard-wired to
 Azure (Storage Queue + Blob). They are now addressed through small interfaces so
-the same pipeline runs on Kafka + S3/MinIO (the portable default) or on Azure
-(the reference cloud deployment), selected entirely by environment variables.
+the same pipeline runs on Kafka (the portable work queue) with either Azure Blob
+or an S3-compatible object store, or on the reference Azure deployment, selected
+entirely by environment variables.
 
     QUEUE_BACKEND         kafka (default) | azure
-    OBJECT_STORE_BACKEND  s3 (default)    | azure
+    OBJECT_STORE_BACKEND  azure (default) | s3
 
 Nothing here imports a backend's client library at module import time -- each
 concrete backend imports its SDK lazily inside ``__init__`` -- so importing this

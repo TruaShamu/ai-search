@@ -1,13 +1,14 @@
-# Local, cloud-agnostic stack: the same components the Kubernetes deployment
-# runs, but on one machine. Brings up the portable infra (Kafka + MinIO +
-# Qdrant); the API and an embed worker are opt-in behind the "app" profile
-# because the API image bakes in index artifacts that are not in git.
+# Local, cloud-agnostic-*compute* stack: the same component types the Kubernetes
+# deployment runs, on one machine. Kafka (Redpanda stand-in) + Qdrant + Azurite
+# (the official Azure Blob emulator — object storage stays on Azure Blob, so no
+# AWS/MinIO dependency). The API and an embed worker are opt-in behind the "app"
+# profile because the API image bakes in index artifacts that are not in git.
 #
-#   docker compose up -d                 # infra only: kafka, minio, qdrant
+#   docker compose up -d                 # infra only: kafka, qdrant, azurite
 #   docker compose --profile app up -d   # + api and a single embed worker
 #
-# Host tools reach Kafka on localhost:19092 and MinIO on localhost:9000;
-# in-network containers use kafka:9092 and minio:9000.
+# Host tools reach Kafka on localhost:19092 and Azurite Blob on localhost:10000;
+# in-network containers use kafka:9092 and azurite:10000.
 
 services:
   kafka:
@@ -31,19 +32,15 @@ services:
       timeout: 5s
       retries: 10
 
-  minio:
-    image: minio/minio:RELEASE.2024-09-22T00-33-43Z
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:3.32.0
+    command: ["azurite-blob", "--blobHost", "0.0.0.0", "--blobPort", "10000", "--skipApiVersionCheck"]
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "10000:10000"
     volumes:
-      - minio-data:/data
+      - azurite-data:/data
     healthcheck:
-      test: ["CMD-SHELL", "mc ready local || exit 1"]
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 10000 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -79,23 +76,22 @@ services:
     command: ["python", "-m", "src.indexing.worker", "--loop"]
     environment:
       QUEUE_BACKEND: kafka
-      OBJECT_STORE_BACKEND: s3
+      OBJECT_STORE_BACKEND: azure
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       KAFKA_TOPIC: embed-tasks
       KAFKA_GROUP_ID: embed-workers
-      S3_ENDPOINT_URL: http://minio:9000
-      S3_BUCKET: embeddings
-      AWS_ACCESS_KEY_ID: minioadmin
-      AWS_SECRET_ACCESS_KEY: minioadmin
-      AWS_REGION: us-east-1
+      # Azurite's well-known dev account (public, not a secret). Blob endpoint
+      # points at the in-network azurite service.
+      AZURE_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
+      STORAGE_CONTAINER: embeddings
       QDRANT_URL: http://qdrant:6333
       EMBED_OUTPUT_MODE: blob
     depends_on:
       kafka:
         condition: service_healthy
-      minio:
+      azurite:
         condition: service_healthy
 
 volumes:
-  minio-data:
+  azurite-data:
   qdrant-data:

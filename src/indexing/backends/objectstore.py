@@ -4,10 +4,11 @@ The backfill reads pre-cut corpus slices and writes dense ``.npz`` shards plus
 failure diagnostics. That IO used to be Azure Blob only; it now goes through a
 tiny interface with two backends:
 
-* :class:`S3ObjectStore`   -- portable default. Talks to any S3-compatible
-  endpoint via boto3, so the same code addresses AWS S3, MinIO in-cluster, or
-  MinIO in docker-compose by setting ``S3_ENDPOINT_URL``.
-* :class:`AzureBlobStore`  -- the original Azure Blob container.
+* :class:`AzureBlobStore`  -- default. The managed Azure Blob container the
+  deployment runs against; locally, the Azurite emulator stands in for it.
+* :class:`S3ObjectStore`   -- optional, portable. Talks to any S3-compatible
+  endpoint via boto3, so the same code can address AWS S3 or MinIO by setting
+  ``S3_ENDPOINT_URL``. Kept to demonstrate the abstraction is not Azure-bound.
 
 Both expose four operations the pipeline needs::
 
@@ -163,10 +164,10 @@ class AzureBlobStore(ObjectStore):
 # Factory                                                                      #
 # --------------------------------------------------------------------------- #
 def get_object_store(backend: str | None = None, **kwargs) -> ObjectStore:
-    """Construct the store named by ``OBJECT_STORE_BACKEND`` (default ``s3``)."""
-    backend = (backend or os.getenv("OBJECT_STORE_BACKEND", "s3")).strip().lower()
-    if backend in ("s3", "minio"):
-        return S3ObjectStore(**kwargs)
+    """Construct the store named by ``OBJECT_STORE_BACKEND`` (default ``azure``)."""
+    backend = (backend or os.getenv("OBJECT_STORE_BACKEND", "azure")).strip().lower()
     if backend in ("azure", "azure-blob", "blob"):
         return AzureBlobStore(**kwargs)
-    raise ValueError(f"Unknown OBJECT_STORE_BACKEND '{backend}' (expected 's3' or 'azure')")
+    if backend in ("s3", "minio"):
+        return S3ObjectStore(**kwargs)
+    raise ValueError(f"Unknown OBJECT_STORE_BACKEND '{backend}' (expected 'azure' or 's3')")

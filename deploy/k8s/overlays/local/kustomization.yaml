@@ -8,15 +8,18 @@ kind: Kustomization
 #   docker build -f Dockerfile.embed -t booksearch-embed:local .
 #   kind load docker-image booksearch-api:local booksearch-embed:local
 #
-# imagePullPolicy: Never forces the kubelet to use the loaded image instead of
-# trying to pull the tag from a registry.
+# The base uses ghcr.io/truashamu/* images; here we remap those names to plain
+# local tags. imagePullPolicy: Never forces the kubelet to use the loaded image
+# instead of trying to pull from GHCR.
 resources:
   - ../../base
 
 images:
-  - name: booksearch-api
+  - name: ghcr.io/truashamu/booksearch-api
+    newName: booksearch-api
     newTag: local
-  - name: booksearch-embed
+  - name: ghcr.io/truashamu/booksearch-embed
+    newName: booksearch-embed
     newTag: local
 
 patches:

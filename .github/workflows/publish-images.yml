@@ -1,0 +1,96 @@
+name: Publish images to GHCR
+
+# Builds and pushes the two application images to the GitHub Container Registry
+# so the Kubernetes deployment (deploy/k8s) can pull them without any Azure
+# registry access. The ACA reference path keeps using ACR (see deploy.yml); this
+# workflow is the portable, cloud-neutral registry path.
+#
+#   ghcr.io/truashamu/booksearch-api    -- FastAPI search service
+#   ghcr.io/truashamu/booksearch-embed  -- embedding worker (KEDA ScaledJob)
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'src/**'
+      - 'Dockerfile.api'
+      - 'Dockerfile.embed'
+      - 'requirements.txt'
+      - '.github/workflows/publish-images.yml'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/booksearch
+
+jobs:
+  # The worker image is self-contained (source + pip only), so it builds with
+  # nothing but the checkout and GITHUB_TOKEN.
+  embed:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push embed image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.embed
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-embed:latest
+            ${{ env.IMAGE_PREFIX }}-embed:${{ github.sha }}
+
+  # The API image bakes in index artifacts that are not in git, so it downloads
+  # them from Blob first (same step deploy.yml uses for ACA).
+  api:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Download model artifacts from Blob Storage
+        run: |
+          mkdir -p data/index data/models/reranker-onnx
+          az storage blob download \
+            --account-name booksearchblobs --container-name models \
+            --name tfidf_vectorizer.pkl --file data/index/tfidf_vectorizer.pkl \
+            --account-key "${{ secrets.STORAGE_ACCOUNT_KEY }}"
+          az storage blob download-batch \
+            --account-name booksearchblobs --source models \
+            --pattern "reranker-onnx/*" --destination data/models \
+            --account-key "${{ secrets.STORAGE_ACCOUNT_KEY }}"
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.api
+          push: true
+          tags: |
+            ${{ env.IMAGE_PREFIX }}-api:latest
+            ${{ env.IMAGE_PREFIX }}-api:${{ github.sha }}

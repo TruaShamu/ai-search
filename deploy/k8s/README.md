@@ -1,14 +1,17 @@
 # Application manifests (Kustomize)
 
 First-party application deployment: the FastAPI search service and the embedding
-worker. Third-party infrastructure (Kafka, Qdrant, MinIO, KEDA) is installed
-separately from Helm charts — see [`../helm`](../helm/README.md). Deploy the
-infra first; this layer assumes those in-cluster service names exist.
+worker. Third-party infrastructure (Kafka, Qdrant, KEDA) is installed separately
+from Helm charts — see [`../helm`](../helm/README.md). Deploy the infra first;
+this layer assumes those in-cluster service names exist. The object store is
+managed Azure Blob (connection string in `secret.yaml`), not an in-cluster
+service. Images are pulled from GHCR (`ghcr.io/<owner>/booksearch-{api,embed}`);
+the local overlay remaps them to locally-built tags.
 
 ```
 base/
   configmap.yaml         backend selection + service endpoints + worker tuning
-  secret.yaml            demo credentials (replace in any real cluster)
+  secret.yaml            demo credentials incl. Blob connection string (replace in any real cluster)
   api-deployment.yaml    FastAPI service; readiness /ready, liveness /health
   api-service.yaml       ClusterIP :80 -> :8000
   api-hpa.yaml           CPU autoscale 1 -> 3
@@ -27,20 +30,24 @@ deployment onto vendor-neutral Kubernetes:
 | `booksearch-api` container app, `minReplicas:1 maxReplicas:3` | `Deployment` + `Service` + `HPA` (1→3), identical probes and 2 vCPU / 4Gi |
 | `embed-worker` event Job, Storage-Queue trigger, `maxExecutions:30` | **KEDA `ScaledJob`**, Kafka-lag trigger, `maxReplicaCount:30` |
 | Azure Storage Queue | Apache Kafka topic `embed-tasks` |
-| Azure Blob | MinIO / S3 (`OBJECT_STORE_BACKEND=s3`) |
+| Azure Blob | Azure Blob (default) — pluggable to S3 via `OBJECT_STORE_BACKEND=s3` |
 | Azure Files–backed Qdrant | Qdrant StatefulSet + PVC (Helm) |
+| ACR image registry | GHCR (`ghcr.io/<owner>/booksearch-*`) |
 
-The application selects Kafka + S3 purely through the `booksearch-config`
-ConfigMap, so the same images run against Azure by flipping `QUEUE_BACKEND` /
-`OBJECT_STORE_BACKEND` back to `azure` — see the Bicep in [`../../infra`](../../infra)
-for the reference cloud deployment that remains supported.
+The queue and compute move fully off Azure (Kafka + Kubernetes); object storage
+stays on managed **Azure Blob** so no AWS account is needed, while the backend
+stays pluggable. The application selects backends purely through the
+`booksearch-config` ConfigMap, so the same images run against the reference ACA
+path by flipping `QUEUE_BACKEND` / `OBJECT_STORE_BACKEND` — see the Bicep in
+[`../../infra`](../../infra) for that deployment, which remains supported.
 
 ## Deploy (local, kind)
 
 ```sh
 # 0. infra (once) — see ../helm/README.md
 kubectl create namespace booksearch
-# ...helm installs for keda, kafka, qdrant, minio...
+# ...helm installs for keda, kafka, qdrant...
+# set AZURE_STORAGE_CONNECTION_STRING in base/secret.yaml (Azurite for a local demo)
 
 # 1. build images and load them into the kind cluster
 docker build -f Dockerfile.api   -t booksearch-api:local   .

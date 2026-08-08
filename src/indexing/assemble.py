@@ -61,8 +61,8 @@ def load_local_shards(directory: Path) -> list[tuple[int, np.ndarray, list[str]]
 def load_object_store_shards(prefix: str) -> list[tuple[int, np.ndarray, list[str]]]:
     """Download every ``.npz`` shard under ``prefix`` from the configured store.
 
-    Backend is chosen by ``OBJECT_STORE_BACKEND`` (s3/MinIO by default, azure as
-    the reference cloud path) -- the same abstraction the worker writes through.
+    Backend is chosen by ``OBJECT_STORE_BACKEND`` (azure Blob by default, s3 as
+    the optional portable path) -- the same abstraction the worker writes through.
     """
     from src.indexing.backends import get_object_store
 

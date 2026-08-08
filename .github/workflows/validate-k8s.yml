@@ -63,5 +63,4 @@ jobs:
           helm repo update
           helm template kafka  bitnami/kafka --version 30.0.4  -f deploy/helm/values-kafka.yaml  > /dev/null
           helm template qdrant qdrant/qdrant --version 1.12.1 -f deploy/helm/values-qdrant.yaml > /dev/null
-          helm template minio  bitnami/minio --version 14.7.5 -f deploy/helm/values-minio.yaml  > /dev/null
           echo "All dependency charts render with the pinned values."

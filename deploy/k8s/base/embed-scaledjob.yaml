@@ -23,7 +23,7 @@ spec:
         restartPolicy: Never
         containers:
           - name: embed-worker
-            image: booksearch-embed:latest
+            image: ghcr.io/truashamu/booksearch-embed:latest
             command: ["python", "-m", "src.indexing.worker", "--loop"]
             envFrom:
               - configMapRef:
@@ -31,16 +31,11 @@ spec:
             env:
               - name: PYTHONPATH
                 value: /app
-              - name: AWS_ACCESS_KEY_ID
+              - name: AZURE_STORAGE_CONNECTION_STRING
                 valueFrom:
                   secretKeyRef:
                     name: booksearch-secrets
-                    key: AWS_ACCESS_KEY_ID
-              - name: AWS_SECRET_ACCESS_KEY
-                valueFrom:
-                  secretKeyRef:
-                    name: booksearch-secrets
-                    key: AWS_SECRET_ACCESS_KEY
+                    key: AZURE_STORAGE_CONNECTION_STRING
             resources:
               # 4Gi is the cap the OOMKill work was tuned against: the model
               # plus a 32-wide batch fits, a 128-wide batch does not. Requests
