@@ -269,9 +269,6 @@ vectorizer over and uploads.
 Portable by design — see **[deploy/README.md](deploy/README.md)** for the
 Kubernetes path (Helm-installed Kafka/Qdrant/KEDA + Kustomize app manifests,
 images from GHCR, managed Azure Blob for object storage) and a local
-Portable by design — see **[deploy/README.md](deploy/README.md)** for the
-Kubernetes path (Helm-installed Kafka/Qdrant/KEDA + Kustomize app manifests,
-images from GHCR, managed Azure Blob for object storage) and a local
 `docker-compose` stack (Redpanda + Azurite + Qdrant + Jaeger). The cloud
 substrate that Kubernetes runs on — AKS, the storage account, and the
 passwordless **workload identity** the worker uses for Blob access — is
@@ -279,6 +276,11 @@ provisioned with **Terraform**
 (**[infra/terraform/README.md](infra/terraform/README.md)**). The Azure Container
 Apps Bicep in `infra/` remains a supported reference deployment; the same images
 run on either by setting `QUEUE_BACKEND` / `OBJECT_STORE_BACKEND`.
+
+**CI/CD** is a two-stage GitHub Actions pipeline: `publish-images.yml` builds and
+pushes the API and worker images to GHCR on every push to `master`, then
+`deploy.yml` ("Deploy to AKS") pins the Kustomize image tags to that commit SHA
+and rolls it out to the AKS cluster, waiting on the API readiness probe.
 
 ### Observability
 

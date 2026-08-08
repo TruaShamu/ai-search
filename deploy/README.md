@@ -130,3 +130,33 @@ kubectl kustomize deploy/k8s/overlays/local | kubeconform -strict -summary \
 # dependency charts render with the pinned values
 helm template kafka bitnami/kafka --version 30.0.4 -f deploy/helm/values-kafka.yaml >/dev/null
 ```
+
+## Continuous deployment to AKS
+
+CI/CD is a two-stage pipeline against the Terraform-provisioned cluster
+([`infra/terraform`](../infra/terraform)):
+
+1. **[`publish-images.yml`](../.github/workflows/publish-images.yml)** — on push
+   to `master`, builds and pushes `booksearch-{api,embed}` to GHCR, tagged with
+   both `latest` and the commit SHA.
+2. **[`deploy.yml`](../.github/workflows/deploy.yml)** ("Deploy to AKS") — runs
+   on that workflow's success, lints + tests, then pins the
+   [`overlays/aks`](k8s/overlays/aks) image tags to the same SHA
+   (`kustomize edit set image`), `kubectl apply -k`s it, and waits on the API
+   rollout (its `/ready` probe).
+
+The deploy job **skips neutrally** until the cluster coordinates are configured,
+so pushes are not red before the platform exists. To turn it on:
+
+| Kind | Name | Value |
+|------|------|-------|
+| Repo **variable** | `AKS_RESOURCE_GROUP` | Terraform `resource_group_name` output |
+| Repo **variable** | `AKS_CLUSTER_NAME` | Terraform `aks_cluster_name` output |
+| Repo **secret** | `AZURE_CREDENTIALS` | service-principal JSON for `azure/login` |
+
+One-time cluster wiring after `terraform apply` (see
+[`infra/terraform/README.md`](../infra/terraform/README.md)): set
+`AZURE_STORAGE_ACCOUNT_URL` in [`k8s/base/configmap.yaml`](k8s/base/configmap.yaml)
+to the `storage_account_url` output, and annotate the worker ServiceAccount with
+the managed-identity client id for passwordless Blob access.
+

@@ -1,9 +1,9 @@
 name: Publish images to GHCR
 
 # Builds and pushes the two application images to the GitHub Container Registry
-# so the Kubernetes deployment (deploy/k8s) can pull them without any Azure
-# registry access. The ACA reference path keeps using ACR (see deploy.yml); this
-# workflow is the portable, cloud-neutral registry path.
+# so the AKS deployment (deploy/k8s) can pull them without any Azure registry
+# access. This is the source of the images the "Deploy to AKS" workflow rolls
+# out (it triggers on this workflow's success and pins the same commit SHA).
 #
 #   ghcr.io/truashamu/booksearch-api    -- FastAPI search service
 #   ghcr.io/truashamu/booksearch-embed  -- embedding worker (KEDA ScaledJob)
@@ -21,7 +21,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/booksearch
 
 jobs:
   # The worker image is self-contained (source + pip only), so it builds with
@@ -33,6 +32,12 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
+
+      # GHCR repository names must be lowercase, but github.repository_owner
+      # preserves the account's original casing ("TruaShamu"). Lowercase it in
+      # bash (there is no lowercase function in GitHub Actions expressions).
+      - name: Compute lowercase image prefix
+        run: echo "IMAGE_PREFIX=${REGISTRY}/${GITHUB_REPOSITORY_OWNER,,}/booksearch" >> "$GITHUB_ENV"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -52,7 +57,7 @@ jobs:
             ${{ env.IMAGE_PREFIX }}-embed:${{ github.sha }}
 
   # The API image bakes in index artifacts that are not in git, so it downloads
-  # them from Blob first (same step deploy.yml uses for ACA).
+  # them from Blob before building.
   api:
     runs-on: ubuntu-latest
     permissions:
@@ -61,12 +66,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Compute lowercase image prefix
+        run: echo "IMAGE_PREFIX=${REGISTRY}/${GITHUB_REPOSITORY_OWNER,,}/booksearch" >> "$GITHUB_ENV"
+
       - name: Azure Login
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Download model artifacts from Blob Storage
+        # The API image bakes in index artifacts that are not in git; pull them
+        # from Blob before the build (same artifacts the search service loads).
         run: |
           mkdir -p data/index data/models/reranker-onnx
           az storage blob download \
